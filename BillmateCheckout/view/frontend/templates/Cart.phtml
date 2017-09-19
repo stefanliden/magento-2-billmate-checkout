@@ -1,0 +1,12 @@
+<script>
+  require(
+    ['jquery', 'Billmate_BillmateCheckout/js/ajax'],
+    function($, BillmateAjax) {
+      var ajaxUrl = '<?php echo $block->getAjaxUrl(); ?>';
+      BillmateAjax.call(ajaxUrl);
+    }
+  );
+</script>
+<div id="billmate-cart">
+<?php echo $this->getCart(); ?>
+</div>

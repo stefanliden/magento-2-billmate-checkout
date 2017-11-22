@@ -630,7 +630,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             'CheckoutData' => array(
                 'windowmode' => 'iframe',
                 'sendreciept' => 'yes',
-                'terms' => $this->getTermsURL(),
+                'terms' => $this->getTermsURL()
             ),
             'PaymentData' => array(
                 'method' => '93',
@@ -641,7 +641,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'callbackurl' => $url . "billmatecheckout/callback/callback",
                 "accepturl" => $url . "billmatecheckout/success/success/",
                 'number' => $billmate_checkout_id,
-				"cancelurl" => $url
+				"cancelurl" => $url . "billmatecheckout"
             ),
             'Articles' => array(),
             'Cart' => array()
@@ -895,7 +895,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             'CheckoutData' => array(
                 'windowmode' => 'iframe',
                 'sendreciept' => 'yes',
-                'terms' => $this->getTermsURL(),
+                'terms' => $this->getTermsURL()
             ),
             'PaymentData' => array(
                 'method' => '93',
@@ -905,7 +905,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'orderid' => $cart->getQuote()->getReservedOrderId(),
                 'callbackurl' => $url . "billmatecheckout/callback/callback",
                 "accepturl" => $url . "billmatecheckout/success/success/",
-				"cancelurl" => $url
+				"cancelurl" => $url . "billmatecheckout"
             ),
             'Articles' => array(),
             'Cart' => array()
@@ -1083,7 +1083,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         $return = json_decode($out);
 		try {
 			$_SESSION['billmate_checkout_id'] = $return->data->number;
-			return "<iframe id=\"checkout\" src=\"" . $return->data->url . "\" style=\"width: 100%; min-height: 800px; border:none;\" sandbox=\"allow-same-origin allow-scripts allow-modals allow-popups allow-forms allow-top-navigation\" height=\"909\"></iframe>";
+			return "<iframe id=\"checkout\" src=\"" . $return->data->url . "\" style=\"width: 100%; min-height: 800px; border:none;\" sandbox=\"allow-same-origin allow-scripts allow-modals allow-popups allow-forms allow-top-navigation\"></iframe>";
 		}
 		catch (\Exception $e){
 			return $return->message;
@@ -1128,7 +1128,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			//init the customer
 			$customer = $this->customerFactory->create();
 			$customer->setWebsiteId($websiteId);
-			$customer->loadByEmail($orderData['email']); // load customet by email address
+			$customer->loadByEmail($orderData['email']); // load customer by email address
 			//check the customer
 			if (!$customer->getEntityId()){
 				//If not avilable then create this customer
@@ -1184,7 +1184,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			else {
 				$cart->getShippingAddress()->addData($_SESSION['billmate_billing_address']);
 			}
+			$cart->getBillingAddress()->setCustomerId($customer->getId());
+			$cart->getShippingAddress()->setCustomerId($customer->getId());
 			$cart->save();
+			$cart->getBillingAddress()->setCustomerId($customer->getId());
+			$cart->getShippingAddress()->setCustomerId($customer->getId());
+			$cart->setCustomerId($customer->getId());
+			$cart->assignCustomer($customer);
+			$cart->save();
+			
 			$order_id = $this->cartManagementInterface->placeOrder($cart->getId());
 			$order = $objectManager->create('\Magento\Sales\Model\Order')->load($order_id);
 			$emailSender = $objectManager->create('\Magento\Sales\Model\Order\Email\Sender\OrderSender');
@@ -1194,11 +1202,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			$orderState = \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT;
 			$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
 			$order->save();
-			
 			return $order_id;
 		}
 		catch (\Exception $e){
-			file_put_contents("billmate.log", date("Y-m-d H:i:s") . " Could not create order. Error: " . $e->getMessage() . "\n", FILE_APPEND);
+			file_put_contents("var/log/billmate.log", date("Y-m-d H:i:s") . " Could not create order. Error: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n", FILE_APPEND);
 			return 0;
 		}
     }

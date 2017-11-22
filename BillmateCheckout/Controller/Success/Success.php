@@ -38,13 +38,28 @@ class Success extends \Magento\Framework\App\Action\Action {
 					$_SESSION['bm_order_id'] = $orderId;
 			}
 			$order = $objectManager->get('\Magento\Sales\Model\Order')->loadByIncrementId($_SESSION['bm-inc-id']);
+			$orderId = $order->getId();
 			$this->eventManager->dispatch(
 					'checkout_onepage_controller_success_action',
 					['order_ids' => [$order->getId()]]
 			);
+			
+			$this->checkoutSession->setLastSuccessQuoteId($cart->getQuote()->getId());
+			$this->checkoutSession->setLastQuoteId($cart->getQuote()->getId());
+			$this->checkoutSession->setLastOrderId($orderId);
+			$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+			$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+			$url = $storeManager->getStore()->getBaseUrl() . "checkout/onepage/success";
+			if (headers_sent()){
+				die('<script type="text/javascript">window.location.href="' . $url . '";</script>');
+			}
+			else{
+				header('Location: ' . $url);
+				die();
+			}
 		}
 		catch (\Exception $e){
-				$_SESSION['bm-inc-id'] = $cart->getQuote()->getReservedOrderId();
+			$_SESSION['bm-inc-id'] = $cart->getQuote()->getReservedOrderId();
 		}
 		return $resultPage;
 	}

@@ -10,6 +10,7 @@ class CreateOrder extends \Magento\Framework\App\Action\Action {
 	protected $helper;
 	protected $orderInterface;
 	protected $eventManager;
+	protected $checkoutSession;
 	
 	public function __construct(Context $context, 
 		PageFactory $resultPageFactory,
@@ -17,14 +18,16 @@ class CreateOrder extends \Magento\Framework\App\Action\Action {
 		\Magento\Catalog\Api\ProductRepositoryInterface $productRepository, 
 		\Billmate\BillmateCheckout\Helper\Data $_helper, 
 		\Magento\Framework\Event\Manager $eventManager,
-		\Magento\Sales\Api\Data\OrderInterface $order
-		){
+		\Magento\Sales\Api\Data\OrderInterface $order,
+		\Magento\Checkout\Model\Session $_session
+	){
 		$this->eventManager = $eventManager;
 		$this->resultJsonFactory = $resultJsonFactory;
 		$this->resultPageFactory = $resultPageFactory;
 	    $this->productRepository = $productRepository;
 		$this->helper = $_helper;
 		$this->orderInterface = $order;
+		$this->checkoutSession = $_session;
 		parent::__construct($context);
 	}
 	
@@ -49,7 +52,10 @@ class CreateOrder extends \Magento\Framework\App\Action\Action {
 				}
 				$orderId = $this->helper->createOrder($input);
 				$_SESSION['bm_order_id'] = $orderId;
-				return $result->setData('billmatecheckout/success/success');
+				$this->checkoutSession->setLastSuccessQuoteId($cart->getQuote()->getId());
+				$this->checkoutSession->setLastQuoteId($cart->getQuote()->getId());
+				$this->checkoutSession->setLastOrderId($orderId);
+				return $result->setData('checkout/onepage/success');
 			}
 		}
 	}

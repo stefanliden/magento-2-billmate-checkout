@@ -211,7 +211,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$str .= "<div class=\"table-responsive\">";
 		$str .= "<div class=\"billmate-checkout-cart-table\">";
 		$str .= "<div class=\"billmate-checkout-table-head\"><div class=\"billmate-checkout-product-head\">" . __('Product') . "</div><div class=\"billmate-checkout-price-head\">".__('Price')."</div><div class=\"billmate-checkout-qty-head\">".__('Quantity')."</div><div class=\"billmate-checkout-sum-head\">".__('Sum')."</div></div><span id=\"billmate-checkout-line\" class=\"billmate-checkout-line\"></span>";
-		
+			
 		$productLoader = $objectManager->get('\Magento\Catalog\Model\Product');
 		$sum = 0;
         $taxAmount = 0;
@@ -219,7 +219,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$imgs = array();
         foreach ($itemsVisible as $item){
 			$productLoader2 = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Catalog\Api\ProductRepositoryInterface');
-			$product = $productLoader2->get($item->getProduct()->getSku());
+			$product = $productLoader2->get($item->getSku());
 			array_push($imgs, $imageHelper->init($product, 'product_page_image_small')->setImageFile($product->getFile())->resize(80, 80)->getUrl());
 		}
 		$i = 0;
@@ -227,7 +227,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         foreach ($itemsVisible as $item){
             $image_url = "";
 			$productLoader2 = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Catalog\Api\ProductRepositoryInterface');
-			$product = $productLoader2->get($item->getProduct()->getSku());
+			$product = $productLoader2->get($item->getSku());
             $taxClassId = $product->getTaxClassId();
             $percent = $taxCalculation->getRate($request->setProductClassId($taxClassId));
             $image_url = $imageHelper->init($product, 'product_page_image_small')->setImageFile($product->getFile())->resize(80, 80)->getUrl();
@@ -386,31 +386,43 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             $taxClassId = $product->getTaxClassId();
             $percent = $taxCalculation->getRate($request->setProductClassId($taxClassId));
             $image_url = $imageHelper->init($product, 'product_page_image_small')->setImageFile($product->getFile())->resize(80, 80)->getUrl();
-            $activeOptions = "";
-			if ($this->getShowAttribute()){
-				if ($item->getProduct()->getTypeId() == 'configurable'){
-					$productTypeInstance = $objectManager->get('Magento\ConfigurableProduct\Model\Product\Type\Configurable');
-					$productAttributeOptions = $productTypeInstance->getConfigurableAttributesAsArray($item->getProduct());
-					$vals = $item->getBuyRequest()->getData()['super_attribute'];
-					foreach ($vals as $key => $val){
-						$activeOptions .= "<span>".$productAttributeOptions[$key]['label'];
-						foreach ($productAttributeOptions[$key]['values'] as $value){
-							if ($value['value_index'] == $val){
-								$activeOptions .= ": ".$value['label'];
+            
+			$area = 0;
+			$attributes = $item->getProduct()->getAttributes();
+			foreach ($attributes as $attribute) {
+				if ($attribute->getIsVisibleOnFront() == 1){
+					if ($product->getAttributeText($attribute->getAttributeCode()) || $product->getData($attribute->getAttributeCode()) != null){
+						if ($attribute->getAttributeCode() == 'm2_per_package'){
+							if ($product->getAttributeText($attribute->getAttributeCode())){
+								$area = $product->getAttributeText($attribute->getAttributeCode());
+							}
+							else {
+								$area = $product->getData($attribute->getAttributeCode());
 							}
 						}
-						$activeOptions .= "</span>";
 					}
 				}
 			}
-            $str .= "<div class=\"billmate-checkout-product-row\"><div class=\"billmate-checkout-img\"><img src=\"".$imgs[$i]."\" alt=\"logo\"></div><div class=\"billmate-checkout-name\"><p>".$item->getName()."</p>".$activeOptions."</div><div class=\"billmate-checkout-price\" id=\"price_".$item->getId()."\">". $priceHelper->currency(($item->getPrice()*(1+($percent/100))), true, false) ."</div>";
-
-            if ($this->getBtnEnable()){
-                $str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><button class=\"billmate-checkout-button-sub sub\" id=\"bm-sub-btn sub_" . $item->getId() . "\" name=\"sub\">-</button><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div><button id=\"bm-inc-btn inc_" . $item->getId() . "\" class=\"billmate-checkout-button-inc inc\" name=\"inc\">+</button></div>";
-            }
-            else {
-                $str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div></div>";
-            }
+			if ($area == 0 || $this->getShowAttribute()){
+				$activeOptions = "";
+				$str .= "<div class=\"billmate-checkout-product-row\"><div class=\"billmate-checkout-img\"><img src=\"".$imgs[$i]."\" alt=\"logo\"></div><div class=\"billmate-checkout-name\"><p>".$item->getName()."</p>".$activeOptions."</div><div class=\"billmate-checkout-price\" id=\"price_".$item->getId()."\">". $priceHelper->currency(($item->getPrice()*(1+($percent/100))), true, false) ."</div>";
+				if ($this->getBtnEnable()){
+					$str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><button class=\"billmate-checkout-button-sub sub\" id=\"bm-sub-btn sub_" . $item->getId() . "\" name=\"sub\">-</button><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div><button id=\"bm-inc-btn inc_" . $item->getId() . "\" class=\"billmate-checkout-button-inc inc\" name=\"inc\">+</button></div>";
+				}
+				else {
+					$str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div></div>";
+				}
+			}
+			else {
+				$activeOptions = "<span><strong>Pris/m²</strong>: " . $priceHelper->currency($objectManager->get('\Caupo\M2\Block\M2')->getCorrectPrice($item->getProduct(), $item->getQty()*$area), true, false) . "</span><span><strong>Pris/förp</strong>: " . $priceHelper->currency(($item->getPrice()*(1+($percent/100))), true, false) . "</span>";
+				$str .= "<div class=\"billmate-checkout-product-row\"><div class=\"billmate-checkout-img\"><img src=\"".$imgs[$i]."\" alt=\"logo\"></div><div class=\"billmate-checkout-name\"><p>".$item->getName()."</p>".$activeOptions."</div><div class=\"billmate-checkout-price\" id=\"price_".$item->getId()."\">". $priceHelper->currency(($item->getPrice()*(1+($percent/100))), true, false) ."</div>";
+				if ($this->getBtnEnable()){
+					$str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><button class=\"billmate-checkout-button-sub sub\" id=\"bm-sub-btn sub_" . $item->getId() . "\" name=\"sub\">-</button><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div><button id=\"bm-inc-btn inc_" . $item->getId() . "\" class=\"billmate-checkout-button-inc inc\" name=\"inc\">+</button><span class=\"area\" id=\"area\">" . ($item->getQty()*floatval($area)) . "m²</span></div>";
+				}
+				else {
+					$str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div><span class=\"area\" id=\"area\">" . ($item->getQty()*floatval($area)) . "m²</span></div>";
+				}
+			}
             $str .= "<div class=\"billmate-checkout-sum\" id=\"sum_".$item->getId()."\">".$priceHelper->currency(($item->getPrice()*$item->getQty()*(1+($percent/100))), true, false)."</div><div class=\"billmate-checkout-del-but\"><span id=\"bm-del-btn del_" . $item->getId() . "\" class=\"billmate-checkout-button-del del\" name=\"del\"></span></div><span id=\"billmate-checkout-line\" class=\"billmate-checkout-line\"></span></div>";
 
             $taxAmount = $taxAmount + (($item->getPrice()*(1+($percent/100)) - $item->getPrice())*$item->getQty());
@@ -443,7 +455,38 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 	}
 	
 	public function setShippingAddress($input){
-		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+
+		$input['firstname'] = str_replace('Ã…','Å',$input['firstname']);
+		$input['lastname'] = str_replace('Ã…','Å',$input['lastname']);
+		$input['street'] = str_replace('Ã…','Å',$input['street']);
+		$input['city'] = str_replace('Ã…','Å',$input['city']);
+
+		$input['firstname'] = str_replace('Ã„','Ä',$input['firstname']);
+		$input['lastname'] = str_replace('Ã„','Ä',$input['lastname']);
+		$input['street'] = str_replace('Ã„','Ä',$input['street']);
+		$input['city'] = str_replace('Ã„','Ä',$input['city']);
+
+		$input['firstname'] = str_replace('Ã–','Ö',$input['firstname']);
+		$input['lastname'] = str_replace('Ã–','Ö',$input['lastname']);
+		$input['street'] = str_replace('Ã–','Ö',$input['street']);
+		$input['city'] = str_replace('Ã–','Ö',$input['city']);
+
+		$input['firstname'] = str_replace('Ã¥','å',$input['firstname']);
+		$input['lastname'] = str_replace('Ã¥','å',$input['lastname']);
+		$input['street'] = str_replace('Ã¥','å',$input['street']);
+		$input['city'] = str_replace('Ã¥','å',$input['city']);
+
+		$input['firstname'] = str_replace('Ã¤','ä',$input['firstname']);
+		$input['lastname'] = str_replace('Ã¤','ä',$input['lastname']);
+		$input['street'] = str_replace('Ã¤','ä',$input['street']);
+		$input['city'] = str_replace('Ã¤','ä',$input['city']);
+
+		$input['firstname'] = str_replace('Ã¶','ö',$input['firstname']);
+		$input['lastname'] = str_replace('Ã¶','ö',$input['lastname']);
+		$input['street'] = str_replace('Ã¶','ö',$input['street']);
+		$input['city'] = str_replace('Ã¶','ö',$input['city']);
+
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
 		if (array_key_exists('telephone', $input)){
 			$cart->getQuote()->getShippingAddress()->addData(array(
@@ -506,8 +549,39 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 	}
 	
 	public function setBillingAddress($input){
+
+		$input['firstname'] = str_replace('Ã…','Å',$input['firstname']);
+		$input['lastname'] = str_replace('Ã…','Å',$input['lastname']);
+		$input['street'] = str_replace('Ã…','Å',$input['street']);
+		$input['city'] = str_replace('Ã…','Å',$input['city']);
+
+		$input['firstname'] = str_replace('Ã„','Ä',$input['firstname']);
+		$input['lastname'] = str_replace('Ã„','Ä',$input['lastname']);
+		$input['street'] = str_replace('Ã„','Ä',$input['street']);
+		$input['city'] = str_replace('Ã„','Ä',$input['city']);
+
+		$input['firstname'] = str_replace('Ã–','Ö',$input['firstname']);
+		$input['lastname'] = str_replace('Ã–','Ö',$input['lastname']);
+		$input['street'] = str_replace('Ã–','Ö',$input['street']);
+		$input['city'] = str_replace('Ã–','Ö',$input['city']);
+
+		$input['firstname'] = str_replace('Ã¥','å',$input['firstname']);
+		$input['lastname'] = str_replace('Ã¥','å',$input['lastname']);
+		$input['street'] = str_replace('Ã¥','å',$input['street']);
+		$input['city'] = str_replace('Ã¥','å',$input['city']);
+
+		$input['firstname'] = str_replace('Ã¤','ä',$input['firstname']);
+		$input['lastname'] = str_replace('Ã¤','ä',$input['lastname']);
+		$input['street'] = str_replace('Ã¤','ä',$input['street']);
+		$input['city'] = str_replace('Ã¤','ä',$input['city']);
+
+		$input['firstname'] = str_replace('Ã¶','ö',$input['firstname']);
+		$input['lastname'] = str_replace('Ã¶','ö',$input['lastname']);
+		$input['street'] = str_replace('Ã¶','ö',$input['street']);
+		$input['city'] = str_replace('Ã¶','ö',$input['city']);
+
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
+	        $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
 		$cart->getQuote()->getBillingAddress()->addData(array(
             'firstname' => $input['firstname'],
             'lastname' => $input['lastname'],
@@ -895,7 +969,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             'CheckoutData' => array(
                 'windowmode' => 'iframe',
                 'sendreciept' => 'yes',
-                'terms' => $this->getTermsURL()
+                'terms' => $this->getTermsURL(),
             ),
             'PaymentData' => array(
                 'method' => '93',
@@ -1128,7 +1202,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			//init the customer
 			$customer = $this->customerFactory->create();
 			$customer->setWebsiteId($websiteId);
-			$customer->loadByEmail($orderData['email']); // load customer by email address
+			$customer->loadByEmail($orderData['email']); // load customet by email address
 			//check the customer
 			if (!$customer->getEntityId()){
 				//If not avilable then create this customer
@@ -1192,7 +1266,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			$cart->setCustomerId($customer->getId());
 			$cart->assignCustomer($customer);
 			$cart->save();
-			
 			$order_id = $this->cartManagementInterface->placeOrder($cart->getId());
 			$order = $objectManager->create('\Magento\Sales\Model\Order')->load($order_id);
 			$emailSender = $objectManager->create('\Magento\Sales\Model\Order\Email\Sender\OrderSender');
@@ -1202,6 +1275,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			$orderState = \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT;
 			$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
 			$order->save();
+			
 			return $order_id;
 		}
 		catch (\Exception $e){

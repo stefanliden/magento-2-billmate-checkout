@@ -15,12 +15,14 @@ class Success extends \Magento\Framework\App\Action\Action {
 		PageFactory $resultPageFactory,
 		\Magento\Framework\Event\Manager $eventManager,
 		\Billmate\BillmateCheckout\Helper\Data $_helper, 
-		CheckoutSession $checkoutSession
+		CheckoutSession $checkoutSession,
+        \Psr\Log\LoggerInterface $logger
 	) {
 		$this->eventManager = $eventManager;
 		$this->resultPageFactory = $resultPageFactory;
 		$this->checkoutSession = $checkoutSession;
 		$this->helper = $_helper;
+        $this->logger = $logger;
 		parent::__construct($context);
 	}
 	
@@ -60,6 +62,18 @@ class Success extends \Magento\Framework\App\Action\Action {
 		}
 		catch (\Exception $e){
 			$_SESSION['bm-inc-id'] = $cart->getQuote()->getReservedOrderId();
+
+            $this->logger->error(print_r(array(
+                'note' => 'could not redirect customer to store order confirmation page',
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'exception.message' => $e->getMessage(),
+                'exception.file' => $e->getFile(),
+                'exception.line' => $e->getLine(),
+                '' => ''
+            ), true));
 		}
 		return $resultPage;
 	}

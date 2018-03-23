@@ -859,7 +859,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 "id" => $this->getBillmateId(),
                 "hash" => hash_hmac('sha512', json_encode($data), $this->getBillmateSecret()),
                 "version" => '2.1.7',
-                "client" => 'MAGENTO:3.0.3',
+                "client" => $this->getClientVersion(),
                 "serverdata" => $_SERVER,
                 "time" => microtime(true),
                 "test" => $this->getTestMode(),
@@ -1124,7 +1124,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 "id" => $this->getBillmateId(),
                 "hash" => hash_hmac('sha512', json_encode($data), $this->getBillmateSecret()),
                 "version" => '2.1.7',
-                "client" => 'MAGENTO:3.0.3',
+                "client" => $this->getClientVersion(),
                 "serverdata" => $_SERVER,
                 "time" => microtime(true),
                 "test" => $this->getTestMode(),
@@ -1418,7 +1418,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 	
 	public function def(){
 		define("BILLMATE_SERVER", "2.1.6");
-		define("BILLMATE_CLIENT", "Pluginname:BillMate:1.0");
+		define("BILLMATE_CLIENT", $this->getClientVersion());
 		define("BILLMATE_LANGUAGE", "sv");
 	}
+
+    public function getClientVersion() {
+        return "Magento:".$this->getMagentoVersion()." PLUGIN:0.9.1b";
+    }
+
+    public function getMagentoVersion() {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
+        $version = $productMetadata->getVersion();
+        return $version;
+    }
 }

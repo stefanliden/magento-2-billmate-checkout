@@ -59,8 +59,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		\Magento\Quote\Model\QuoteFactory $quote, 
 		\Magento\Quote\Api\ShippingMethodManagementInterface $_shippingMethodManagementInterface, 
 		\Magento\Quote\Model\ResourceModel\Quote\CollectionFactory $quoteCollectionFactory,
-		\Magento\Checkout\Model\Cart $_cart,
-        \Psr\Log\LoggerInterface $logger
+		\Magento\Checkout\Model\Cart $_cart
 	){
         $this->_product = $product;
         $this->orderInterface = $order;
@@ -80,7 +79,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         $this->quote = $quote;
         $this->shippingMethodManagementInterface = $_shippingMethodManagementInterface;
         $this->quoteCollectionFactory = $quoteCollectionFactory;
-        $this->logger = $logger;
+        $this->logger = $context->getLogger();
         parent::__construct($context);
     }
 

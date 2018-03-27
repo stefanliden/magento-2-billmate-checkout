@@ -4,12 +4,11 @@
 		<css src="Billmate_BillmateCheckout/css/checkout.css" />
 	</head> 
 	<body>
-                <referenceContainer name="checkout.root" remove="true" />
-                <referenceContainer name="header.container" remove="true" />
+		<referenceContainer name="checkout.root" remove="true" />
+		<referenceContainer name="header.container" remove="true" />
 		<referenceContainer name="header_container" remove="true" />
 		<referenceBlock name="base-header-container" remove="true" />
-		<referenceContainer name="head.additional" remove="true" />
-                <referenceContainer name="store.menu" remove="true" />
+		<referenceContainer name="store.menu" remove="true" />
 		<referenceContainer name="container_mobile_header_top" remove="true" />
 		<referenceContainer name="page.wrapper">
 			<container name="bm-cart" htmlTag="div" htmlClass="bm-cart-wrapper" after="main">

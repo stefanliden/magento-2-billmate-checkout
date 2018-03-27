@@ -488,7 +488,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$input['street'] = str_replace('Ã¶','ö',$input['street']);
 		$input['city'] = str_replace('Ã¶','ö',$input['city']);
 
-	$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
 		if (array_key_exists('telephone', $input)){
 			$cart->getQuote()->getShippingAddress()->addData(array(
@@ -583,7 +583,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$input['city'] = str_replace('Ã¶','ö',$input['city']);
 
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-	        $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
+		$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
 		$cart->getQuote()->getBillingAddress()->addData(array(
             'firstname' => $input['firstname'],
             'lastname' => $input['lastname'],
@@ -706,7 +706,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             'CheckoutData' => array(
                 'windowmode' => 'iframe',
                 'sendreciept' => 'yes',
-                'terms' => $this->getTermsURL()
+                'terms' => $this->getTermsURL(),
+                'redirectOnSuccess'=>'true'
             ),
             'PaymentData' => array(
                 'method' => '93',
@@ -972,6 +973,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'windowmode' => 'iframe',
                 'sendreciept' => 'yes',
                 'terms' => $this->getTermsURL(),
+                'redirectOnSuccess'=>'true'
             ),
             'PaymentData' => array(
                 'method' => '93',

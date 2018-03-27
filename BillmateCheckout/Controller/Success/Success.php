@@ -32,18 +32,18 @@ class Success extends \Magento\Framework\App\Action\Action {
 		$resultPage = $this->resultPageFactory->create();
 		try{
 			if (!isset($_SESSION['bm-inc-id'])){
-					$orderData = array(
-							'email'=>$_SESSION['billmate_email'],
-							'shipping_address'=>$_SESSION['billmate_billing_address']
-					);
-					$orderId = $this->helper->createOrder($orderData);
-					$_SESSION['bm_order_id'] = $orderId;
+				$orderData = array(
+					'email'=>$_SESSION['billmate_email'],
+					'shipping_address'=>$_SESSION['billmate_billing_address']
+				);
+				$orderId = $this->helper->createOrder($orderData);
+				$_SESSION['bm_order_id'] = $orderId;
 			}
 			$order = $objectManager->get('\Magento\Sales\Model\Order')->loadByIncrementId($_SESSION['bm-inc-id']);
 			$orderId = $order->getId();
 			$this->eventManager->dispatch(
-					'checkout_onepage_controller_success_action',
-					['order_ids' => [$order->getId()]]
+				'checkout_onepage_controller_success_action',
+				['order_ids' => [$order->getId()]]
 			);
 			
 			$this->checkoutSession->setLastSuccessQuoteId($cart->getQuote()->getId());

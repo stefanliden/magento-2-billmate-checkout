@@ -43,8 +43,10 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
 				$this->helper->setBillingAddress($input);
 			}
 			else if (array_key_exists("billingAddress",$_POST)){
+                $_email = (isset($_POST['email'])) ? $_POST['email'] : '';
+                $_email = ($_email == '' && isset($_POST['billingAddress']['email'])) ? $_POST['billingAddress']['email'] : '';
 				$input = array(
-					'email'=>$_POST['email'],
+					'email'=> $_email,
 					'firstname'=>$_POST['billingAddress']['firstname'],
 					'lastname'=>$_POST['billingAddress']['lastname'],
 					'street'=>$_POST['billingAddress']['street'],

@@ -1207,6 +1207,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			$customer->setWebsiteId($websiteId);
 			$customer->loadByEmail($orderData['email']); // load customet by email address
 			//check the customer
+            $_password = str_pad($orderData['email'], 10, rand(111,999));
 			if (!$customer->getEntityId()){
 				//If not avilable then create this customer
 				$customer->setWebsiteId($websiteId)
@@ -1214,7 +1215,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 						->setFirstname($orderData['shipping_address']['firstname'])
 						->setLastname($orderData['shipping_address']['lastname'])
 						->setEmail($orderData['email'])
-						->setPassword($orderData['email']);
+						->setPassword($_password);
 				$customer->save();
 			}
 			$customer->setEmail($orderData['email']);

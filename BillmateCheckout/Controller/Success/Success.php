@@ -27,10 +27,55 @@ class Success extends \Magento\Framework\App\Action\Action {
 	}
 	
 	public function execute(){
+
+        $this->logger->error(print_r(array(
+            '__FILE__' => __FILE__,
+            '__CLASS__' => __CLASS__,
+            '__FUNCTION__' => __FUNCTION__,
+            '__LINE__' => __LINE__,
+            'date' => date('Y-m-d H:i:s'),
+            'note' => 'aaa',
+            '' => ''
+        ), true));
+
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+
+        $this->logger->error(print_r(array(
+            '__FILE__' => __FILE__,
+            '__CLASS__' => __CLASS__,
+            '__FUNCTION__' => __FUNCTION__,
+            '__LINE__' => __LINE__,
+            'date' => date('Y-m-d H:i:s'),
+            'note' => 'aab',
+            '' => ''
+        ), true));
+
 		$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
+
+         $this->logger->error(print_r(array(
+            '__FILE__' => __FILE__,
+            '__CLASS__' => __CLASS__,
+            '__FUNCTION__' => __FUNCTION__,
+            '__LINE__' => __LINE__,
+            'date' => date('Y-m-d H:i:s'),
+            'note' => 'aac',
+            '' => ''
+        ), true));
+
 		$resultPage = $this->resultPageFactory->create();
 		try{
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aba',
+                'isset.session.bm-inc-id' => (isset($_SESSION['bm-inc-id'])),
+                '' => ''
+            ), true));
+
 			if (!isset($_SESSION['bm-inc-id'])){
 				$orderData = array(
 					'email'=>$_SESSION['billmate_email'],
@@ -41,6 +86,18 @@ class Success extends \Magento\Framework\App\Action\Action {
 			}
 			$order = $objectManager->get('\Magento\Sales\Model\Order')->loadByIncrementId($_SESSION['bm-inc-id']);
 			$orderId = $order->getId();
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'abb',
+                'orderId' => $orderId,
+                '' => ''
+            ), true));
+
 			$this->eventManager->dispatch(
 				'checkout_onepage_controller_success_action',
 				['order_ids' => [$order->getId()]]
@@ -51,7 +108,31 @@ class Success extends \Magento\Framework\App\Action\Action {
 			$this->checkoutSession->setLastOrderId($orderId);
 			$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 			$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'abc',
+                '' => ''
+            ), true));
+
 			$url = $storeManager->getStore()->getBaseUrl() . "checkout/onepage/success";
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'abd',
+                'url' => $url,
+                'headers_sent' => (headers_sent()),
+                '' => ''
+            ), true));
+
 			if (headers_sent()){
 				die('<script type="text/javascript">window.location.href="' . $url . '";</script>');
 			}
@@ -75,6 +156,18 @@ class Success extends \Magento\Framework\App\Action\Action {
                 '' => ''
             ), true));
 		}
+
+        $this->logger->error(print_r(array(
+            'note' => 'could not redirect customer to store order confirmation page',
+            '__FILE__' => __FILE__,
+            '__CLASS__' => __CLASS__,
+            '__FUNCTION__' => __FUNCTION__,
+            '__LINE__' => __LINE__,
+            'date' => date('Y-m-d H:i:s'),
+            'note' => 'done Return content of resultPage',
+            '' => ''
+        ), true));
+
 		return $resultPage;
 	}
 }

@@ -26,6 +26,7 @@ define([
 		}
 		this.createOrder = function(data){
 			if (data.status == "Step2Loaded"){
+			//	document.getElementById("billmate-checkout").style.display = "none";
 				$.ajax({
 					url : CREATE_ORDER_URL,
 					data: data,

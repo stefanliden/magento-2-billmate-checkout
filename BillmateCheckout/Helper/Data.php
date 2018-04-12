@@ -79,6 +79,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         $this->quote = $quote;
         $this->shippingMethodManagementInterface = $_shippingMethodManagementInterface;
         $this->quoteCollectionFactory = $quoteCollectionFactory;
+        $this->logger = $context->getLogger();
         parent::__construct($context);
     }
 
@@ -486,7 +487,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$input['street'] = str_replace('Ã¶','ö',$input['street']);
 		$input['city'] = str_replace('Ã¶','ö',$input['city']);
 
-	$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
 		if (array_key_exists('telephone', $input)){
 			$cart->getQuote()->getShippingAddress()->addData(array(
@@ -581,7 +582,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$input['city'] = str_replace('Ã¶','ö',$input['city']);
 
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-	        $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
+		$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
 		$cart->getQuote()->getBillingAddress()->addData(array(
             'firstname' => $input['firstname'],
             'lastname' => $input['lastname'],
@@ -704,18 +705,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             'CheckoutData' => array(
                 'windowmode' => 'iframe',
                 'sendreciept' => 'yes',
-                'terms' => $this->getTermsURL()
+                'terms' => $this->getTermsURL(),
+                'redirectOnSuccess'=>'true'
             ),
             'PaymentData' => array(
-                'method' => '93',
-                'currency' => 'SEK',
-                'language' => 'sv',
-                'country' => 'SE',
                 'orderid' => $cart->getQuote()->getReservedOrderId(),
-                'callbackurl' => $url . "billmatecheckout/callback/callback",
-                "accepturl" => $url . "billmatecheckout/success/success/",
-                'number' => $billmate_checkout_id,
-				"cancelurl" => $url . "billmatecheckout"
+                'number' => $billmate_checkout_id
             ),
             'Articles' => array(),
             'Cart' => array()
@@ -857,7 +852,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 "id" => $this->getBillmateId(),
                 "hash" => hash_hmac('sha512', json_encode($data), $this->getBillmateSecret()),
                 "version" => '2.1.7',
-                "client" => 'MAGENTO:3.0.3',
+                "client" => $this->getClientVersion(),
                 "serverdata" => $_SERVER,
                 "time" => microtime(true),
                 "test" => $this->getTestMode(),
@@ -970,6 +965,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'windowmode' => 'iframe',
                 'sendreciept' => 'yes',
                 'terms' => $this->getTermsURL(),
+                'redirectOnSuccess'=>'true'
             ),
             'PaymentData' => array(
                 'method' => '93',
@@ -1122,7 +1118,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 "id" => $this->getBillmateId(),
                 "hash" => hash_hmac('sha512', json_encode($data), $this->getBillmateSecret()),
                 "version" => '2.1.7',
-                "client" => 'MAGENTO:3.0.3',
+                "client" => $this->getClientVersion(),
                 "serverdata" => $_SERVER,
                 "time" => microtime(true),
                 "test" => $this->getTestMode(),
@@ -1176,10 +1172,33 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 
     public function createOrder($orderData, $orderID = '', $paymentID = ''){
 		try {
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aaa',
+                '' => ''
+            ), true));
+
 			$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 			if ($orderID == ''){
 				$orderID = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Checkout\Model\Cart')->getQuote()->getReservedOrderId();
 			}
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aab',
+                'orderID' => $orderID,
+                '' => ''
+            ), true));
+
 			$exOrder = $this->orderInterface->loadByIncrementId($orderID);
 			if ($exOrder->getIncrementId()){
 				return;
@@ -1189,21 +1208,58 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			if (isset($_SESSION['billmate_applied_discount_code'])){
 				$discountCode = $_SESSION['billmate_applied_discount_code'];
 			}
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aac',
+                'isset.session.billmate_applied_discount_code' => (isset($_SESSION['billmate_applied_discount_code'])),
+                'isset.session.shipping_code' => (isset($_SESSION['shipping_code'])),
+                'session.billmate_applied_discount_code' => ((isset($_SESSION['billmate_applied_discount_code'])) ? $_SESSION['billmate_applied_discount_code'] : ''),
+                'session.shipping_code' => ((isset($_SESSION['shipping_code'])) ? $_SESSION['shipping_code'] : ''),
+                '' => ''
+            ), true));
+
 			$shippingCode = $_SESSION['shipping_code'];
 			
 			$actual_quote = $this->quoteCollectionFactory->create()->addFieldToFilter("reserved_order_id", $orderID)->getFirstItem();
 			
 			$actual_quote_id = $actual_quote->getId();
 			
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aad',
+                'actual_quote_id' => $actual_quote_id,
+                '' => ''
+            ), true));
 			
 			//init the store id and website id @todo pass from array
 			$store = $this->_storeManager->getStore();
 			$websiteId = $this->_storeManager->getStore()->getWebsiteId();
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aae',
+                '' => ''
+            ), true));
+
 			//init the customer
 			$customer = $this->customerFactory->create();
 			$customer->setWebsiteId($websiteId);
 			$customer->loadByEmail($orderData['email']); // load customet by email address
 			//check the customer
+            $_password = str_pad($orderData['email'], 10, rand(111,999));
 			if (!$customer->getEntityId()){
 				//If not avilable then create this customer
 				$customer->setWebsiteId($websiteId)
@@ -1211,7 +1267,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 						->setFirstname($orderData['shipping_address']['firstname'])
 						->setLastname($orderData['shipping_address']['lastname'])
 						->setEmail($orderData['email'])
-						->setPassword($orderData['email']);
+						->setPassword($_password);
 				$customer->save();
 			}
 			$customer->setEmail($orderData['email']);
@@ -1222,9 +1278,33 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			$customer = $this->customerRepository->getById($customer->getEntityId());
 			$actual_quote->setCurrency();
 			$actual_quote->assignCustomer($customer);
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aaf assignCustomer to quote',
+                '' => ''
+            ), true));
+
 			if (isset($_SESSION['billmate_applied_discount_code'])){
 				$actual_quote->setCouponCode($discountCode);
 			}
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aag',
+                'isset.session.billmate_shipping_address' => (isset($_SESSION['billmate_shipping_address'])),
+                'isset.session.billmate_billing_address' => (isset($_SESSION['billmate_billing_address'])),
+                '' => ''
+            ), true));
+
 			//Set Address to quote @todo add section in order data for seperate billing and handle it
 			$actual_quote->getBillingAddress()->addData($_SESSION['billmate_billing_address']);
 			if (isset($_SESSION['billmate_shipping_address'])){
@@ -1233,6 +1313,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			else {
 				$actual_quote->getShippingAddress()->addData($_SESSION['billmate_billing_address']);
 			}
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aah',
+                '' => ''
+            ), true));
+
 			// Collect Rates and Set Shipping & Payment Method
 			$this->shippingRate->setCode($shippingCode)->getPrice();
 			$shippingAddress = $actual_quote->getShippingAddress();
@@ -1248,6 +1339,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			$actual_quote->collectTotals();
 			// Submit the quote and create the order
 			$actual_quote->save();
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aai',
+                '' => ''
+            ), true));
+
 			$cart = $this->cartRepositoryInterface->get($actual_quote->getId());
 			$cart->setCustomerEmail($orderData['email']);
 			$cart->setCustomerId($customer->getId());
@@ -1261,26 +1363,103 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			$cart->getBillingAddress()->setCustomerId($customer->getId());
 			$cart->getShippingAddress()->setCustomerId($customer->getId());
 			$cart->save();
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aaj',
+                '' => ''
+            ), true));
+
 			$cart->getBillingAddress()->setCustomerId($customer->getId());
 			$cart->getShippingAddress()->setCustomerId($customer->getId());
 			$cart->setCustomerId($customer->getId());
 			$cart->assignCustomer($customer);
 			$cart->save();
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aak',
+                '' => ''
+            ), true));
+
 			$order_id = $this->cartManagementInterface->placeOrder($cart->getId());
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aal',
+                'order_id' => $order_id,
+                '' => ''
+            ), true));
+
 			$order = $objectManager->create('\Magento\Sales\Model\Order')->load($order_id);
 			$emailSender = $objectManager->create('\Magento\Sales\Model\Order\Email\Sender\OrderSender');
 			$emailSender->send($order);
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aam',
+                '' => ''
+            ), true));
+
 			$_SESSION['bm-inc-id'] = $order->getIncrementId();
 			
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aan',
+                'session.bm-inc-id' => $_SESSION['bm-inc-id'],
+                '' => ''
+            ), true));
+
 			$orderState = \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT;
 			$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
 			$order->save();
+
+            $this->logger->error(print_r(array(
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'date' => date('Y-m-d H:i:s'),
+                'note' => 'aao',
+                'order_id' => $order_id,
+                '' => ''
+            ), true));
 			
 			return $order_id;
 		}
 		catch (\Exception $e){
-			file_put_contents("var/log/billmate.log", date("Y-m-d H:i:s") . " Could not create order. Error: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n", FILE_APPEND);
-			return 0;
+            $this->logger->error(print_r(array(
+                'Could not create order',
+                '__FILE__' => __FILE__,
+                '__CLASS__' => __CLASS__,
+                '__FUNCTION__' => __FUNCTION__,
+                '__LINE__' => __LINE__,
+                'exception.message' => $e->getMessage(),
+                'exception.file' => $e->getFile(),
+                'exception.line' => $e->getLine(),
+                '' => ''
+            ), true));
+            return 0;
 		}
     }
 	
@@ -1406,7 +1585,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 	
 	public function def(){
 		define("BILLMATE_SERVER", "2.1.6");
-		define("BILLMATE_CLIENT", "Pluginname:BillMate:1.0");
+		define("BILLMATE_CLIENT", $this->getClientVersion());
 		define("BILLMATE_LANGUAGE", "sv");
 	}
+
+    public function getClientVersion() {
+        return "Magento:".$this->getMagentoVersion()." PLUGIN:0.9.3b";
+    }
+
+    public function getMagentoVersion() {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
+        $version = $productMetadata->getVersion();
+        return $version;
+    }
 }

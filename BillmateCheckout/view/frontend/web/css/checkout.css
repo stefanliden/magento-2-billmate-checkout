@@ -7,6 +7,11 @@
     border-bottom: 4px solid rgb(214, 210, 210);
     padding-bottom: 10px;
 }
+
+.nav-toggle{
+	display: none !important;
+}
+
 .billmate-checkout-price{
     margin-top: -20px;
     margin-left: 54%;
@@ -26,7 +31,7 @@
     margin-left: 73%;
 }
 .billmate-checkout-sum{
-    margin-top: -50px;
+    margin-top: -47px;
     margin-left: 85%;
     color:#7c7c7c;
 	font-weight: bold;
@@ -95,7 +100,7 @@ button.inc {
     height: 37px;
     color:#000;
     background-color:#fff;
-    margin-top: -59px;
+    margin-top: -56px;
     margin-left: 44px;
 	border: 1px solid #f3f3f3;
 	  border-top-right-radius: 3px !important;
@@ -166,20 +171,25 @@ div.checkout{
     cursor:pointer;
 }
 
-#code{
-    width:183px;
-    height:26px;
+#code {
     border-radius:3px;
+    display: block;
+    float: left;
+    height:35px;
+    width:140px;
 }
-#codeButton{
-    width:136px;
-    height:26px;
-    border-radius:3px;
+
+#codeButton {
     background-color:#06A1DC;
-    color:#fff;
+    border-radius:3px;
     border:none;
+    color:#fff;
+    display: block;
+    float: left;
     font-weight:bold;
-    margin-left:10px;
+    height:35px;
+    margin-left: 8px;
+    width:110px;
 }
 #codeButton:hover {
     background-color: #00aeef;
@@ -240,10 +250,6 @@ table.totals td {
 .billmate-checkout-discount #code{
     border-color: #e2e2e2;
     height: 35px;
-}
-.billmate-checkout-discount #codeButton{
-    height: 35px;
-    margin-left: 0px;
 }
 .checkoutWrapper #testMode{
     background-color: #f4f8fb !important;
@@ -322,9 +328,6 @@ table.totals td.name {
 @media screen and (max-width: 767px){
     div.bm-cart-wrapper{
         width: 100%;
-    }
-    .billmate-checkout-discount #codeButton{
-        margin-top: 10px;
     }
     .billmate-checkout-product-row .billmate-checkout-name, .billmate-checkout-sum ,.billmate-checkout-price{
         font-size: 14px;

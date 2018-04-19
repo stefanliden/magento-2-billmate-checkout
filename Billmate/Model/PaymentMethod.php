@@ -17,6 +17,7 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
     protected $_canRefundInvoicePartial     = false;
 	protected $_isOffline					= false;
 	protected $helper;
+	protected $registry;
 	
 	public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -33,6 +34,7 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []
     ) {
+		$this->registry = $registry;
 		$this->helper = $_helper;
         parent::__construct(
             $context,
@@ -46,6 +48,16 @@ class PaymentMethod extends \Magento\Payment\Model\Method\AbstractMethod {
             $resourceCollection,
             $data
         );
+    }
+	
+	public function getTitle(){
+		$order = $this->registry->registry('current_order');
+		if ($order !== null){
+			if ($order->getData('billmate_method_name') !== null){
+				return $order->getData('billmate_method_name');
+			}
+		}
+        return $this->getConfigData('title');
     }
 	
 	public function canRefund(){

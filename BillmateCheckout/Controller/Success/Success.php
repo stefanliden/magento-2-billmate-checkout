@@ -3,6 +3,7 @@ namespace Billmate\BillmateCheckout\Controller\Success;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Framework\App\Action\Context;
 use \Magento\Checkout\Model\Session as CheckoutSession;
+require_once(realpath(__DIR__."/Billmate.php"));
 class Success extends \Magento\Framework\App\Action\Action {
 	
 	protected $resultPageFactory;
@@ -15,67 +16,171 @@ class Success extends \Magento\Framework\App\Action\Action {
 		PageFactory $resultPageFactory,
 		\Magento\Framework\Event\Manager $eventManager,
 		\Billmate\BillmateCheckout\Helper\Data $_helper, 
-		CheckoutSession $checkoutSession,
-        \Psr\Log\LoggerInterface $logger
+		CheckoutSession $checkoutSession
 	) {
 		$this->eventManager = $eventManager;
 		$this->resultPageFactory = $resultPageFactory;
 		$this->checkoutSession = $checkoutSession;
 		$this->helper = $_helper;
-        $this->logger = $logger;
 		parent::__construct($context);
 	}
 	
 	public function execute(){
-
-        $this->logger->error(print_r(array(
-            '__FILE__' => __FILE__,
-            '__CLASS__' => __CLASS__,
-            '__FUNCTION__' => __FUNCTION__,
-            '__LINE__' => __LINE__,
-            'date' => date('Y-m-d H:i:s'),
-            'note' => 'aaa',
-            '' => ''
-        ), true));
-
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-
-        $this->logger->error(print_r(array(
-            '__FILE__' => __FILE__,
-            '__CLASS__' => __CLASS__,
-            '__FUNCTION__' => __FUNCTION__,
-            '__LINE__' => __LINE__,
-            'date' => date('Y-m-d H:i:s'),
-            'note' => 'aab',
-            '' => ''
-        ), true));
-
 		$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-
-         $this->logger->error(print_r(array(
-            '__FILE__' => __FILE__,
-            '__CLASS__' => __CLASS__,
-            '__FUNCTION__' => __FUNCTION__,
-            '__LINE__' => __LINE__,
-            'date' => date('Y-m-d H:i:s'),
-            'note' => 'aac',
-            '' => ''
-        ), true));
-
 		$resultPage = $this->resultPageFactory->create();
+		$_POST = empty($_POST) ? $_GET : $_POST;
 		try{
+			if (!empty($_POST)){
+				$test = $this->helper->getTestMode();
+				$ssl = true;
+				$debug = false;
 
-            $this->logger->error(print_r(array(
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'aba',
-                'isset.session.bm-inc-id' => (isset($_SESSION['bm-inc-id'])),
-                '' => ''
-            ), true));
-
+				$id = $this->helper->getBillmateId();
+				$key = $this->helper->getBillmateSecret();
+				$bm = new BillMate($id, $key, $this->helper, $ssl, $test, $debug);
+				$values = array(
+					"number" => json_decode($_POST['data'], true)['number']
+				);
+				$paymentInfo = $bm->getPaymentinfo($values);
+				$this->helper->setBmPaymentMethod($paymentInfo['PaymentData']['method']);
+				ob_start();
+				var_dump($paymentInfo);
+				file_put_contents("var/log/bmdev.log", ob_get_clean() . "\n", FILE_APPEND);
+				$shipping_address = array();
+				$billing_address = array();
+				$useShipping = false;
+				if (array_key_exists('Shipping', $paymentInfo['Customer'])){
+					if (array_key_exists('firstname', $paymentInfo['Customer']['Shipping'])){
+						$shipping_address = array(
+							'firstname' => $paymentInfo['Customer']['Shipping']['firstname'],
+							'lastname' => $paymentInfo['Customer']['Shipping']['lastname'],
+							'street' => $paymentInfo['Customer']['Shipping']['street'],
+							'city' => $paymentInfo['Customer']['Shipping']['city'],
+							'country_id' => $paymentInfo['Customer']['Shipping']['country'],
+							'postcode' => $paymentInfo['Customer']['Shipping']['zip'],
+							'telephone' => $paymentInfo['Customer']['Billing']['phone']
+						);
+						$this->helper->setShippingAddress($shipping_address);
+						$useShipping = true;
+						$tempOrder = array(
+							'currency_id'  => $paymentInfo['PaymentData']['currency'],
+							'email'        => $paymentInfo['Customer']['Billing']['email'],
+							'shipping_address' => array(
+								'firstname'    => $paymentInfo['Customer']['Shipping']['firstname'],
+								'lastname'     => $paymentInfo['Customer']['Shipping']['lastname'],
+								'street' => $paymentInfo['Customer']['Shipping']['street'],
+								'city' => $paymentInfo['Customer']['Shipping']['city'],
+								'country_id' => 'SE',//$paymentInfo['Customer']['Shipping']['country'],
+								'postcode' => $paymentInfo['Customer']['Shipping']['zip'],
+								'telephone' => $paymentInfo['Customer']['Billing']['phone'],
+							),
+							'items' => array()
+						);
+					}
+				}
+				if (!$useShipping){
+					$shipping_address = array(
+						'firstname' => $paymentInfo['Customer']['Billing']['firstname'],
+						'lastname' => $paymentInfo['Customer']['Billing']['lastname'],
+						'street' => $paymentInfo['Customer']['Billing']['street'],
+						'city' => $paymentInfo['Customer']['Billing']['city'],
+						'country_id' => $paymentInfo['Customer']['Billing']['country'],
+						'postcode' => $paymentInfo['Customer']['Billing']['zip'],
+						'telephone' => $paymentInfo['Customer']['Billing']['phone']
+					);
+					$this->helper->setShippingAddress($shipping_address);
+					$tempOrder = array(
+						'currency_id'  => $paymentInfo['PaymentData']['currency'],
+						'email'        => $paymentInfo['Customer']['Billing']['email'],
+						'shipping_address' => array(
+							'firstname'    => $paymentInfo['Customer']['Billing']['firstname'],
+							'lastname'     => $paymentInfo['Customer']['Billing']['lastname'],
+							'street' => $paymentInfo['Customer']['Billing']['street'],
+							'city' => $paymentInfo['Customer']['Billing']['city'],
+							'country_id' => $paymentInfo['Customer']['Billing']['country'],
+							'postcode' => $paymentInfo['Customer']['Billing']['zip'],
+							'telephone' => $paymentInfo['Customer']['Billing']['phone'],
+						),
+						'items' => array()
+					);
+				}
+				$billing_address = array(
+					'firstname' => $paymentInfo['Customer']['Billing']['firstname'],
+					'lastname' => $paymentInfo['Customer']['Billing']['lastname'],
+					'street' => $paymentInfo['Customer']['Billing']['street'],
+					'city' => $paymentInfo['Customer']['Billing']['city'],
+					'country_id' => $paymentInfo['Customer']['Billing']['country'],
+					'postcode' => $paymentInfo['Customer']['Billing']['zip'],
+					'telephone' => $paymentInfo['Customer']['Billing']['phone'],
+					'email' =>$paymentInfo['Customer']['Billing']['email']
+				);
+				$this->helper->setBillingAddress($billing_address);
+				$this->helper->setShippingAddress($shipping_address);
+				$articles = $paymentInfo['Articles'];
+				foreach($articles as $article){
+					if ($article['artnr'] == 'discount_code'){
+						$_SESSION['billmate_applied_discount_code'] = $article['title'];
+					}
+					else if ($article['artnr'] == 'shipping_code'){
+						$this->helper->setShippingMethod($article['title']);
+					}
+					else {
+						if (strpos($article['artnr'], "discount") === false){
+							$productLoader = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Catalog\Api\ProductRepositoryInterface');
+							$product = $productLoader->get($article['artnr']);
+							$taxClassId = $product->getTaxClassId();
+							$taxCalculation = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Tax\Model\Calculation');
+							$request = $taxCalculation->getRateRequest(null, null, null, 0);
+							$percent = $taxCalculation->getRate($request->setProductClassId($taxClassId));
+							$tmp = array(
+								'product_id' => $article['artnr'],
+								'qty' => $article['quantity'],
+								'price' => (($article['withouttax']/$article['quantity'])/100)//*(1+($percent/100))
+							);
+							array_push($tempOrder['items'], $tmp);
+						}
+					}
+				}
+				$order_id = $this->helper->createOrder($tempOrder, $paymentInfo['PaymentData']['orderid']);
+				$order = \Magento\Framework\App\ObjectManager::getInstance()->create('\Magento\Sales\Model\Order')->load($order_id);
+				$order->setData('billmate_invoice_id', json_decode($_POST['data'], true)['number']);
+				$order->setData('billmate_method_name',$paymentInfo['PaymentData']['method_name']);
+				$order->save();
+				if ($paymentInfo['PaymentData']['status'] == 'Created' || ($paymentInfo['PaymentData']['status'] == 'Paid' && !$this->helper->getBmEnable())){
+					$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
+					$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+					$order->save();
+				}
+				else if ($paymentInfo['PaymentData']['status'] == 'Paid' && $this->helper->getBmEnable()){
+					if (json_decode($_POST['data'], true)['status']=='Paid'){
+						$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
+						$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+						$order->save();
+						$invoice = $this->invoiceService->prepareInvoice($order);
+						$invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
+						$invoice->register();
+						$transactionSave = \Magento\Framework\App\ObjectManager::getInstance()->create('Magento\Framework\DB\Transaction')->addObject($invoice)->addObject($invoice->getOrder());
+						$transactionSave->save();
+					}
+				}
+				else if ($paymentInfo['PaymentData']['status'] == 'Pending'){
+					$orderState = $this->helper->getPendingControl();
+					$order->setState($orderState)->setStatus($orderState);
+					$order->save();
+				}
+				else {
+					$orderState = $this->helper->getDeny();
+					$order->setState($orderState)->setStatus($orderState);
+					$order->save();
+				}
+			}
+		}
+		catch (\Exception $e){
+			file_put_contents("var/log/billmate.log", date("Y-m-d H:i:s") . " Could not create order. Error: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n", FILE_APPEND);
+			$_SESSION['bm-inc-id'] = $cart->getQuote()->getReservedOrderId();
+		}
+		try {
 			if (!isset($_SESSION['bm-inc-id'])){
 				$orderData = array(
 					'email'=>$_SESSION['billmate_email'],
@@ -83,56 +188,17 @@ class Success extends \Magento\Framework\App\Action\Action {
 				);
 				$orderId = $this->helper->createOrder($orderData);
 				$_SESSION['bm_order_id'] = $orderId;
+				$order = $objectManager->get('\Magento\Sales\Model\Order')->loadByIncrementId($_SESSION['bm-inc-id']);
 			}
-			$order = $objectManager->get('\Magento\Sales\Model\Order')->loadByIncrementId($_SESSION['bm-inc-id']);
-			$orderId = $order->getId();
-
-            $this->logger->error(print_r(array(
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'abb',
-                'orderId' => $orderId,
-                '' => ''
-            ), true));
-
-			$this->eventManager->dispatch(
-				'checkout_onepage_controller_success_action',
-				['order_ids' => [$order->getId()]]
-			);
-			
 			$this->checkoutSession->setLastSuccessQuoteId($cart->getQuote()->getId());
 			$this->checkoutSession->setLastQuoteId($cart->getQuote()->getId());
-			$this->checkoutSession->setLastOrderId($orderId);
-			$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+			$this->checkoutSession->setLastOrderId($order->getId());
+			$this->eventManager->dispatch(
+					'checkout_onepage_controller_success_action',
+					['order_ids' => [$order->getId()]]
+			);
 			$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
-
-            $this->logger->error(print_r(array(
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'abc',
-                '' => ''
-            ), true));
-
 			$url = $storeManager->getStore()->getBaseUrl() . "checkout/onepage/success";
-
-            $this->logger->error(print_r(array(
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'abd',
-                'url' => $url,
-                'headers_sent' => (headers_sent()),
-                '' => ''
-            ), true));
-
 			if (headers_sent()){
 				die('<script type="text/javascript">window.location.href="' . $url . '";</script>');
 			}
@@ -142,32 +208,9 @@ class Success extends \Magento\Framework\App\Action\Action {
 			}
 		}
 		catch (\Exception $e){
+			file_put_contents("var/log/billmate.log", date("Y-m-d H:i:s") . " Could not redirect to store success page. Error: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n", FILE_APPEND);
 			$_SESSION['bm-inc-id'] = $cart->getQuote()->getReservedOrderId();
-
-            $this->logger->error(print_r(array(
-                'note' => 'could not redirect customer to store order confirmation page',
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'exception.message' => $e->getMessage(),
-                'exception.file' => $e->getFile(),
-                'exception.line' => $e->getLine(),
-                '' => ''
-            ), true));
 		}
-
-        $this->logger->error(print_r(array(
-            'note' => 'could not redirect customer to store order confirmation page',
-            '__FILE__' => __FILE__,
-            '__CLASS__' => __CLASS__,
-            '__FUNCTION__' => __FUNCTION__,
-            '__LINE__' => __LINE__,
-            'date' => date('Y-m-d H:i:s'),
-            'note' => 'done Return content of resultPage',
-            '' => ''
-        ), true));
-
 		return $resultPage;
 	}
 }

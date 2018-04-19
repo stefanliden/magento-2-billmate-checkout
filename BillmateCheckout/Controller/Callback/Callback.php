@@ -58,7 +58,7 @@ class Callback extends \Magento\Framework\App\Action\Action {
 							'city' => $paymentInfo['Customer']['Shipping']['city'],
 							'country_id' => $paymentInfo['Customer']['Shipping']['country'],
 							'postcode' => $paymentInfo['Customer']['Shipping']['zip'],
-							'telephone' => $paymentInfo['Customer']['Shipping']['phone']
+							'telephone' => $paymentInfo['Customer']['Billing']['phone']
 						);
 						$this->helper->setShippingAddress($shipping_address);
 						$useShipping = true;
@@ -72,7 +72,7 @@ class Callback extends \Magento\Framework\App\Action\Action {
 								'city' => $paymentInfo['Customer']['Shipping']['city'],
 								'country_id' => 'SE',//$paymentInfo['Customer']['Shipping']['country'],
 								'postcode' => $paymentInfo['Customer']['Shipping']['zip'],
-								'telephone' => $paymentInfo['Customer']['Shipping']['phone'],
+								'telephone' => $paymentInfo['Customer']['Billing']['phone'],
 							),
 							'items' => array()
 						);
@@ -115,6 +115,7 @@ class Callback extends \Magento\Framework\App\Action\Action {
 					'email' =>$paymentInfo['Customer']['Billing']['email']
 				);
 				$this->helper->setBillingAddress($billing_address);
+				$this->helper->setShippingAddress($shipping_address);
 				$articles = $paymentInfo['Articles'];
 				foreach($articles as $article){
 					if ($article['artnr'] == 'discount_code'){
@@ -144,6 +145,7 @@ class Callback extends \Magento\Framework\App\Action\Action {
 				$order = \Magento\Framework\App\ObjectManager::getInstance()->create('\Magento\Sales\Model\Order')->load($order_id);
 			}
 			$order->setData('billmate_invoice_id', $res['data']['number']);
+			$order->setData('billmate_method_name',$paymentInfo['PaymentData']['method_name']);
 			$order->save();
 			if ($paymentInfo['PaymentData']['status'] == 'Created' || ($paymentInfo['PaymentData']['status'] == 'Paid' && !$this->helper->getBmEnable())){
 				$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;

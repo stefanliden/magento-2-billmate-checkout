@@ -1,15 +1,11 @@
 <?xml version="1.0"?>
 <page layout="1column" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
 	<head>
-		<css src="Billmate_BillmateCheckout/css/checkout.css" order="100"/>
+		<css src="Billmate_BillmateCheckout/css/checkout.css" />
 	</head> 
 	<body>
-		<referenceContainer name="checkout.root" remove="true" />
-		<referenceContainer name="header.container" remove="true" />
-		<referenceContainer name="header_container" remove="true" />
-		<referenceBlock name="base-header-container" remove="true" />
-		<referenceContainer name="store.menu" remove="true" />
-		<referenceContainer name="container_mobile_header_top" remove="true" />
+		<referenceContainer name="checkout.root" remove="true"/>
+		
 		<referenceContainer name="page.wrapper">
 			<container name="bm-cart" htmlTag="div" htmlClass="bm-cart-wrapper" after="main">
 				<block class="Billmate\BillmateCheckout\Block\Cart" ifconfig="billmate_billmatecheckout/general/enable" cacheable="false" name="billmatecart" template="Cart.phtml" before="main" after="header-wrapper">
@@ -19,6 +15,5 @@
 				<block class="Billmate\BillmateCheckout\Block\Checkout" ifconfig="billmate_billmatecheckout/general/enable" cacheable="false" name="billmatecheckout" template="Checkout.phtml" after="bm-cart"/>
 			</container>
 		</referenceContainer>
-		<move element="logo" destination="bm-cart" before="billmatecart"/>
 	</body>
 </page>

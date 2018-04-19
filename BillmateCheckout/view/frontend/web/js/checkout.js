@@ -26,7 +26,6 @@ define([
 		}
 		this.createOrder = function(data){
 			if (data.status == "Step2Loaded"){
-			//	document.getElementById("billmate-checkout").style.display = "none";
 				$.ajax({
 					url : CREATE_ORDER_URL,
 					data: data,
@@ -68,7 +67,7 @@ define([
 							self.createOrder(json.data);
 						break;
 					case 'content_height':
-						document.getElementById("checkout").height = json.data;
+						$('checkout').height = json.data;
 						break;
 					case 'content_scroll_position':
 						window.latestScroll = $(document).find( "#checkout" ).offset().top + json.data;

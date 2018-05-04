@@ -82,6 +82,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         parent::__construct($context);
     }
 
+	public function getShippingPrice($inclFormatting = true){
+		
+	}
+	
     public function getCart(){
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $cart = $this->_cart;
@@ -338,7 +342,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 						$_SESSION['billmate_shipping_tax'] = 0;
 					}
 					else {
-						$lShippingPrice = ($rate->getPrice()*(1+($shippingTax/100)));
+						$lShippingPrice = ($rate->getPrice());
 						$_SESSION['billmate_shipping_tax'] = ($rate->getPrice()*(1+($shippingTax/100)))-$rate->getPrice();
 					}
 					$shippingAddress->setShippingMethod($rate->getCode());
@@ -716,7 +720,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$shippingTaxClass = $this->getShippingTaxClass();
 		$shippingTax = $taxCalculation->getRate($request->setProductClassId($shippingTaxClass));
 		if ($shippingTax == 0){
-			$shippingInclTax = $lShippingPrice*(1+($shippingTax/100));
+			$shippingInclTax = $lShippingPrice;
 			if (($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount()) > 0){
 				$totalDiscountAmount = ($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount());
 				foreach ($discounts as $key => $val){
@@ -751,7 +755,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			);
 		}
 		else {
-			$shippingInclTax = $lShippingPrice*(1+($shippingTax/100));
+			$shippingInclTax = $lShippingPrice;
 			if (($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount()) > 0){
 				$totalDiscountAmount = ($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount());
 				foreach ($discounts as $key => $val){
@@ -982,7 +986,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$shippingTax = $taxCalculation->getRate($request->setProductClassId($shippingTaxClass));
 		if ($shippingTax == 0){
 			
-			$shippingInclTax = $lShippingPrice*(1+($shippingTax/100));
+			$shippingInclTax = $lShippingPrice;
 			if (($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount()) > 0){
 				$totalDiscountAmount = ($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount());
 				foreach ($discounts as $key => $val){
@@ -1017,7 +1021,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			);
 		}
 		else {
-			$shippingInclTax = $lShippingPrice*(1+($shippingTax/100));
+			$shippingInclTax = $lShippingPrice;
 			if (($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount()) > 0){
 				$totalDiscountAmount = ($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount());
 				foreach ($discounts as $key => $val){

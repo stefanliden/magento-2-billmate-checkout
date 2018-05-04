@@ -1,6 +1,24 @@
 body{
     font-weight:bold;
 }
+.page .messages {
+	width: 1280px;
+}
+
+.columns {
+	width: 1280px;
+}
+
+div.column.main {
+	width: 1280px;
+	display: block;
+}
+
+.bm-checkout-wrapper {
+	margin-left: 295px;
+}
+
+
 
 .billmate-checkout-table-head{
     font-size:14px;
@@ -85,10 +103,6 @@ h1{
 div.checkout {
     width: 100%;
     float: right;
-}
-
-div.column.main{
-    display:none;
 }
 
 button.inc {
@@ -192,7 +206,7 @@ div.checkout{
 }
 div.bm-cart-wrapper{
     margin:0 auto;
-    width: 750px;
+    width: 550px;
 }
 div#billmate-cart{
     padding-left: 15px;
@@ -304,7 +318,7 @@ table.totals td.name {
 }
 @media screen and (max-width: 991px){
     div.bm-cart-wrapper{
-        width: 750px;
+        width: 550px;
     }
     .billmate-checkout-product-row .billmate-checkout-name,.billmate-checkout-sum ,.billmate-checkout-price{
         font-size: 16px;

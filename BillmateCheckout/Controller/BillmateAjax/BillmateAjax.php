@@ -6,6 +6,7 @@ use Magento\Framework\App\Action\Context;
 
 class BillmateAjax extends \Magento\Framework\App\Action\Action {
 	
+    protected $resultPageFactory;
     protected $formKey;
 	protected $helper;
 	protected $checkoutSession;
@@ -15,11 +16,13 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action {
 		\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
         \Magento\Framework\Data\Form\FormKey $formKey,
 		\Magento\Checkout\Model\Session $_checkoutSession,
+        \Magento\Framework\View\Result\PageFactory $resultPageFactory,
 		\Billmate\BillmateCheckout\Helper\Data $_helper
 		) {
         $this->formKey = $formKey;
 		$this->helper = $_helper;
 		$this->resultJsonFactory = $resultJsonFactory;
+        $this->resultPageFactory = $resultPageFactory;
 		$this->checkoutSession = $_checkoutSession;
 		parent::__construct($context);
 	}
@@ -119,10 +122,16 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action {
 			}
 			if ($changed){
 				$cart = $this->helper->getCart();
+				$page = $this->resultPageFactory->create();
+				$page->addHandle('billmatecheckout_index_index');
+				$layout = $page->getLayout();
+				$block = $layout->getBlock('billmatecart');
+				$block->setTemplate('Billmate_BillmateCheckout::Cart.phtml');
+				$html = $block->toHtml();
 				$iframe = $this->helper->updateIframe();
 				$return = array(
 					'iframe'=>$iframe,
-					'cart'=>$cart
+					'cart'=>$html
 				);
 				return $result->setData($return);
 			}

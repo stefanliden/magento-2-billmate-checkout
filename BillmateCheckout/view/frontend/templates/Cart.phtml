@@ -7,6 +7,163 @@
     }
   );
 </script>
+<?php 
+	$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+	$priceHelper = $objectManager->create('Magento\Framework\Pricing\Helper\Data');
+	$totals = $this->getTotals();
+	$prods = $this->getCartProducts();
+	$methods = $this->getShippingMethods();
+?>
 <div id="billmate-cart">
-<?php echo $this->getCart(); ?>
+	<h2> <?php echo __('Shopping Cart'); ?></h2>
+	<div class="table-responsive">
+		<div class="billmate-checkout-cart-table">
+			<div class="billmate-checkout-table-head">
+				<div class="billmate-checkout-product-head"> 
+					<?php echo __('Product'); ?> 
+				</div>
+				<div class="billmate-checkout-qty-head">
+					<?php echo __('Quantity'); ?>
+				</div>
+				<div class="billmate-checkout-sum-head">
+					<?php echo __('Sum'); ?>
+				</div>
+			</div>
+			<span id="billmate-checkout-line" class="billmate-checkout-line"></span>
+			<?php foreach ($prods as $prod): ?>
+				<div class="billmate-checkout-product-row">
+					<div class="billmate-checkout-name">
+						<p><?php echo $prod['name']; ?></p>
+						<?php if ($this->showOptions()): ?>
+							<span>
+								<?php echo $prod['options'];?>
+							</span>
+						<?php endif; ?>
+					</div>
+					<div class="billmate-checkout-price" id="price_<?php echo $prod['id']; ?>">
+						<?php echo $priceHelper->currency($prod['price'], true, false); ?>
+					</div>
+					<?php if ($this->qtyChangeEnable()): ?>
+						<div class="billmate-checkout-qty" id="qty_<?php echo $prod['id']; ?>">
+							<button class="billmate-checkout-button-sub sub" id="bm-sub-btn sub_<?php echo $prod['id']; ?>" name="sub">
+								-
+							</button>
+							<div class="billmate-checkout-product-qty">
+								<?php echo $prod['qty']; ?>
+							</div>
+							<button id="bm-inc-btn inc_<?php echo $prod['id']; ?>" class="billmate-checkout-button-inc inc" name="inc">
+								+
+							</button>
+						</div>
+					<?php else: ?>
+						<div class="billmate-checkout-qty" id="qty_<?php echo $prod['id']; ?>">
+							<div class="billmate-checkout-product-qty">
+								<?php echo $prod['qty']; ?>
+							</div>
+						</div>
+					<?php endif; ?>
+					<div class="billmate-checkout-sum" id="sum_<?php echo $prod['id']; ?>">
+						<?php echo $priceHelper->currency(($prod['price']*$prod['qty']), true, false); ?>
+					</div>
+					<div class="billmate-checkout-del-but">
+						<span id="bm-del-btn del_<?php echo $prod['id']; ?>" class="billmate-checkout-button-del del" name="del"></span>
+					</div>
+					<span id="billmate-checkout-line" class="billmate-checkout-line"></span>
+				</div>
+			<?php endforeach; ?>
+		</div>
+	</div>
+	<table class="totals">
+		<tr>
+			<td class="name">
+				<?php echo __('Shipping'); ?>
+			</td>
+			<td class="price">
+				<?php echo $this->getShippingPrice() ?>
+			</td>
+		</tr>
+		<?php if ($this->hasDiscount()): ?>
+            <tr>
+				<td class="name">
+					<?php echo __('Discount'); ?>
+				</td>
+				<td class="price">
+					<?php echo $this->getDiscount(); ?>
+				</td>
+			</tr>
+        <?php endif; ?>
+		<tr>
+			<td class="name">
+				<?php echo __('Tax'); ?>
+			</td>
+			<td class="price">
+				<?php echo $this->getTax(); ?>
+			</td>
+		</tr>
+        <tr>
+			<td class="name">
+				<?php echo __('Total'); ?>
+			</td>
+			<td class="price">
+				<?php echo $this->getGrandTotal(); ?>
+			</td>
+		</tr>
+	</table>
+	<div class="billmate-checkout-discount">
+		<h1><?php echo __('Discount Codes'); ?> </h1>
+		<form action="javascript:void(0);">
+			<input type="text" name="code" id="code" class="code">
+			<input type="button" id="codeButton" class="codeButton" value="<?php echo __('Apply Discount'); ?>">
+		</form>
+	</div>
+	<script>
+		document.getElementById("code").addEventListener("keyup", function(event) {
+			event.preventDefault();
+			if (event.keyCode == 13) {
+				document.getElementById("codeButton").click();
+			}
+		});
+	</script>
+	<div class="billmate_shipping_methods">
+		<h1>  <?php echo __('Shipping Methods'); ?> </h1>
+		<form>
+			<?php $first = true; ?>
+			<?php foreach ($methods as $method): ?>
+				<?php if (isset($_SESSION['shipping_code'])): ?>
+					<?php if ($_SESSION['shipping_code'] == $method['code']): ?>
+						<div class="ship_methods">
+							<input type="radio" class="radio" id="<?php echo $method['code'] ?>" name="method" value="<?php echo $method['code']; ?>" checked> 
+							<label for="<?php echo $method['code']; ?>" class="radio_lable" >
+								<?php echo $method['title'] . " " . $priceHelper->currency($method['price'], true, false); ?>
+							</label>
+						</div>
+					<?php else: ?>
+						<div class="ship_methods">
+							<input type="radio" class="radio" id="<?php echo $method['code'] ?>" name="method" value="<?php echo $method['code']; ?>"> 
+							<label for="<?php echo $method['code']; ?>" class="radio_lable" >
+								<?php echo $method['title'] . " " . $priceHelper->currency($method['price'], true, false); ?>
+							</label>
+						</div>
+					<?php endif; ?>
+				<?php else: ?>
+					<?php if ($first): ?>
+						<?php $first = false; ?>
+						<div class="ship_methods">
+							<input type="radio" class="radio" id="<?php echo $method['code'] ?>" name="method" value="<?php echo $method['code']; ?>" checked> 
+							<label for="<?php echo $method['code']; ?>" class="radio_lable" >
+								<?php echo $method['title'] . " " . $priceHelper->currency($method['price'], true, false); ?>
+							</label>
+						</div>
+					<?php else: ?>
+						<div class="ship_methods">
+							<input type="radio" class="radio" id="<?php echo $method['code'] ?>" name="method" value="<?php echo $method['code']; ?>"> 
+							<label for="<?php echo $method['code']; ?>" class="radio_lable" >
+								<?php echo $method['title'] . " " . $priceHelper->currency($method['price'], true, false); ?>
+							</label>
+						</div>
+					<?php endif; ?>
+				<?php endif; ?>
+			<?php endforeach; ?>
+		</form>
+	</div>
 </div>

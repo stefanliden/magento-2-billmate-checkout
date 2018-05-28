@@ -67,7 +67,7 @@ define([
 							self.createOrder(json.data);
 						break;
 					case 'content_height':
-						$('checkout').height = json.data;
+                        $(document).find('#checkout').css({'height': json.data+'px'});
 						break;
 					case 'content_scroll_position':
 						window.latestScroll = $(document).find( "#checkout" ).offset().top + json.data;

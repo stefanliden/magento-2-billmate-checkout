@@ -1097,7 +1097,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         $return = json_decode($out);
 		try {
 			$_SESSION['billmate_checkout_id'] = $return->data->number;
-			return "<iframe id=\"checkout\" src=\"" . $return->data->url . "\" style=\"width: 100%; min-height: 800px; border:none;\" sandbox=\"allow-same-origin allow-scripts allow-modals allow-popups allow-forms allow-top-navigation\"></iframe>";
+			return "<iframe id=\"checkout\" src=\"" . $return->data->url . "\" style=\"width: 100%; min-height: 800px; height: 800px; border:none;\" sandbox=\"allow-same-origin allow-scripts allow-modals allow-popups allow-forms allow-top-navigation\"></iframe>";
 		}
 		catch (\Exception $e){
 			return $return->message;

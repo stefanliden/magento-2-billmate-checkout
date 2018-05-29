@@ -1,24 +1,22 @@
 body{
     font-weight:bold;
 }
+
 .page .messages {
-	width: 1280px;
+    width: 100%;
 }
 
-.columns {
-	width: 1280px;
+.columns div.column.main {
+    float: right;
+    width: 50%;
 }
 
-div.column.main {
-	width: 1280px;
-	display: block;
+.columns div.sidebar-main {
+    float: left;
+    padding: 0;
+    padding-left:2%;
+    width: 50%;
 }
-
-.bm-checkout-wrapper {
-	margin-left: 295px;
-}
-
-
 
 .billmate-checkout-table-head{
     font-size:14px;
@@ -69,9 +67,6 @@ div.column.main {
 }
 .billmate-checkout-img{
     float:left;
-}
-.billmate-checkout-discount{
-    margin-top: -123px;
 }
 
 .totals{
@@ -181,20 +176,9 @@ div.checkout{
     cursor:pointer;
 }
 
-#code{
-    width:183px;
-    height:26px;
-    border-radius:3px;
-}
 #codeButton{
-    width:136px;
-    height:26px;
-    border-radius:3px;
     background-color:#06A1DC;
     color:#fff;
-    border:none;
-    font-weight:bold;
-    margin-left:10px;
 }
 #codeButton:hover {
     background-color: #00aeef;
@@ -206,7 +190,7 @@ div.checkout{
 }
 div.bm-cart-wrapper{
     margin:0 auto;
-    width: 550px;
+    width: 100%;
 }
 div#billmate-cart{
     padding-left: 15px;
@@ -252,23 +236,15 @@ table.totals td {
     float: left;
     width: 100%;
 }
-.billmate-checkout-discount #code{
-    border-color: #e2e2e2;
-    height: 35px;
-}
-.billmate-checkout-discount #codeButton{
-    height: 35px;
-    margin-left: 0px;
-}
 .checkoutWrapper #testMode{
     background-color: #f4f8fb !important;
     color: #737373;
 }
 .billmate-checkout-discount {
+    clear: both;
+    display: block;
     margin-top: 0px;
-    float: left;
     margin-bottom: 0px;
-	width: 45%;
     padding-bottom: 10px;
 }
 .billmate_shipping_methos {
@@ -317,9 +293,6 @@ table.totals td.name {
     
 }
 @media screen and (max-width: 991px){
-    div.bm-cart-wrapper{
-        width: 550px;
-    }
     .billmate-checkout-product-row .billmate-checkout-name,.billmate-checkout-sum ,.billmate-checkout-price{
         font-size: 16px;
     }
@@ -333,11 +306,13 @@ table.totals td.name {
 	padding:0;
 	} 
 @media screen and (max-width: 767px){
+
+    .columns div.sidebar-main {
+        padding: 0;
+    }
+
     div.bm-cart-wrapper{
         width: 100%;
-    }
-    .billmate-checkout-discount #codeButton{
-        margin-top: 10px;
     }
     .billmate-checkout-product-row .billmate-checkout-name, .billmate-checkout-sum ,.billmate-checkout-price{
         font-size: 14px;

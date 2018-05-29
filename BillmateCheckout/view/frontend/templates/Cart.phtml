@@ -16,63 +16,50 @@
 ?>
 <div id="billmate-cart">
 	<h2> <?php echo __('Shopping Cart'); ?></h2>
-	<div class="table-responsive">
-		<div class="billmate-checkout-cart-table">
-			<div class="billmate-checkout-table-head">
-				<div class="billmate-checkout-product-head"> 
-					<?php echo __('Product'); ?> 
-				</div>
-				<div class="billmate-checkout-qty-head">
-					<?php echo __('Quantity'); ?>
-				</div>
-				<div class="billmate-checkout-sum-head">
-					<?php echo __('Sum'); ?>
-				</div>
-			</div>
-			<span id="billmate-checkout-line" class="billmate-checkout-line"></span>
-			<?php foreach ($prods as $prod): ?>
-				<div class="billmate-checkout-product-row">
-					<div class="billmate-checkout-name">
-						<p><?php echo $prod['name']; ?></p>
-						<?php if ($this->showOptions()): ?>
-							<span>
-								<?php echo $prod['options'];?>
-							</span>
-						<?php endif; ?>
-					</div>
-					<div class="billmate-checkout-price" id="price_<?php echo $prod['id']; ?>">
-						<?php echo $priceHelper->currency($prod['price'], true, false); ?>
-					</div>
-					<?php if ($this->qtyChangeEnable()): ?>
-						<div class="billmate-checkout-qty" id="qty_<?php echo $prod['id']; ?>">
-							<button class="billmate-checkout-button-sub sub" id="bm-sub-btn sub_<?php echo $prod['id']; ?>" name="sub">
-								-
-							</button>
-							<div class="billmate-checkout-product-qty">
-								<?php echo $prod['qty']; ?>
-							</div>
-							<button id="bm-inc-btn inc_<?php echo $prod['id']; ?>" class="billmate-checkout-button-inc inc" name="inc">
-								+
-							</button>
-						</div>
-					<?php else: ?>
-						<div class="billmate-checkout-qty" id="qty_<?php echo $prod['id']; ?>">
-							<div class="billmate-checkout-product-qty">
-								<?php echo $prod['qty']; ?>
-							</div>
-						</div>
-					<?php endif; ?>
-					<div class="billmate-checkout-sum" id="sum_<?php echo $prod['id']; ?>">
-						<?php echo $priceHelper->currency(($prod['price']*$prod['qty']), true, false); ?>
-					</div>
-					<div class="billmate-checkout-del-but">
-						<span id="bm-del-btn del_<?php echo $prod['id']; ?>" class="billmate-checkout-button-del del" name="del"></span>
-					</div>
-					<span id="billmate-checkout-line" class="billmate-checkout-line"></span>
-				</div>
-			<?php endforeach; ?>
-		</div>
-	</div>
+
+    <table id="shopping-cart-table" class="cart items data table">
+        <thead>
+            <tr>
+                <th class="col item" scope="col"><span><?php echo __('Product'); ?></span></th>
+                <th class="col price" scope="col"><span>Pris</span></th>
+                <th class="col qty" scope="col"><span><?php echo __('Quantity'); ?></span></th>
+                <th class="col subtotal" scope="col"><span><?php echo __('Sum'); ?></span></th>
+            </tr>
+        </thead>
+        <tbody class="cart item">
+            <?php foreach ($prods as $prod): ?>
+            <tr class="item-info">
+                <td data-th="Item" class="col item">
+                    <strong class="product-item-name">
+                        <p><?php echo $prod['name']; ?></p>
+                        <?php if ($this->showOptions()): ?>
+                            <span>
+                                <?php echo $prod['options'];?>
+                            </span>
+                        <?php endif; ?>
+                    </strong>
+                </td>
+
+                <td class="col price" data-th="price">
+                    <span class="price"><?php echo $priceHelper->currency($prod['price'], true, false); ?></span>
+                </td>
+
+                <td class="col qty" data-th="qty">
+                    <?php echo $prod['qty']; ?>
+                </td>
+
+                <td class="col subtotal" data-th="subtotal">
+                    <span class="cart-price">
+                        <span class="price"><?php echo $priceHelper->currency(($prod['price']*$prod['qty']), true, false); ?></span>
+                    </span>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+
+
+
 	<table class="totals">
 		<tr>
 			<td class="name">
@@ -109,13 +96,27 @@
 			</td>
 		</tr>
 	</table>
+
+
 	<div class="billmate-checkout-discount">
-		<h1><?php echo __('Discount Codes'); ?> </h1>
 		<form action="javascript:void(0);">
-			<input type="text" name="code" id="code" class="code">
-			<input type="button" id="codeButton" class="codeButton" value="<?php echo __('Apply Discount'); ?>">
+            <div class="fieldset coupon">
+                <div class="field">
+                    <h1><?php echo __('Discount Codes'); ?></h1>
+                    <input type="text" name="code" id="code" class="input-text">
+                </div>
+
+                <div class="actions-toolbar">
+                    <div class="primary">
+                        <button id="codeButton" class="action apply primary" type="button" value="<?php echo __('Apply Discount'); ?>">
+                            <span><?php echo __('Apply Discount'); ?></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 		</form>
 	</div>
+
 	<script>
 		document.getElementById("code").addEventListener("keyup", function(event) {
 			event.preventDefault();

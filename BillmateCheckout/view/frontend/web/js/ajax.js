@@ -254,7 +254,7 @@ define([
 					document.getElementById('billmate-cart').innerHTML = data.cart;
 				});
 			});
-			$(document).on('click', '.codeButton', function(){
+			$(document).on('click', '#codeButton', function(){
 				var param = {
 					field1 : "ajax",
 					field2 : "submit",

@@ -7,12 +7,12 @@ body{
 }
 
 .columns div.column.main {
-    float: right;
+    float: left;
     width: 50%;
 }
 
 .columns div.sidebar-main {
-    float: left;
+    float: right;
     padding: 0;
     padding-left:2%;
     width: 50%;

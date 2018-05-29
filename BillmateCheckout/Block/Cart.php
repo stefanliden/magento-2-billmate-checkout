@@ -117,7 +117,56 @@ class Cart extends \Magento\Checkout\Block\Onepage {
 		return $priceHelper->currency(0, true, false);
 	}
 	
+
+    /**
+     * Fetch cart shipping and store in session when not already stored in session
+     */
+    private function maybeFetchShippingPrices()
+    {
+        if (
+                !isset($_SESSION['shippingPrice'])
+                || !isset($_SESSION['shipping_code'])
+                || !isset($_SESSION['billmate_shipping_tax'])
+        ) {
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
+            $cart->getQuote()->getBillingAddress()->addData(array(
+                'firstname' => 'Testperson',
+                'lastname' => 'Approved',
+                'street' => 'Teststreet',
+                'city' => 'Testcity',
+                'country_id' => 'SE',
+                'postcode' => '12345',
+                'telephone' => '0700123456'
+            ));
+            $cart->getQuote()->getShippingAddress()->addData(array(
+                'firstname' => 'Testperson',
+                'lastname' => 'Approved',
+                'street' => 'Teststreet',
+                'city' => 'Testcity',
+                'country_id' => 'SE',
+                'postcode' => '12345'
+            ));
+            $shippingAddress = $cart->getQuote()->getShippingAddress();
+            $shippingAddress->setCollectShippingRates(true)->collectShippingRates()->setShippingMethod('freeshipping_freeshipping');
+            $first = true;
+            $methods = $shippingAddress->getGroupedAllShippingRates();
+            foreach ($methods as $method){
+                foreach ($method as $rate){
+                    if ($first){
+                        $first = false;
+                        $lShippingPrice = $rate->getPrice();
+                        $_SESSION['shippingPrice'] = $lShippingPrice;
+                        $_SESSION['shipping_code'] = $rate->getCode();
+                        $_SESSION['billmate_shipping_tax'] = $rate->getShippingTaxAmount();
+                    }
+                }
+            }
+        }
+    }
+
 	public function getShippingPrice(){
+        $this->maybeFetchShippingPrices();
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 		$priceHelper = $objectManager->create('Magento\Framework\Pricing\Helper\Data');
 		return $priceHelper->currency($_SESSION['shippingPrice'], true, false);

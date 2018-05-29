@@ -29,7 +29,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
     const XML_PATH_GENERAL_CUSTOMCSS = 'billmate_billmatecheckout/general/customcss';
     const XML_PATH_GENERAL_BTN = 'billmate_billmatecheckout/general/inc_dec_btns';
 	const XML_PATH_GENERAL_ATTRIBUTES = 'billmate_billmatecheckout/general/show_attributes_cart';
-	const XML_PATH_GENERAL_TERMS_URL = 'billmate_billmatecheckout/general/terms_url';
+    const XML_PATH_GENERAL_TERMS_URL = 'billmate_billmatecheckout/general/terms_url';
+    const XML_PATH_GENERAL_PRIVACY_POLICY_PAGE = 'billmate_billmatecheckout/general/privacy_policy_page';
     const XML_PATH_CREDENTIALS_ID = 'billmate_billmatecheckout/credentials/billmate_id';
     const XML_PATH_CREDENTIALS_KEY = 'billmate_billmatecheckout/credentials/billmate_key';
     const XML_PATH_GENERAL_TESTMODE = 'billmate_billmatecheckout/credentials/testmode';
@@ -659,6 +660,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             'Articles' => array(),
             'Cart' => array()
         );
+
+        $privacyPolicyUrl = $this->getPrivacyPolicyUrl();
+        if ($privacyPolicyUrl != '') {
+            $data['CheckoutData']['privacyPolicy'] = $privacyPolicyUrl;
+        }
 		
 		$currentStore = $this->_storeManager->getStore();
 		$currentStoreId = $currentStore->getId();
@@ -924,6 +930,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             'Articles' => array(),
             'Cart' => array()
         );
+
+        $privacyPolicyUrl = $this->getPrivacyPolicyUrl();
+        if ($privacyPolicyUrl != '') {
+            $data['CheckoutData']['privacyPolicy'] = $privacyPolicyUrl;
+        }
 		
 		$currentStore = $this->_storeManager->getStore();
 		$currentStoreId = $currentStore->getId();
@@ -1334,6 +1345,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_TERMS_URL, $storeScope);
 	}
 	
+    public function getPrivacyPolicyUrl()
+    {
+        $url = '';
+        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
+        $pageId = $this->scopeConfig->getValue(self::XML_PATH_GENERAL_PRIVACY_POLICY_PAGE, $storeScope);
+        if ($pageId > 0) {
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $url = $objectManager->create('Magento\Cms\Helper\Page')->getPageUrl($pageId);
+        }
+        return $url;
+    }
+
 	public function setBmPaymentMethod($method){
 		switch ($method){
 			case "1":

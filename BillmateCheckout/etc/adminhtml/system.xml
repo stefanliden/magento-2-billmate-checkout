@@ -45,6 +45,10 @@
 					<label>Terms URL</label>
 					<comment>Full URL to terms and conditions</comment>
 				</field>
+                <field id="privacy_policy_page" translate="label comment" type="select" sortOrder="55" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Privacy Policy page</label>
+                    <source_model>Billmate\BillmateCheckout\Model\Config\Source\Pages</source_model>
+                </field>
 			</group>
 			<group id="credentials" translate="label" type="text" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="1">
 				<label>Credentials</label>

@@ -213,10 +213,20 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         $shippingStr .= "</div>";
 		
 		$str .= "<h2>" . __('Shopping Cart') . "</h2>";
-		$str .= "<div class=\"table-responsive\">";
-		$str .= "<div class=\"billmate-checkout-cart-table\">";
-		$str .= "<div class=\"billmate-checkout-table-head\"><div class=\"billmate-checkout-product-head\">" . __('Product') . "</div><div class=\"billmate-checkout-price-head\">".__('Price')."</div><div class=\"billmate-checkout-qty-head\">".__('Quantity')."</div><div class=\"billmate-checkout-sum-head\">".__('Sum')."</div></div><span id=\"billmate-checkout-line\" class=\"billmate-checkout-line\"></span>";
-		
+
+        $str .= "
+            <table id=\"shopping-cart-table\" class=\"cart items data table\">
+                <thead>
+                    <tr>
+                        <th class=\"col item\" scope=\"col\"><span>".__('Product')."</span></th>
+                        <th class=\"col price\" scope=\"col\"><span>".__('Price')."</span></th>
+                        <th class=\"col qty\" scope=\"col\"><span>".__('Quantity')."</span></th>
+                        <th class=\"col subtotal\" scope=\"col\"><span>".__('Sum')."</span></th>
+                    </tr>
+                </thead>
+                <tbody class=\"cart item\">
+        ";
+
 		$productLoader = $objectManager->get('\Magento\Catalog\Model\Product');
 		$sum = 0;
         $taxAmount = 0;
@@ -252,15 +262,30 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 }
             }
 
-            $str .= "<div class=\"billmate-checkout-product-row\"><div class=\"billmate-checkout-img\"><img src=\"".$imgs[$i]."\" alt=\"logo\"></div><div class=\"billmate-checkout-name\"><p>".$item->getName()."</p>".$activeOptions."</div><div class=\"billmate-checkout-price\" id=\"price_".$item->getId()."\">".round(($item->getPrice()*(1+($percent/100))),2)."</div>";
+            $str .= "
+                <tr class=\"item-info\">
+                    <td data-th=\"Item\" class=\"col item\">
+                        <strong class=\"product-item-name\">
+                            <p>".$item->getName()."</p>
+                            ".$activeOptions."
+                        </strong>
+                    </td>
 
-            if ($this->getBtnEnable()){
-                $str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><button class=\"billmate-checkout-button-sub sub\" id=\"sub_" . $item->getId() . "\" name=\"sub\">-</button><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div><button id=\"inc_" . $item->getId() . "\" class=\"billmate-checkout-button-inc inc\" name=\"inc\">+</button></div>";
-            }
-            else {
-                $str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div></div>";
-            }
-			$str .= "<div class=\"billmate-checkout-sum\" id=\"sum_".$item->getId()."\">".round(($item->getPrice()*$item->getQty()*(1+($percent/100))),2)."</div><div class=\"billmate-checkout-del-but\"><span id=\"del_" . $item->getId() . "\" class=\"billmate-checkout-button-del del\" name=\"del\"></span></div><span id=\"billmate-checkout-line\" class=\"billmate-checkout-line\"></span></div>";
+                    <td class=\"col price\" data-th=\"price\">
+                        <span class=\"price\">".round(($item->getPrice()*(1+($percent/100))),2)."</span>
+                    </td>
+
+                    <td class=\"col qty\" data-th=\"qty\">
+                        ".$item->getQty()."
+                    </td>
+
+                    <td class=\"col subtotal\" data-th=\"subtotal\">
+                        <span class=\"cart-price\">
+                            <span class=\"price\">".round(($item->getPrice()*$item->getQty()*(1+($percent/100))),2)."</span>
+                        </span>
+                    </td>
+                </tr>
+            ";
 
 			$taxAmount = $taxAmount + (($item->getPrice()*(1+($percent/100)) - $item->getPrice())*$item->getQty());
 
@@ -269,7 +294,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		}
 		
 		
-        $str .= "</div></div><table class=\"totals\">";
+        $str .= "
+                </tbody>
+            </table>
+        ";
+
+        $str .= "<table class=\"totals\">";
 		$sum = $sum*(1+($percent/100));
         $str .= "<tr><td class=\"name\">" . __('Shipping') . "</td><td class=\"price\">" . $lShippingPrice . "</td></tr>";
 		
@@ -285,16 +315,37 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		}
 		$str .= "<tr><td class=\"name\">" . __('Total') . "</td><td class=\"price\">" . ($cart->getQuote()->getGrandTotal()) . "</td></tr>";
 		$str .= "</table>";
-		$str .= "<div class=\"billmate-checkout-discount\">";
-        $str .= "<h1>" . __('Discount Codes') . "</h1><form action=\"javascript:void(0);\"><input type=\"text\" name=\"code\" placeholder=\"".__('Discount Code')."\" id=\"code\" class=\"code\" ><input type=\"button\" id=\"codeButton\" class=\"codeButton\" value=\"" . __('Apply Discount') . "\"></form></div>
-        <script>
-        	document.getElementById(\"code\").addEventListener(\"keyup\", function(event) {
-			    event.preventDefault();
-			    if (event.keyCode == 13) {
-			        document.getElementById(\"codeButton\").click();
-			    }
-			});
-        </script>";
+
+
+        $str .= "
+            <div class=\"billmate-checkout-discount\">
+                <form action=\"javascript:void(0);\">
+                    <div class=\"fieldset coupon\">
+                        <div class=\"field\">
+                            <h1>".__('Discount Codes')."</h1>
+                            <input type=\"text\" name=\"code\" id=\"code\" class=\"input-text\">
+                        </div>
+
+                        <div class=\"actions-toolbar\">
+                            <div class=\"primary\">
+                                <button id=\"codeButton\" class=\"action apply primary\" type=\"button\" value=\"".__('Apply Discount')."\">
+                                    <span>".__('Apply Discount')."</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <script>
+                document.getElementById(\"code\").addEventListener(\"keyup\", function(event) {
+                    event.preventDefault();
+                    if (event.keyCode == 13) {
+                        document.getElementById(\"codeButton\").click();
+                    }
+                });
+            </script>
+        ";
+
         $str .= $shippingStr;
         return $this->updateCart();
     }
@@ -368,9 +419,20 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$shippingStr .= "</div>";
 		
 		$str .= "<h2>" . __('Shopping Cart') . "</h2>";
-		$str .= "<div class=\"table-responsive\">";
-        $str .= "<div class=\"billmate-checkout-cart-table\">";
-        $str .= "<div class=\"billmate-checkout-table-head\"><div class=\"billmate-checkout-product-head\">" . __('Product') . "</div><div class=\"billmate-checkout-price-head\">".__('Price')."</div><div class=\"billmate-checkout-qty-head\">".__('Quantity')."</div><div class=\"billmate-checkout-sum-head\">".__('Sum')."</div></div><span id=\"billmate-checkout-line\" class=\"billmate-checkout-line\"></span>";
+
+
+        $str .= "
+            <table id=\"shopping-cart-table\" class=\"cart items data table\">
+                <thead>
+                    <tr>
+                        <th class=\"col item\" scope=\"col\"><span>".__('Product')."</span></th>
+                        <th class=\"col price\" scope=\"col\"><span>".__('Price')."</span></th>
+                        <th class=\"col qty\" scope=\"col\"><span>".__('Quantity')."</span></th>
+                        <th class=\"col subtotal\" scope=\"col\"><span>".__('Sum')."</span></th>
+                    </tr>
+                </thead>
+                <tbody class=\"cart item\">
+        ";
 
         $productLoader = $objectManager->get('\Magento\Catalog\Model\Product');
         $sum = 0;
@@ -408,22 +470,45 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 					}
 				}
 			}
-            $str .= "<div class=\"billmate-checkout-product-row\"><div class=\"billmate-checkout-img\"><img src=\"".$imgs[$i]."\" alt=\"logo\"></div><div class=\"billmate-checkout-name\"><p>".$item->getName()."</p>".$activeOptions."</div><div class=\"billmate-checkout-price\" id=\"price_".$item->getId()."\">". $priceHelper->currency(($item->getPrice()*(1+($percent/100))), true, false) ."</div>";
 
-            if ($this->getBtnEnable()){
-                $str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><button class=\"billmate-checkout-button-sub sub\" id=\"bm-sub-btn sub_" . $item->getId() . "\" name=\"sub\">-</button><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div><button id=\"bm-inc-btn inc_" . $item->getId() . "\" class=\"billmate-checkout-button-inc inc\" name=\"inc\">+</button></div>";
-            }
-            else {
-                $str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div></div>";
-            }
-            $str .= "<div class=\"billmate-checkout-sum\" id=\"sum_".$item->getId()."\">".$priceHelper->currency(($item->getPrice()*$item->getQty()*(1+($percent/100))), true, false)."</div><div class=\"billmate-checkout-del-but\"><span id=\"bm-del-btn del_" . $item->getId() . "\" class=\"billmate-checkout-button-del del\" name=\"del\"></span></div><span id=\"billmate-checkout-line\" class=\"billmate-checkout-line\"></span></div>";
+            $str .= "
+                <tr class=\"item-info\">
+                    <td data-th=\"Item\" class=\"col item\">
+                        <strong class=\"product-item-name\">
+                            <p>".$item->getName()."</p>
+                            ".$activeOptions."
+                        </strong>
+                    </td>
+
+                    <td class=\"col price\" data-th=\"price\">
+                        <span class=\"price\">".round(($item->getPrice()*(1+($percent/100))),2)."</span>
+                    </td>
+
+                    <td class=\"col qty\" data-th=\"qty\">
+                        ".$item->getQty()."
+                    </td>
+
+                    <td class=\"col subtotal\" data-th=\"subtotal\">
+                        <span class=\"cart-price\">
+                            <span class=\"price\">".round(($item->getPrice()*$item->getQty()*(1+($percent/100))),2)."</span>
+                        </span>
+                    </td>
+                </tr>
+            ";
 
             $taxAmount = $taxAmount + (($item->getPrice()*(1+($percent/100)) - $item->getPrice())*$item->getQty());
 			$sumex = $sumex + $item->getPrice()*$item->getQty();
             $sum = $sum + $item->getPrice()*$item->getQty()*(1+($percent/100));
 			$i = $i +1;
         }
-        $str .= "</div></div><table class=\"totals\">";
+
+        $str .= "
+                </tbody>
+            </table>
+        ";
+
+        $str .= "<table class=\"totals\">";
+
         $str .= "<tr><td class=\"name\">" . __('Shipping') . "</td><td class=\"price\">" . $priceHelper->currency($lShippingPrice, true, false) . "</td></tr>";
         if ($cart->getQuote()->getSubtotal() != $cart->getQuote()->getSubtotalWithDiscount()){
             $str .= "<tr><td class=\"name\">" . __('Discount') . "</td><td class=\"price\">" . $priceHelper->currency(($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount())*(0-1), true, false) . "</td></tr>";
@@ -431,18 +516,36 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$str .= "<tr><td class=\"name\">" . __('Tax') . "</td><td class=\"price\">" . $priceHelper->currency(($sum-$sumex+$_SESSION['billmate_shipping_tax']+(($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount())/(1+($shippingTax/100)))-($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount())), true, false) . "</td></tr>";
         $str .= "<tr><td class=\"name\">" . __('Total') . "</td><td class=\"price\">" . $priceHelper->currency(($sum+$lShippingPrice-($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount())), true, false) . "</td></tr>";
         $str .= "</table>";
-        $str .= "<div class=\"billmate-checkout-discount\">";
-        $str .= "<h1>" . __('Discount Codes') . "</h1><form action=\"javascript:void(0);\"><input type=\"text\" name=\"code\" id=\"code\" class=\"code\" ><input type=\"button\" id=\"codeButton\" class=\"codeButton\" value=\"" . __('Apply Discount') . "\"></form></div>
-        <script>
-            document.getElementById(\"code\").addEventListener(\"keyup\", function(event) {
-                event.preventDefault();
-                if (event.keyCode == 13) {
-                    document.getElementById(\"codeButton\").click();
-                }
-            });
-        </script>
-		
-		";
+
+        $str .= "
+            <div class=\"billmate-checkout-discount\">
+                <form action=\"javascript:void(0);\">
+                    <div class=\"fieldset coupon\">
+                        <div class=\"field\">
+                            <h1>".__('Discount Codes')."</h1>
+                            <input type=\"text\" name=\"code\" id=\"code\" class=\"input-text\">
+                        </div>
+
+                        <div class=\"actions-toolbar\">
+                            <div class=\"primary\">
+                                <button id=\"codeButton\" class=\"action apply primary\" type=\"button\" value=\"".__('Apply Discount')."\">
+                                    <span>".__('Apply Discount')."</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <script>
+                document.getElementById(\"code\").addEventListener(\"keyup\", function(event) {
+                    event.preventDefault();
+                    if (event.keyCode == 13) {
+                        document.getElementById(\"codeButton\").click();
+                    }
+                });
+            </script>
+        ";
+
         $str .= $shippingStr;
         return $str;
 	}

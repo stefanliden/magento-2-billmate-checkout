@@ -29,6 +29,9 @@ class Checkout extends \Magento\Checkout\Block\Onepage {
 	}
 
 	public function getBillmateCheckout(){
+		if (isset($_SESSION['billmate_checkout_id'])){
+			return $this->helper->updateIframe();
+		}
 		return $this->helper->getIframe();
 	}
 }

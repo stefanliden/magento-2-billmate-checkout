@@ -29,151 +29,148 @@ class Success extends \Magento\Framework\App\Action\Action {
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 		$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
 		$resultPage = $this->resultPageFactory->create();
-		$_POST = empty($_POST) ? $_GET : $_POST;
+		$res = array();
+		if(is_array($_POST)) {
+			$res['credentials'] = json_decode($_POST['credentials'], true);
+			$res['data'] = json_decode($_POST['data'],true);
+		}
 		try{
-			if (!empty($_POST)){
-				$test = $this->helper->getTestMode();
-				$ssl = true;
-				$debug = false;
+			$test = $this->helper->getTestMode();
+			$ssl = true;
+			$debug = false;
 
-				$id = $this->helper->getBillmateId();
-				$key = $this->helper->getBillmateSecret();
-				$bm = new BillMate($id, $key, $this->helper, $ssl, $test, $debug);
-				$values = array(
-					"number" => json_decode($_POST['data'], true)['number']
-				);
-				$paymentInfo = $bm->getPaymentinfo($values);
-				$this->helper->setBmPaymentMethod($paymentInfo['PaymentData']['method']);
-				ob_start();
-				var_dump($paymentInfo);
-				file_put_contents("var/log/bmdev.log", ob_get_clean() . "\n", FILE_APPEND);
-				$shipping_address = array();
-				$billing_address = array();
-				$useShipping = false;
-				if (array_key_exists('Shipping', $paymentInfo['Customer'])){
-					if (array_key_exists('firstname', $paymentInfo['Customer']['Shipping'])){
-						$shipping_address = array(
-							'firstname' => $paymentInfo['Customer']['Shipping']['firstname'],
-							'lastname' => $paymentInfo['Customer']['Shipping']['lastname'],
-							'street' => $paymentInfo['Customer']['Shipping']['street'],
-							'city' => $paymentInfo['Customer']['Shipping']['city'],
-							'country_id' => $paymentInfo['Customer']['Shipping']['country'],
-							'postcode' => $paymentInfo['Customer']['Shipping']['zip'],
-							'telephone' => $paymentInfo['Customer']['Billing']['phone']
-						);
-						$this->helper->setShippingAddress($shipping_address);
-						$useShipping = true;
-						$tempOrder = array(
-							'currency_id'  => $paymentInfo['PaymentData']['currency'],
-							'email'        => $paymentInfo['Customer']['Billing']['email'],
-							'shipping_address' => array(
-								'firstname'    => $paymentInfo['Customer']['Shipping']['firstname'],
-								'lastname'     => $paymentInfo['Customer']['Shipping']['lastname'],
-								'street' => $paymentInfo['Customer']['Shipping']['street'],
-								'city' => $paymentInfo['Customer']['Shipping']['city'],
-								'country_id' => 'SE',//$paymentInfo['Customer']['Shipping']['country'],
-								'postcode' => $paymentInfo['Customer']['Shipping']['zip'],
-								'telephone' => $paymentInfo['Customer']['Billing']['phone'],
-							),
-							'items' => array()
-						);
-					}
-				}
-				if (!$useShipping){
+			$id = $this->helper->getBillmateId();
+			$key = $this->helper->getBillmateSecret();
+			$bm = new BillMate($id, $key, $this->helper, $ssl, $test, $debug);
+			$values = array(
+				"number" => $res['data']['number']
+			);
+			$paymentInfo = $bm->getPaymentinfo($values);
+			$this->helper->setBmPaymentMethod($paymentInfo['PaymentData']['method']);
+			$shipping_address = array();
+			$billing_address = array();
+			$useShipping = false;
+			if (array_key_exists('Shipping', $paymentInfo['Customer'])){
+				if (array_key_exists('firstname', $paymentInfo['Customer']['Shipping'])){
 					$shipping_address = array(
-						'firstname' => $paymentInfo['Customer']['Billing']['firstname'],
-						'lastname' => $paymentInfo['Customer']['Billing']['lastname'],
-						'street' => $paymentInfo['Customer']['Billing']['street'],
-						'city' => $paymentInfo['Customer']['Billing']['city'],
-						'country_id' => $paymentInfo['Customer']['Billing']['country'],
-						'postcode' => $paymentInfo['Customer']['Billing']['zip'],
+						'firstname' => $paymentInfo['Customer']['Shipping']['firstname'],
+						'lastname' => $paymentInfo['Customer']['Shipping']['lastname'],
+						'street' => $paymentInfo['Customer']['Shipping']['street'],
+						'city' => $paymentInfo['Customer']['Shipping']['city'],
+						'country_id' => $paymentInfo['Customer']['Shipping']['country'],
+						'postcode' => $paymentInfo['Customer']['Shipping']['zip'],
 						'telephone' => $paymentInfo['Customer']['Billing']['phone']
 					);
 					$this->helper->setShippingAddress($shipping_address);
+					$useShipping = true;
 					$tempOrder = array(
 						'currency_id'  => $paymentInfo['PaymentData']['currency'],
 						'email'        => $paymentInfo['Customer']['Billing']['email'],
 						'shipping_address' => array(
-							'firstname'    => $paymentInfo['Customer']['Billing']['firstname'],
-							'lastname'     => $paymentInfo['Customer']['Billing']['lastname'],
-							'street' => $paymentInfo['Customer']['Billing']['street'],
-							'city' => $paymentInfo['Customer']['Billing']['city'],
-							'country_id' => $paymentInfo['Customer']['Billing']['country'],
-							'postcode' => $paymentInfo['Customer']['Billing']['zip'],
+							'firstname'    => $paymentInfo['Customer']['Shipping']['firstname'],
+							'lastname'     => $paymentInfo['Customer']['Shipping']['lastname'],
+							'street' => $paymentInfo['Customer']['Shipping']['street'],
+							'city' => $paymentInfo['Customer']['Shipping']['city'],
+							'country_id' => 'SE',//$paymentInfo['Customer']['Shipping']['country'],
+							'postcode' => $paymentInfo['Customer']['Shipping']['zip'],
 							'telephone' => $paymentInfo['Customer']['Billing']['phone'],
 						),
 						'items' => array()
 					);
 				}
-				$billing_address = array(
+			}
+			if (!$useShipping){
+				$shipping_address = array(
 					'firstname' => $paymentInfo['Customer']['Billing']['firstname'],
 					'lastname' => $paymentInfo['Customer']['Billing']['lastname'],
 					'street' => $paymentInfo['Customer']['Billing']['street'],
 					'city' => $paymentInfo['Customer']['Billing']['city'],
 					'country_id' => $paymentInfo['Customer']['Billing']['country'],
 					'postcode' => $paymentInfo['Customer']['Billing']['zip'],
-					'telephone' => $paymentInfo['Customer']['Billing']['phone'],
-					'email' =>$paymentInfo['Customer']['Billing']['email']
+					'telephone' => $paymentInfo['Customer']['Billing']['phone']
 				);
-				$this->helper->setBillingAddress($billing_address);
 				$this->helper->setShippingAddress($shipping_address);
-				$articles = $paymentInfo['Articles'];
-				foreach($articles as $article){
-					if ($article['artnr'] == 'discount_code'){
-						$_SESSION['billmate_applied_discount_code'] = $article['title'];
-					}
-					else if ($article['artnr'] == 'shipping_code'){
-						$this->helper->setShippingMethod($article['title']);
-					}
-					else {
-						if (strpos($article['artnr'], "discount") === false){
-							$productLoader = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Catalog\Api\ProductRepositoryInterface');
-							$product = $productLoader->get($article['artnr']);
-							$taxClassId = $product->getTaxClassId();
-							$taxCalculation = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Tax\Model\Calculation');
-							$request = $taxCalculation->getRateRequest(null, null, null, 0);
-							$percent = $taxCalculation->getRate($request->setProductClassId($taxClassId));
-							$tmp = array(
-								'product_id' => $article['artnr'],
-								'qty' => $article['quantity'],
-								'price' => (($article['withouttax']/$article['quantity'])/100)//*(1+($percent/100))
-							);
-							array_push($tempOrder['items'], $tmp);
-						}
-					}
+				$tempOrder = array(
+					'currency_id'  => $paymentInfo['PaymentData']['currency'],
+					'email'        => $paymentInfo['Customer']['Billing']['email'],
+					'shipping_address' => array(
+						'firstname'    => $paymentInfo['Customer']['Billing']['firstname'],
+						'lastname'     => $paymentInfo['Customer']['Billing']['lastname'],
+						'street' => $paymentInfo['Customer']['Billing']['street'],
+						'city' => $paymentInfo['Customer']['Billing']['city'],
+						'country_id' => $paymentInfo['Customer']['Billing']['country'],
+						'postcode' => $paymentInfo['Customer']['Billing']['zip'],
+						'telephone' => $paymentInfo['Customer']['Billing']['phone'],
+					),
+					'items' => array()
+				);
+			}
+			$billing_address = array(
+				'firstname' => $paymentInfo['Customer']['Billing']['firstname'],
+				'lastname' => $paymentInfo['Customer']['Billing']['lastname'],
+				'street' => $paymentInfo['Customer']['Billing']['street'],
+				'city' => $paymentInfo['Customer']['Billing']['city'],
+				'country_id' => $paymentInfo['Customer']['Billing']['country'],
+				'postcode' => $paymentInfo['Customer']['Billing']['zip'],
+				'telephone' => $paymentInfo['Customer']['Billing']['phone'],
+				'email' =>$paymentInfo['Customer']['Billing']['email']
+			);
+			$this->helper->setBillingAddress($billing_address);
+			$this->helper->setShippingAddress($shipping_address);
+			$articles = $paymentInfo['Articles'];
+			foreach($articles as $article){
+				if ($article['artnr'] == 'discount_code'){
+					$_SESSION['billmate_applied_discount_code'] = $article['title'];
 				}
-				$order_id = $this->helper->createOrder($tempOrder, $paymentInfo['PaymentData']['orderid']);
-				$order = \Magento\Framework\App\ObjectManager::getInstance()->create('\Magento\Sales\Model\Order')->load($order_id);
-				$order->setData('billmate_invoice_id', json_decode($_POST['data'], true)['number']);
-				$order->setData('billmate_method_name',$paymentInfo['PaymentData']['method_name']);
-				$order->save();
-				if ($paymentInfo['PaymentData']['status'] == 'Created' || ($paymentInfo['PaymentData']['status'] == 'Paid' && !$this->helper->getBmEnable())){
-					$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
-					$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
-					$order->save();
-				}
-				else if ($paymentInfo['PaymentData']['status'] == 'Paid' && $this->helper->getBmEnable()){
-					if (json_decode($_POST['data'], true)['status']=='Paid'){
-						$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
-						$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
-						$order->save();
-						$invoice = $this->invoiceService->prepareInvoice($order);
-						$invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
-						$invoice->register();
-						$transactionSave = \Magento\Framework\App\ObjectManager::getInstance()->create('Magento\Framework\DB\Transaction')->addObject($invoice)->addObject($invoice->getOrder());
-						$transactionSave->save();
-					}
-				}
-				else if ($paymentInfo['PaymentData']['status'] == 'Pending'){
-					$orderState = $this->helper->getPendingControl();
-					$order->setState($orderState)->setStatus($orderState);
-					$order->save();
+				else if ($article['artnr'] == 'shipping_code'){
+					$this->helper->setShippingMethod($article['title']);
 				}
 				else {
-					$orderState = $this->helper->getDeny();
-					$order->setState($orderState)->setStatus($orderState);
-					$order->save();
+					if (strpos($article['artnr'], "discount") === false){
+						$productLoader = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Catalog\Api\ProductRepositoryInterface');
+						$product = $productLoader->get($article['artnr']);
+						$taxClassId = $product->getTaxClassId();
+						$taxCalculation = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Tax\Model\Calculation');
+						$request = $taxCalculation->getRateRequest(null, null, null, 0);
+						$percent = $taxCalculation->getRate($request->setProductClassId($taxClassId));
+						$tmp = array(
+							'product_id' => $article['artnr'],
+							'qty' => $article['quantity'],
+							'price' => (($article['withouttax']/$article['quantity'])/100)//*(1+($percent/100))
+						);
+						array_push($tempOrder['items'], $tmp);
+					}
 				}
+			}
+			$order_id = $this->helper->createOrder($tempOrder, $paymentInfo['PaymentData']['orderid']);
+			$order = \Magento\Framework\App\ObjectManager::getInstance()->create('\Magento\Sales\Model\Order')->load($order_id);
+			$order->setData('billmate_invoice_id', $_SESSION['billmate_checkout_id']);
+			$order->setData('billmate_method_name',$paymentInfo['PaymentData']['method_name']);
+			$order->save();
+			if ($paymentInfo['PaymentData']['status'] == 'Created' || ($paymentInfo['PaymentData']['status'] == 'Paid' && !$this->helper->getBmEnable())){
+				$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
+				$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+				$order->save();
+			}
+			else if ($paymentInfo['PaymentData']['status'] == 'Paid' && $this->helper->getBmEnable()){
+				$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
+				$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+				$order->save();
+				$invoice = $this->invoiceService->prepareInvoice($order);
+				$invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
+				$invoice->register();
+				$transactionSave = \Magento\Framework\App\ObjectManager::getInstance()->create('Magento\Framework\DB\Transaction')->addObject($invoice)->addObject($invoice->getOrder());
+				$transactionSave->save();
+			}
+			else if ($paymentInfo['PaymentData']['status'] == 'Pending'){
+				$orderState = $this->helper->getPendingControl();
+				$order->setState($orderState)->setStatus($orderState);
+				$order->save();
+			}
+			else {
+				$orderState = $this->helper->getDeny();
+				$order->setState($orderState)->setStatus($orderState);
+				$order->save();
 			}
 		}
 		catch (\Exception $e){

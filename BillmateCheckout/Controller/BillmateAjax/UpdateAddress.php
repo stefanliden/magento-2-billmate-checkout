@@ -79,10 +79,15 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
 				}
 			}
 			$iframe = $this->helper->updateIframe();
-			$cart = $this->helper->getCart();
+			$page = $this->resultPageFactory->create();
+			$page->addHandle('billmatecheckout_index_index');
+			$layout = $page->getLayout();
+			$block = $layout->getBlock('billmatecart');
+			$block->setTemplate('Billmate_BillmateCheckout::Cart.phtml');
+			$html = $block->toHtml();
 			$return = array(
 				'iframe'=>$iframe,
-				'cart'=>$cart
+				'cart'=>$html
 			);
 			return $result->setData($return);
 		}

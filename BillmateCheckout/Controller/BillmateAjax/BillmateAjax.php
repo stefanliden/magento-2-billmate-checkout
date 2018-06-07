@@ -121,7 +121,6 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action {
 				$changed = true;
 			}
 			if ($changed){
-				$cart = $this->helper->getCart();
 				$page = $this->resultPageFactory->create();
 				$page->addHandle('billmatecheckout_index_index');
 				$layout = $page->getLayout();

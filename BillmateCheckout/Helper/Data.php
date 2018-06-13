@@ -1034,7 +1034,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
     }
 
     public function getClientVersion() {
-         return "Magento:".$this->getMagentoVersion()." PLUGIN:0.9.3b";
+         return "Magento:".$this->getMagentoVersion()." PLUGIN:0.10.0b";
     }
 
     public function getMagentoVersion() {

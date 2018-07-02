@@ -27,8 +27,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
     const XML_PATH_GENERAL_ENABLE = 'billmate_billmatecheckout/general/enable';
     const XML_PATH_GENERAL_PUSHORDEREVENTS = 'billmate_billmatecheckout/general/pushorderevents';
     const XML_PATH_GENERAL_CUSTOMCSS = 'billmate_billmatecheckout/general/customcss';
-    const XML_PATH_GENERAL_BTN = 'billmate_billmatecheckout/general/inc_dec_btns';
-	const XML_PATH_GENERAL_ATTRIBUTES = 'billmate_billmatecheckout/general/show_attributes_cart';
     const XML_PATH_GENERAL_TERMS_URL = 'billmate_billmatecheckout/general/terms_url';
     const XML_PATH_GENERAL_PRIVACY_POLICY_PAGE = 'billmate_billmatecheckout/general/privacy_policy_page';
     const XML_PATH_CREDENTIALS_ID = 'billmate_billmatecheckout/credentials/billmate_id';
@@ -908,11 +906,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_ENABLE, $storeScope);
     }
 
-    public function getBtnEnable(){
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_BTN, $storeScope);
-    }
-
     public function getBillmateId(){
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_CREDENTIALS_ID, $storeScope);
@@ -977,11 +970,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_PENDING_ENABLE, $storeScope);
     }
-	
-	public function getShowAttribute(){
-		$storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_ATTRIBUTES, $storeScope);
-	}
 	
 	public function getTermsURL(){
 		$storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;

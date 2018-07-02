@@ -30,17 +30,6 @@
 						Push order events, credit, cancel and activate to Billmate.
 					</comment>
 				</field>
-				<field id="inc_dec_btns" translate="label comment" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Show Increase/Decrease buttons in cart</label>
-					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-					<comment>
-						Activate if you want to show increase and decrease buttons in checkout
-					</comment>
-				</field>
-				<field id="show_attributes_cart" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Show attributes in cart</label>
-					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-				</field>
 				<field id="terms_url" translate="label comment" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
 					<label>Terms URL</label>
 					<comment>Full URL to terms and conditions</comment>

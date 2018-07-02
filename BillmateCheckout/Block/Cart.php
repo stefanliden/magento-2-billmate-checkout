@@ -72,7 +72,7 @@ class Cart extends \Magento\Checkout\Block\Onepage {
 	}
 	
 	public function showOptions(){
-		return $this->helper->getShowAttribute();
+		return true;
 	}
 	
 	public function qtyChangeEnable(){

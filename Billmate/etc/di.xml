@@ -1,0 +1,15 @@
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Billmate\Billmate\Logger\Handler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+    <type name="Billmate\Billmate\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">Billmate</argument>
+            <argument name="handlers"  xsi:type="array">
+                <item name="system" xsi:type="object">Billmate\Billmate\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

@@ -16,12 +16,14 @@ class Success extends \Magento\Framework\App\Action\Action {
 		PageFactory $resultPageFactory,
 		\Magento\Framework\Event\Manager $eventManager,
 		\Billmate\BillmateCheckout\Helper\Data $_helper, 
-		CheckoutSession $checkoutSession
+        CheckoutSession $checkoutSession,
+        \Billmate\Billmate\Logger\Logger $logger
 	) {
 		$this->eventManager = $eventManager;
 		$this->resultPageFactory = $resultPageFactory;
 		$this->checkoutSession = $checkoutSession;
 		$this->helper = $_helper;
+        $this->logger = $logger;
 		parent::__construct($context);
 	}
 	
@@ -174,7 +176,7 @@ class Success extends \Magento\Framework\App\Action\Action {
 			}
 		}
 		catch (\Exception $e){
-			file_put_contents("var/log/billmate.log", date("Y-m-d H:i:s") . " Could not create order. Error: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n", FILE_APPEND);
+            $this->logger->info("Could not create order. Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
 			$_SESSION['bm-inc-id'] = $cart->getQuote()->getReservedOrderId();
 		}
 		try {
@@ -205,7 +207,7 @@ class Success extends \Magento\Framework\App\Action\Action {
 			}
 		}
 		catch (\Exception $e){
-			file_put_contents("var/log/billmate.log", date("Y-m-d H:i:s") . " Could not redirect to store success page. Error: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n", FILE_APPEND);
+            $this->logger->info("Could not redirect to store success page. Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
 			$_SESSION['bm-inc-id'] = $cart->getQuote()->getReservedOrderId();
 		}
 		return $resultPage;

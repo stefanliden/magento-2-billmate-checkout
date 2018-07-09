@@ -58,7 +58,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		\Magento\Quote\Model\QuoteFactory $quote, 
 		\Magento\Quote\Api\ShippingMethodManagementInterface $_shippingMethodManagementInterface, 
 		\Magento\Quote\Model\ResourceModel\Quote\CollectionFactory $quoteCollectionFactory,
-		\Magento\Checkout\Model\Cart $_cart
+        \Magento\Checkout\Model\Cart $_cart,
+        \Billmate\Billmate\Logger\Logger $logger
 	){
         $this->_product = $product;
         $this->orderInterface = $order;
@@ -78,6 +79,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         $this->quote = $quote;
         $this->shippingMethodManagementInterface = $_shippingMethodManagementInterface;
         $this->quoteCollectionFactory = $quoteCollectionFactory;
+        $this->logger = $logger;
         parent::__construct($context);
     }
 
@@ -821,9 +823,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			$actual_quote->getBillingAddress()->addData($_SESSION['billmate_billing_address']);
 			if (isset($_SESSION['billmate_shipping_address'])){
 				$actual_quote->getShippingAddress()->addData($_SESSION['billmate_shipping_address']);
-				ob_start();
-				print_r($actual_quote->getShippingAddress()->getStreet());
-				file_put_contents("var/log/bmdev.log", ob_get_clean() . "\n", FILE_APPEND);
+                $this->logger->info("shippingaddress.street: ".print_r($actual_quote->getShippingAddress()->getStreet(), true));
 			}
 			else {
 				$actual_quote->getShippingAddress()->addData($_SESSION['billmate_billing_address']);
@@ -881,7 +881,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			return $order_id;
 		}
 		catch (\Exception $e){
-			file_put_contents("var/log/billmate.log", date("Y-m-d H:i:s") . " Could not create order. Error: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n", FILE_APPEND);
+            $errorMessage = "Could not create order. Error: " . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
+            $this->logger->info($errorMessage);
 			return 0;
 		}
     }

@@ -888,8 +888,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
     }
 	
 	public function clearSession(){
-		$this->checkoutSession->clearStorage();
-		$this->checkoutSession->clearQuote();
 		$_SESSION['shippingPrice'] = null;
 		$_SESSION['shipping_code'] = null;
 		$_SESSION['billmate_shipping_tax'] = null;
@@ -899,7 +897,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$_SESSION['billmate_applied_discount_code'] = null;
 		$_SESSION['billmate_checkout_id'] = null;
 		$_SESSION['billmate_payment_method'] = null;
-		session_unset();
 	}
 
     public function getEnable(){

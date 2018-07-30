@@ -32,11 +32,11 @@ class Success extends \Magento\Framework\App\Action\Action {
 		$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
 		$resultPage = $this->resultPageFactory->create();
 		$res = array();
-		if(is_array($_POST)) {
-			$res['credentials'] = json_decode($_POST['credentials'], true);
-			$res['data'] = json_decode($_POST['data'],true);
-		}
 		try{
+			if(is_array($_POST)) {
+				$res['credentials'] = json_decode($_POST['credentials'], true);
+				$res['data'] = json_decode($_POST['data'],true);
+			}
 			$test = $this->helper->getTestMode();
 			$ssl = true;
 			$debug = false;
@@ -196,6 +196,7 @@ class Success extends \Magento\Framework\App\Action\Action {
 					'checkout_onepage_controller_success_action',
 					['order_ids' => [$order->getId()]]
 			);
+			$this->helper->clearSession();
 			$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
 			$url = $storeManager->getStore()->getBaseUrl() . "checkout/onepage/success";
 			if (headers_sent()){

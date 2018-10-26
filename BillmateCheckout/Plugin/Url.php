@@ -14,7 +14,7 @@ class Url {
 
     public function afterGetCheckoutUrl($subject,$result){
         if ($this->helper->getEnable()) {
-            return '/billmatecheckout';
+            return $subject->getUrl('billmatecheckout');
         }
         return $result;
     }

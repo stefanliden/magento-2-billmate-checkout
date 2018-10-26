@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../Magento/Config/etc/system_file.xsd">
+	<system>
+		<tab id="billmate" translate="label" sortOrder="10">
+			<label>Billmate</label>
+		</tab>
+		<section id="billmate_billmatecheckout" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+			<label>Checkout</label>
+			<tab>billmate</tab>
+			<resource>Billmate_BillmateCheckout::billmate_billmatecheckout</resource>
+			<group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+				<label>General</label>
+				<field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Active</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+					<comment>
+						Enable/Disable Billmate Checkout
+					</comment>
+				</field>
+				<field id="css_note" translate="label comment" type="note" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Custom CSS</label>
+					<comment>
+						If you want to use custom CSS then you can override the css by creating a file in app/design/frontend/{Vendor}/{Theme}/Billmate_BillmateCheckout/css/checkout.css
+					</comment>
+				</field>
+				<field id="pushorderevents" translate="label comment" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Push order events to Billmate</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+					<comment>
+						Push order events, credit, cancel and activate to Billmate.
+					</comment>
+				</field>
+				<field id="inc_dec_btns" translate="label comment" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Show Increase/Decrease buttons in cart</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+					<comment>
+						Activate if you want to show increase and decrease buttons in checkout
+					</comment>
+				</field>
+				<field id="show_attributes_cart" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Show attributes in cart</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="terms_url" translate="label comment" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Terms URL</label>
+					<comment>Full URL to terms and conditions</comment>
+				</field>
+			</group>
+			<group id="credentials" translate="label" type="text" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="1">
+				<label>Credentials</label>
+				<field id="billmate_id" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Billmate ID</label>
+				</field>
+				<field id="billmate_key" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Billmate Key</label>
+				</field>
+				<field id="testmode" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Billmate Test Mode</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+					<comment>
+						Testmode, no real orders.
+					</comment>
+				</field>
+			</group>
+			<group id="pending_settings" translate="label" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="1">
+				<label>Control/Pending Settings</label>
+				<field id="fetch" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Should Magento fetch updates from Billmate for order with status pending?</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="multiselect" translate="label comment" type="multiselect" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Which status should we use to filter orders for check Billmate status</label>
+					<source_model>Billmate\BillmateCheckout\Model\Config\Source\Orderstatuses</source_model>
+					<comment>
+						
+					</comment>
+				</field>
+				<field id="bm_pending_control" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>What order status should be set if order is Pending from Billmate API?</label>
+					<source_model>Billmate\BillmateCheckout\Model\Config\Source\Orderstatuses</source_model>
+				</field>
+				<field id="bm_deny" translate="label comment" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>What order status should be set if a Pending order gets denied from Billmate API?</label>
+					<source_model>Billmate\BillmateCheckout\Model\Config\Source\Orderstatuses</source_model>
+				</field>
+				<field id="bm_activated" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>What order status should be set if a pending order gets activated from Billmate API?</label>
+					<source_model>Billmate\BillmateCheckout\Model\Config\Source\Orderstatuses</source_model>
+				</field>
+				<field id="bm_canceled" translate="label comment" type="select" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>What order status should be set if a pending order gets canceled from Billmate API?</label>
+					<source_model>Billmate\BillmateCheckout\Model\Config\Source\Orderstatuses</source_model>
+				</field>
+				<field id="enable" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Should invoice be created in Magento if order is marked as activated from Billmate API?</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+			</group>
+		</section>
+	</system>
+</config>

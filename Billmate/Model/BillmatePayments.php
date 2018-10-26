@@ -16,7 +16,16 @@ abstract class BillmatePayments extends \Magento\Payment\Model\Method\AbstractMe
     protected $_canRefund                   = true;
     protected $_canRefundInvoicePartial     = false;
     protected $_isOffline					= false;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Helper\Data
+     */
     protected $helper;
+
+    /**
+     * @var Billmate
+     */
+    protected $billmateProvider;
 
     public function __construct(
         \Magento\Framework\Model\Context $context,
@@ -31,9 +40,11 @@ abstract class BillmatePayments extends \Magento\Payment\Model\Method\AbstractMe
         \Billmate\BillmateCheckout\Helper\Data $_helper,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
+        \Billmate\Billmate\Model\Billmate $billmateProvider,
         array $data = []
     ) {
         $this->helper = $_helper;
+        $this->billmateProvider = $billmateProvider;
         parent::__construct(
             $context,
             $registry,
@@ -70,14 +81,7 @@ abstract class BillmatePayments extends \Magento\Payment\Model\Method\AbstractMe
 
     protected function getBillMateProvider()
     {
-        $test = $this->helper->getTestMode();
-        $ssl = true;
-        $debug = false;
-
-        $id = $this->helper->getBillmateId();
-        $key = $this->helper->getBillmateSecret();
-
-        return new BillMate($id, $key, $this->helper, $ssl, $test, $debug);
+        return $this->billmateProvider;
     }
 
 

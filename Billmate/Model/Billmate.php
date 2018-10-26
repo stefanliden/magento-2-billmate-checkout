@@ -30,29 +30,49 @@
  
  */
  
- namespace Billmate\Billmate\Model;
+namespace Billmate\Billmate\Model;
  
 class BillMate {
-	var $ID = "";
-	var $KEY = "";
-	var $URL = "api.billmate.se";
-	var $MODE = "CURL";
-	var $SSL = true;
-	var $TEST = false;
-	var $DEBUG = false;
-	var $REFERER = false;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Helper\Data
+     */
+    protected $helper;
+
+    protected $ID = "";
+    protected $KEY = "";
+    protected $URL = "api.billmate.se";
+    protected $MODE = "CURL";
+    protected $SSL = true;
+    protected $TEST = false;
+    protected $DEBUG = false;
+    protected $REFERER = [];
 	
-	public function __construct($id,$key,$helper,$ssl=true,$test=false,$debug=false,$referer=array()){
-		$this->ID = $id;
-		$this->KEY = $key;
-		if (!defined('BILLMATE_SERVER')){
-			$helper->def();
-		}
-		$this->SSL = $ssl;
-		$this->DEBUG = $debug;
-		$this->TEST = $test;
-		$this->REFERER = $referer;
+	public function __construct(
+        \Billmate\BillmateCheckout\Helper\Data $_helper,
+        $data = []
+    ) {
+        $this->helper = $_helper;
+        $this->initDefines($data);
 	}
+
+	protected function initDefines($data)
+    {
+        if (!defined('BILLMATE_SERVER')){
+            $this->helper->def();
+        }
+
+        $this->ID = $this->helper->getBillmateId();
+        $this->KEY = $this->helper->getBillmateSecret();
+        $this->TEST = $this->helper->getTestMode();
+        if (isset($data['ssl'])) {
+            $this->SSL = $data['ssl'];
+        }
+
+        if (isset($data['debug'])) {
+            $this->DEBUG = $data['debug'];
+        }
+    }
 
     /**
      * @param $name

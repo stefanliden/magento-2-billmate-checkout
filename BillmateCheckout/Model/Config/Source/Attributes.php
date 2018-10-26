@@ -10,9 +10,9 @@ class Attributes implements \Magento\Framework\Option\ArrayInterface {
 	*/	
     public function toOptionArray(){
         return [
-            'super' => 'Show Super Attributes',
-            'all' => 'Show All Visible Attributes',
-            'none' => 'Show no Attributes',
+            'super' => __('Show Super Attributes'),
+            'all' => __('Show All Visible Attributes'),
+            'none' => __('Show no Attributes'),
         ];
     }
 }

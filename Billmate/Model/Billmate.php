@@ -32,7 +32,7 @@
  
  namespace Billmate\Billmate\Model;
  
-class BillMate{
+class BillMate {
 	var $ID = "";
 	var $KEY = "";
 	var $URL = "api.billmate.se";
@@ -53,12 +53,25 @@ class BillMate{
 		$this->TEST = $test;
 		$this->REFERER = $referer;
 	}
-	
+
+    /**
+     * @param $name
+     * @param $args
+     *
+     * @return array|mixed|void
+     */
 	public function __call($name,$args){
 	 	if(count($args)==0) return; //Function call should be skipped
 	 	return $this->call($name,$args[0]);
 	}
-	function call($function,$params) {
+
+    /**
+     * @param $function
+     * @param $params
+     *
+     * @return array|mixed
+     */
+	public function call($function,$params) {
 		$values = array(
 			"credentials" => array(
 				"id"=>$this->ID,
@@ -82,7 +95,13 @@ class BillMate{
 		}
 		return $this->verify_hash($response);
 	}
-	function verify_hash($response) {
+
+    /**
+     * @param $response
+     *
+     * @return array|mixed
+     */
+    public function verify_hash($response) {
 		$response_array = is_array($response)?$response:json_decode($response,true);
 		//If it is not decodable, the actual response will be returnt.
 		if(!$response_array && !is_array($response))
@@ -101,7 +120,13 @@ class BillMate{
 		}
 		return array_map("utf8_decode",$response_array);
 	}
-	function curl($parameters) {
+
+    /**
+     * @param $parameters
+     *
+     * @return mixed|string
+     */
+    public function curl($parameters) {
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, "http".($this->SSL?"s":"")."://".$this->URL);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -133,11 +158,22 @@ class BillMate{
 		}else curl_close($ch);
 	    return $data;
 	}
-	function hash($args) {
+
+    /**
+     * @param $args
+     *
+     * @return string
+     */
+    public function hash($args) {
 		$this->out("TO BE HASHED DATA",$args);
     	return hash_hmac('sha512',$args,$this->KEY);
     }
-    function out($name,$out) {
+
+    /**
+     * @param $name
+     * @param $out
+     */
+    public function out($name,$out) {
     	if (!$this->DEBUG) return;
     	print "$name: '";
     	if(is_array($out) or  is_object($out)) print_r($out);
@@ -145,4 +181,3 @@ class BillMate{
     	print "'\n";
     }
 }
-?>

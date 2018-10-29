@@ -22,16 +22,20 @@ class Cart extends \Magento\Checkout\Block\Onepage {
 		$this->helper = $_helper;
 		$this->objectManager = $_objectManager;
 	}
-	
-	protected function _toHtml(){
-		return parent::_toHtml();
-	}
 
-	public function getCart(){
+    /**
+     * @return mixed
+     */
+	public function getCart()
+    {
 		return $this->helper->getCart();
 	}
-	
-	public function getAjaxUrl() {
+
+    /**
+     * @return string
+     */
+	public function getAjaxUrl()
+    {
 		return $this->getUrl('billmatecheckout/billmateajax/billmateajax');
 	}	
 }

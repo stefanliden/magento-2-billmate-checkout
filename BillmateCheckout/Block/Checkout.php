@@ -18,17 +18,17 @@ class Checkout extends \Magento\Checkout\Block\Onepage {
 		\Magento\Framework\Data\Form\FormKey $formKey,
         \Magento\Checkout\Model\CompositeConfigProvider $configProvider,
         array $layoutProcessors = []
-	){
+	) {
         parent::__construct($context, $formKey, $configProvider, $layoutProcessors, $data);
 		$this->helper = $_helper;
 		$this->objectManager = $_objectManager;
 	}
-	
-	protected function _toHtml(){
-		return parent::_toHtml();
-	}
 
-	public function getBillmateCheckout(){
+    /**
+     * @return string
+     */
+	public function getBillmateCheckout()
+    {
 		return $this->helper->getIframe();
 	}
 }

@@ -47,7 +47,13 @@ class BillMate {
     protected $TEST = false;
     protected $DEBUG = false;
     protected $REFERER = [];
-	
+
+    /**
+     * BillMate constructor.
+     *
+     * @param \Billmate\BillmateCheckout\Helper\Data $_helper
+     * @param array                                  $data
+     */
 	public function __construct(
         \Billmate\BillmateCheckout\Helper\Data $_helper,
         $data = []
@@ -56,6 +62,9 @@ class BillMate {
         $this->initDefines($data);
 	}
 
+    /**
+     * @param $data
+     */
 	protected function initDefines($data)
     {
         if (!defined('BILLMATE_SERVER')){

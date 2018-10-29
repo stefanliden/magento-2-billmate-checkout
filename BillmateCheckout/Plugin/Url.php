@@ -8,11 +8,24 @@ class Url {
      */
     protected $helper;
 
-    public function __construct(\Billmate\BillmateCheckout\Helper\Data $helper){
+    /**
+     * Url constructor.
+     *
+     * @param \Billmate\BillmateCheckout\Helper\Data $helper
+     */
+    public function __construct(\Billmate\BillmateCheckout\Helper\Data $helper)
+    {
         $this->helper = $helper;
     }
 
-    public function afterGetCheckoutUrl($subject,$result){
+    /**
+     * @param $subject
+     * @param $result
+     *
+     * @return string
+     */
+    public function afterGetCheckoutUrl($subject,$result)
+    {
         if ($this->helper->getEnable()) {
             return $subject->getUrl('billmatecheckout');
         }

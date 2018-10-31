@@ -34,6 +34,9 @@ namespace Billmate\Billmate\Model;
  
 class Billmate {
 
+    const BILLMATE_LANGUAGE = 'sv';
+
+    const BILLMATE_SERVER = '2.1.7';
     /**
      * @var \Billmate\BillmateCheckout\Helper\Data
      */
@@ -47,6 +50,7 @@ class Billmate {
     protected $TEST = false;
     protected $DEBUG = false;
     protected $REFERER = [];
+    protected $client = '';
 
     /**
      * Billmate constructor.
@@ -67,13 +71,10 @@ class Billmate {
      */
 	protected function initDefines($data)
     {
-        if (!defined('BILLMATE_SERVER')){
-            $this->helper->def();
-        }
-
         $this->ID = $this->helper->getBillmateId();
         $this->KEY = $this->helper->getBillmateSecret();
         $this->TEST = $this->helper->getTestMode();
+        $this->client = $this->helper->getClientVersion();
         if (isset($data['ssl'])) {
             $this->SSL = $data['ssl'];
         }
@@ -103,14 +104,14 @@ class Billmate {
 	public function call($function,$params) {
 		$values = array(
 			"credentials" => array(
-				"id"=>$this->ID,
-				"hash"=>$this->hash(json_encode($params)),
-				"version"=>BILLMATE_SERVER,
-				"client"=>BILLMATE_CLIENT,
-				"serverdata"=>array_merge($_SERVER,$this->REFERER),
-				"time"=>microtime(true),
-				"test"=>$this->TEST?"1":"0",
-				"language"=>BILLMATE_LANGUAGE
+				"id" => $this->ID,
+				"hash" => $this->hash(json_encode($params)),
+				"version" =>self::BILLMATE_SERVER,
+				"client" => $this->client,
+				"serverdata" => array_merge($_SERVER,$this->REFERER),
+				"time" => microtime(true),
+				"test" => $this->TEST?"1":"0",
+				"language" => self::BILLMATE_LANGUAGE
 			),
 			"data"=> $params,
 			"function"=> $function,

@@ -1,7 +1,6 @@
-<?php 
-$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
-$url = $storeManager->getStore()->getBaseUrl();
+<?php
+    $url = $block->getUrl();
+    $billmateData = $this->getBillmateCheckoutData();
 ?>
 <script>
 	var UPDATE_ADDRESS_URL = "<?php echo $url . 'billmatecheckout/billmateajax/updateaddress'; ?>";
@@ -17,5 +16,13 @@ $url = $storeManager->getStore()->getBaseUrl();
 	);
 </script>
 <div id="billmate-checkout">
-<?php echo $this->getBillmateCheckout(); ?>
+    <?php if(isset($billmateData['url'])): ?>
+        <iframe id="checkout" src="<?= $billmateData['url'] ?> " style="width: 100%; min-height: 800px; border:none;"
+                sandbox="allow-same-origin allow-scripts allow-modals allow-popups allow-forms allow-top-navigation">
+        </iframe>
+    <?php else: ?>
+        <div class="message-warning warning message" data-ui-id="message-success">
+            <?= $billmateData['message'] ?>
+        </div>
+    <?php endif;?>
 </div>

@@ -83,7 +83,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         parent::__construct($context);
     }
 
-    public function getCart(){
+    public function getCart()
+    {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $cart = $this->_cart;
         $itemsVisible = $cart->getQuote()->getAllVisibleItems();
@@ -887,7 +888,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         return $return->data->url;
     }
 
-    public function getIframe(){
+    public function getIframe()
+    {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
         $itemsVisible = $cart->getQuote()->getAllVisibleItems();
@@ -915,7 +917,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             }
             return "<h1>No visible items found in cart</h1><br>";
         }
-		
+
 		$cart->getQuote()->getBillingAddress()->addData(array(
 			'firstname' => 'Testperson',
 			'lastname' => 'Approved',
@@ -935,7 +937,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		));
 		$shippingAddress = $cart->getQuote()->getShippingAddress();
 		$shippingAddress->setCollectShippingRates(true)->collectShippingRates()->setShippingMethod('freeshipping_freeshipping');
-		
+
 		$first = true;
 		$methods = $shippingAddress->getGroupedAllShippingRates();
 		foreach ($methods as $method){
@@ -951,7 +953,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 				}
 			}
 		}
-		
+
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
         $url = $storeManager->getStore()->getBaseUrl();
@@ -980,7 +982,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             'Articles' => array(),
             'Cart' => array()
         );
-		
+
 		$currentStore = $this->_storeManager->getStore();
 		$currentStoreId = $currentStore->getId();
 		$taxCalculation = $objectManager->get('\Magento\Tax\Model\Calculation');
@@ -1015,7 +1017,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			$product = $productLoader->load($item->getProduct()->getId());
 			$taxClassId = $product->getTaxClassId();
 			$percent = $taxCalculation->getRate($request->setProductClassId($taxClassId));
-			
+
             $prod = array(
                 'quantity' => $item->getQty(),
                 'artnr' => $item->getSku(),
@@ -1041,7 +1043,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$shippingTaxClass = $this->getShippingTaxClass();
 		$shippingTax = $taxCalculation->getRate($request->setProductClassId($shippingTaxClass));
 		if ($shippingTax == 0){
-			
+
 			$shippingInclTax = $lShippingPrice*(1+($shippingTax/100));
 			if (($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount()) > 0){
 				$totalDiscountAmount = ($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount());
@@ -1112,7 +1114,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			);
 		}
         $data['Cart'] = $cart2;
-		
+
         $values = array(
             "credentials" => array(
                 "id" => $this->getBillmateId(),
@@ -1127,7 +1129,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             "data" => $data,
             "function" => 'initCheckout',
         );
-		
+
         $enc = json_encode($values);
 
         $ch = curl_init();
@@ -1584,7 +1586,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 	}
 	
 	public function def(){
-		define("BILLMATE_SERVER", "2.1.6");
+		define("BILLMATE_SERVER", "2.1.7");
 		define("BILLMATE_CLIENT", $this->getClientVersion());
 		define("BILLMATE_LANGUAGE", "sv");
 	}
@@ -1593,10 +1595,21 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         return "Magento:".$this->getMagentoVersion()." PLUGIN:0.9.3b";
     }
 
-    public function getMagentoVersion() {
+    public function getMagentoVersion()
+    {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
         $version = $productMetadata->getVersion();
         return $version;
+    }
+
+    /**
+     * @param $price
+     *
+     * @return mixed
+     */
+    public function priceToCents($price)
+    {
+        return $price * 100;
     }
 }

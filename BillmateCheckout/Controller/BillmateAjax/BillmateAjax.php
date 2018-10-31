@@ -5,9 +5,24 @@ namespace Billmate\BillmateCheckout\Controller\BillmateAjax;
 use Magento\Framework\App\Action\Context;
 
 class BillmateAjax extends \Magento\Framework\App\Action\Action {
-	
+    /**
+     * @var \Magento\Framework\Data\Form\FormKey
+     */
     protected $formKey;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Helper\Data
+     */
 	protected $helper;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Helper\Iframe
+     */
+	protected $iframeHelper;
+
+    /**
+     * @var \Magento\Checkout\Model\Session
+     */
 	protected $checkoutSession;
 	
 	public function __construct(
@@ -15,10 +30,12 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action {
 		\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
         \Magento\Framework\Data\Form\FormKey $formKey,
 		\Magento\Checkout\Model\Session $_checkoutSession,
-		\Billmate\BillmateCheckout\Helper\Data $_helper
+		\Billmate\BillmateCheckout\Helper\Data $_helper,
+        \Billmate\BillmateCheckout\Helper\Iframe $iframeHelper
 		) {
         $this->formKey = $formKey;
 		$this->helper = $_helper;
+        $this->iframeHelper = $iframeHelper;
 		$this->resultJsonFactory = $resultJsonFactory;
 		$this->checkoutSession = $_checkoutSession;
 		parent::__construct($context);
@@ -117,12 +134,12 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action {
 			else if ($_POST['field2'] == 'update'){
 				$changed = true;
 			}
-			if ($changed){
+			if ($changed) {
 				$cart = $this->helper->getCart();
-				$iframe = $this->helper->updateIframe();
+				$iframe = $this->iframeHelper->updateIframe();
 				$return = array(
-					'iframe'=>$iframe,
-					'cart'=>$cart
+					'iframe' => $iframe,
+					'cart' => $cart
 				);
 				return $result->setData($return);
 			}

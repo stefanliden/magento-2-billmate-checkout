@@ -6,7 +6,7 @@ namespace Billmate\Billmate\Model;
  * Pay In Store payment method model
  */
 
-abstract class BillmatePayments extends \Magento\Payment\Model\Method\AbstractMethod {
+class BillmatePayments extends \Magento\Payment\Model\Method\AbstractMethod {
 
     protected $_isGateway                   = true;
     protected $_canCapture                  = true;

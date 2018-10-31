@@ -7,8 +7,8 @@ class Checkout extends \Billmate\BillmateCheckout\Block\Cart {
     /**
      * @return string
      */
-	public function getBillmateCheckout()
+	public function getBillmateCheckoutData()
     {
-		return $this->helper->getIframe();
+		return $this->iframeHelper->getIframe();
 	}
 }

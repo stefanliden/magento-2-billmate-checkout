@@ -10,6 +10,11 @@ class Cart extends \Magento\Checkout\Block\Onepage {
     protected $helper;
 
     /**
+     * @var \Billmate\BillmateCheckout\Helper\Iframe
+     */
+    protected $iframeHelper;
+
+    /**
      * Cart constructor.
      *
      * @param \Magento\Framework\View\Element\Template\Context $context
@@ -26,6 +31,7 @@ class Cart extends \Magento\Checkout\Block\Onepage {
         \Magento\Framework\Data\Form\FormKey $formKey,
         \Magento\Checkout\Model\CompositeConfigProvider $configProvider,
 		\Billmate\BillmateCheckout\Helper\Data $_helper,
+		\Billmate\BillmateCheckout\Helper\Iframe $iframeHelper,
 		\Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Checkout\Helper\Data $checkoutHelper,
         array $layoutProcessors = [],
@@ -33,6 +39,7 @@ class Cart extends \Magento\Checkout\Block\Onepage {
 	) {
         parent::__construct($context, $formKey, $configProvider, $layoutProcessors, $data);
 		$this->helper = $_helper;
+		$this->iframeHelper = $iframeHelper;
 	}
 
     /**

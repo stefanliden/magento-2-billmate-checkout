@@ -32,7 +32,7 @@
  
 namespace Billmate\Billmate\Model;
  
-class BillMate {
+class Billmate {
 
     /**
      * @var \Billmate\BillmateCheckout\Helper\Data
@@ -49,7 +49,7 @@ class BillMate {
     protected $REFERER = [];
 
     /**
-     * BillMate constructor.
+     * Billmate constructor.
      *
      * @param \Billmate\BillmateCheckout\Helper\Data $_helper
      * @param array                                  $data
@@ -113,7 +113,7 @@ class BillMate {
 				"language"=>BILLMATE_LANGUAGE
 			),
 			"data"=> $params,
-			"function"=>$function,
+			"function"=> $function,
 		);
 		$this->out("CALLED FUNCTION",$function);
 		$this->out("PARAMETERS TO BE SENT",$values);
@@ -147,7 +147,7 @@ class BillMate {
 				return $response_array["data"];
 			else return array("code"=>9511,"message"=>"Verification error","hash"=>$hash,"hash_received"=>$response_array["credentials"]["hash"]);
 		}
-		return array_map("utf8_decode",$response_array);
+		return $response_array;
 	}
 
     /**
@@ -156,6 +156,11 @@ class BillMate {
      * @return mixed|string
      */
     public function curl($parameters) {
+
+        if (is_array($parameters)) {
+            $parameters = \GuzzleHttp\json_encode($parameters);
+        }
+
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, "http".($this->SSL?"s":"")."://".$this->URL);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -180,12 +185,20 @@ class BillMate {
 		    'Content-Length: ' . strlen($parameters))
 		);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $parameters);
-		$data = curl_exec($ch);
+        /**
+        #can be used to sertificate integration
+        #$path = __DIR__ . '/cacert.pem';
+        #curl_setopt($ch, CURLOPT_CAINFO, $path);*/
+
+        $response = curl_exec($ch);
 		if (curl_errno($ch)){
 	        $curlerror = curl_error($ch);
-	        return json_encode(array("error"=>9510,"message"=>htmlentities($curlerror)));
-		}else curl_close($ch);
-	    return $data;
+            $response = json_encode(array("error"=>9510,"message"=>htmlentities($curlerror)));
+		}else {
+            curl_close($ch);
+        }
+
+        return $response;
 	}
 
     /**

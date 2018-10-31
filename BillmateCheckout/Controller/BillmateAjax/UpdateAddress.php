@@ -15,12 +15,14 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
 		\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
 		\Magento\Catalog\Api\ProductRepositoryInterface $productRepository, 
 		\Billmate\BillmateCheckout\Helper\Data $_helper, 
-		\Magento\Sales\Api\Data\OrderInterface $order
+		\Magento\Sales\Api\Data\OrderInterface $order,
+        \Billmate\BillmateCheckout\Helper\Iframe $iframeHelper
 		){
 		$this->resultJsonFactory = $resultJsonFactory;
 		$this->resultPageFactory = $resultPageFactory;
 	    $this->productRepository = $productRepository;
 		$this->helper = $_helper;
+        $this->iframeHelper = $iframeHelper;
 		$this->orderInterface = $order;
 		parent::__construct($context);
 	}
@@ -88,7 +90,7 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
 					$this->helper->setShippingAddress($input);
 				}
 			}
-			$iframe = $this->helper->updateIframe();
+			$iframe = $this->iframeHelper->updateIframe();
 			$cart = $this->helper->getCart();
 			$return = array(
 				'iframe'=>$iframe,

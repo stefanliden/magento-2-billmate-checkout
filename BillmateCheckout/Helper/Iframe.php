@@ -74,25 +74,17 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function getIframeData($method='initCheckout')
     {
-		$this->getQuote()->getBillingAddress()->addData($this->getAddress());
-        $shippingAddress = $this->getQuote()->getShippingAddress()->addData($this->getAddress());
+        $this->dataHelper->prepareCheckout();
 
-		$shippingAddress->setCollectShippingRates(true)
-            ->collectShippingRates()
-            ->setShippingMethod('freeshipping_freeshipping');
+        $quoteAddress = $this->dataHelper->getQuote()->getShippingAddress();
+        $lShippingPrice = $quoteAddress->getShippingAmount();
 
-
-		$methods = $shippingAddress->getGroupedAllShippingRates();
-        $rate = current(current($methods));
-
-        $lShippingPrice = $rate->getPrice();
-
-        $this->shippingRate->setCode($rate->getCode());
+        $this->shippingRate->setCode($quoteAddress->getShippingMethod());
         $this->shippingPrice = $lShippingPrice;
 
         $this->setSessionData('shippingPrice', $lShippingPrice);
-        $this->setSessionData('shipping_code', $rate->getCode());
-        $this->setSessionData('billmate_shipping_tax', $rate->getShippingTaxAmount());
+        $this->setSessionData('shipping_code', $quoteAddress->getShippingMethod());
+        $this->setSessionData('billmate_shipping_tax', $quoteAddress->getShippingTaxAmount());
 
 
 
@@ -164,7 +156,7 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
 
         $totalExclTax = round((($sum+$shippingInclTax-($this->getQuote()->getSubtotal()-$this->getQuote()->getSubtotalWithDiscount()))*100)-(($sum-$sumex+($shippingInclTax-$lShippingPrice)+(($this->getQuote()->getSubtotal()-$this->getQuote()->getSubtotalWithDiscount())/(1+($shippingTax/100)))-($this->getQuote()->getSubtotal()-$this->getQuote()->getSubtotalWithDiscount()))*100));
         $tax = round((($sum-$sumex+($shippingInclTax-$lShippingPrice)+(($this->getQuote()->getSubtotal()-$this->getQuote()->getSubtotalWithDiscount())/(1+($shippingTax/100)))-($this->getQuote()->getSubtotal()-$this->getQuote()->getSubtotalWithDiscount()))*100));
-        $grandTotal = round(($sum+$shippingInclTax-($this->getQuote()->getSubtotal()-$this->getQuote()->getSubtotalWithDiscount()))*100);
+        $grandTotal = round($this->toCents($sum+$shippingInclTax-($this->getQuote()->getSubtotal()-$this->getQuote()->getSubtotalWithDiscount())));
         $round = $grandTotal - ($totalExclTax + $tax);
 
 
@@ -213,27 +205,7 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected function getQuote()
     {
-        if (!$this->_quote) {
-            $this->_quote = $this->_getCheckoutSession()->getQuote();
-        }
-
-        return $this->_quote;
-    }
-
-    /**
-     * @return array
-     */
-    protected function getAddress()
-    {
-        return $this->defaultAddress;
-    }
-
-    /**
-     * @return \Magento\Checkout\Model\Session
-     */
-    protected function _getCheckoutSession()
-    {
-        return $this->checkoutSession;
+        return $this->dataHelper->getQuote();
     }
 
     /**
@@ -299,7 +271,7 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected function setSessionData($key, $value)
     {
-        return $this->_getCheckoutSession()->setData($key, $value);
+        return $this->dataHelper->setSessionData($key, $value);
     }
 
     /**
@@ -310,7 +282,7 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected function getSessionData($key)
     {
-        return $this->_getCheckoutSession()->getData($key);
+        return $this->dataHelper->getSessionData($key);
     }
 
     /**

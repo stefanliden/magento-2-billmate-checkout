@@ -1,10 +1,10 @@
 <?php
-
 namespace Billmate\BillmateCheckout\Controller\BillmateAjax;
 
 use Magento\Framework\App\Action\Context;
 
-class BillmateAjax extends \Magento\Framework\App\Action\Action {
+class BillmateAjax extends \Magento\Framework\App\Action\Action
+{
     /**
      * @var \Magento\Framework\Data\Form\FormKey
      */
@@ -103,12 +103,12 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action {
 					}
 				}
 			}
-			else if ($_POST['field2'] == 'radio'){
-				$price = $this->helper->setShippingMethod($_POST['field3']);
+			else if ($this->getRequest()->getParam('field2') == 'radio'){
+				$price = $this->helper->setShippingMethod($this->getRequest()->getParam('field3'));
 				$changed = true;
 			}	
-			else if ($_POST['field2'] == 'submit'){
-				$this->helper->setDiscountCode($_POST['field3']);
+			else if ($this->getRequest()->getParam('field2') == 'submit'){
+				$this->helper->setDiscountCode($this->getRequest()->getParam('field3'));
 				$changed = true;
 			}
 			else if ($_POST['field2'] == 'del'){
@@ -130,8 +130,7 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action {
 						$changed = true;
 					}
 				}
-			}
-			else if ($_POST['field2'] == 'update'){
+			}else if ($_POST['field2'] == 'update') {
 				$changed = true;
 			}
 			if ($changed) {

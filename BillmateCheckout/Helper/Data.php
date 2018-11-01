@@ -26,6 +26,29 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 	protected $shippingPrice;
 	protected $_cart;
 
+    /**
+     * @var \Magento\Framework\View\LayoutFactory
+     */
+    protected $layoutFactory;
+
+    /**
+     * @var array
+     */
+    protected $defaultAddress = [
+        'firstname' => 'Testperson',
+        'lastname' => 'Approved',
+        'street' => 'Teststreet',
+        'city' => 'Testcity',
+        'country_id' => 'SE',
+        'postcode' => '12345',
+        'telephone' => '0700123456'
+    ];
+
+    /**
+     * @var \Magento\Quote\Model\Quote
+     */
+    protected $_quote = false;
+
     const XML_PATH_GENERAL_ENABLE = 'billmate_billmatecheckout/general/enable';
     const XML_PATH_GENERAL_PUSHORDEREVENTS = 'billmate_billmatecheckout/general/pushorderevents';
     const XML_PATH_GENERAL_CUSTOMCSS = 'billmate_billmatecheckout/general/customcss';
@@ -62,6 +85,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		\Magento\Quote\Api\ShippingMethodManagementInterface $_shippingMethodManagementInterface, 
 		\Magento\Quote\Model\ResourceModel\Quote\CollectionFactory $quoteCollectionFactory,
 		\Magento\Checkout\Model\Cart $_cart,
+        \Magento\Framework\View\LayoutFactory $layoutFactory,
         ProductMetadataInterface $metaData
 	){
         $this->_product = $product;
@@ -84,277 +108,33 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         $this->quoteCollectionFactory = $quoteCollectionFactory;
         $this->logger = $context->getLogger();
         $this->metaData = $metaData;
+        $this->layoutFactory = $layoutFactory;
 
         parent::__construct($context);
     }
 
-    public function getCart()
+
+    public function prepareCheckout()
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $cart = $this->_cart;
-        $itemsVisible = $cart->getQuote()->getAllVisibleItems();
-
-		$cart->getQuote()->getBillingAddress()->addData(array(
-            'firstname' => 'Testperson',
-            'lastname' => 'Approved',
-            'street' => 'Teststreet',
-            'city' => 'Testcity',
-            'country_id' => 'SE',
-            'postcode' => '12345',
-            'telephone' => '0700123456'
-        ));
-        $cart->getQuote()->getShippingAddress()->addData(array(
-            'firstname' => 'Testperson',
-            'lastname' => 'Approved',
-            'street' => 'Teststreet',
-            'city' => 'Testcity',
-            'country_id' => 'SE',
-            'postcode' => '12345'
-        ));
-		$currentStore = $this->_storeManager->getStore();
-		$currentStoreId = $currentStore->getId();
-		$taxCalculation = $objectManager->get('\Magento\Tax\Model\Calculation');
-		$request = $taxCalculation->getRateRequest(null, null, null, $currentStoreId);
-		$shippingTaxClass = $this->getShippingTaxClass();
-		$shippingTax = $taxCalculation->getRate($request->setProductClassId($shippingTaxClass));
-		$shippingAddress = $cart->getQuote()->getShippingAddress();
-		$shippingAddress->setCollectShippingRates(true)->collectShippingRates();
-        $first = true;
-		$rates = $shippingAddress->getAllShippingRates();
-
-		if (isset($_SESSION['shipping_code'])){
-			foreach ($rates as $rate){
-				if ($rate->getCode() == $_SESSION['shipping_code']){
-					if ($shippingTax == 0){
-						$lShippingPrice = $rate->getPrice();
-						$_SESSION['billmate_shipping_tax'] = 0;
-					}
-					else {
-						$lShippingPrice = ($rate->getPrice()*(1+($shippingTax/100)));
-						$_SESSION['billmate_shipping_tax'] = ($rate->getPrice()*(1+($shippingTax/100)))-$rate->getPrice();
-					}
-					$shippingAddress->setShippingMethod($rate->getCode());
-					$shippingAddress->save();
-					$this->shippingRate->setCode($rate->getCode());
-					$this->shippingPrice = $lShippingPrice;
-					$_SESSION['shippingPrice'] = $lShippingPrice;
-					$_SESSION['shipping_code'] = $rate->getCode();
-				}
-			}
-		}
-		else {
-			$methods = $shippingAddress->getGroupedAllShippingRates();
-			foreach ($methods as $method){
-				foreach ($method as $rate){
-					if ($first){
-						if ($shippingTax == 0){
-							$lShippingPrice = $rate->getPrice();
-						}
-						else {
-							$lShippingPrice = ($rate->getPrice()*(1+($shippingTax/100)));
-						}
-						$first = false;
-						$this->shippingRate->setCode($rate->getCode());
-						$this->shippingPrice = $lShippingPrice;
-						$shippingAddress->setShippingMethod($rate->getCode());
-						$shippingAddress->save();
-						$_SESSION['shippingPrice'] = $lShippingPrice;
-						$_SESSION['shipping_code'] = $rate->getCode();
-						$cart->getQuote()->collectTotals();
-						$cart->getQuote()->save();
-					}
-				}
-			}
-		}
-		$cart->getQuote()->getShippingAddress()->unsetData('cached_items_all');
-		$cart->getQuote()->getShippingAddress()->unsetData('cached_items_nominal');
-		$cart->getQuote()->getShippingAddress()->unsetData('cached_items_nonnominal');
-		$cart->getQuote()->collectTotals();
-		$cart->getQuote()->getShippingAddress()->collectShippingRates();
-
-		$sum = 0;
-        $taxAmount = 0;
-        $imageHelper  = $objectManager->get('\Magento\Catalog\Helper\Image');
-		$imgs = array();
-        foreach ($itemsVisible as $item){
-			$productLoader2 = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Catalog\Api\ProductRepositoryInterface');
-			$product = $productLoader2->get($item->getSku());
-			array_push($imgs, $imageHelper->init($product, 'product_page_image_small')->setImageFile($product->getFile())->resize(80, 80)->getUrl());
-		}
-		$i = 0;
-		
-        foreach ($itemsVisible as $item) {
-			$productLoader2 = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Catalog\Api\ProductRepositoryInterface');
-			$product = $productLoader2->get($item->getSku());
-            $taxClassId = $product->getTaxClassId();
-            $percent = $taxCalculation->getRate($request->setProductClassId($taxClassId));
-            $activeOptions = "";
-            if ($item->getProduct()->getTypeId() == 'configurable'){
-                $productTypeInstance = $objectManager->get('Magento\ConfigurableProduct\Model\Product\Type\Configurable');
-                $productAttributeOptions = $productTypeInstance->getConfigurableAttributesAsArray($item->getProduct());
-                $vals = $item->getBuyRequest()->getData()['super_attribute'];
-                foreach ($vals as $key => $val){
-                    $activeOptions .= "<span>".$productAttributeOptions[$key]['label'];
-                    foreach ($productAttributeOptions[$key]['values'] as $value){
-                        if ($value['value_index'] == $val){
-                            $activeOptions .= ": ".$value['label'];
-                        }
-                    }
-					$activeOptions .= "</span>";
-                }
-            }
-
-			$taxAmount = $taxAmount + (($item->getPrice()*(1+($percent/100)) - $item->getPrice())*$item->getQty());
-
-			$sum = $sum + $item->getPrice()*$item->getQty();
-			$i = $i +1;
-		}
-
-        return $this->updateCart();
+        /*if (!$this->getQuote()->getShippingAddress()->getShippingMethod()) {*/
+            $this->getQuote()->getBillingAddress()->addData($this->getAddress());
+            $shippingAddress = $this->getQuote()->getShippingAddress()->addData($this->getAddress());
+            $shippingAddress->setCollectShippingRates(true)
+                ->collectShippingRates()
+            ->setShippingMethod('freeshipping_freeshipping');
+        /*}*/
+        return $this;
     }
 
-	public function updateCart(){
-		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-        $itemsVisible = $cart->getQuote()->getAllVisibleItems();
-        $str = "";
-
-		$lShippingPrice = 0;
-		$priceHelper = $objectManager->create('Magento\Framework\Pricing\Helper\Data');
-		$currentStore = $this->_storeManager->getStore();
-        $currentStoreId = $currentStore->getId();
-        $taxCalculation = $objectManager->get('\Magento\Tax\Model\Calculation');
-        $request = $taxCalculation->getRateRequest(null, null, null, $currentStoreId);
-        $shippingTaxClass = $this->getShippingTaxClass();
-		$shippingTax = $taxCalculation->getRate($request->setProductClassId($shippingTaxClass));
-		$shippingAddress = $cart->getQuote()->getShippingAddress();
-		$shippingAddress->setCollectShippingRates(true)->collectShippingRates();
-		$shippingStr = "<div class=\"billmate_shipping_methos\">";
-        $shippingStr .= "<h1>" . __('Shipping Methods') . "</h1><form>";
-		$methods = $shippingAddress->getGroupedAllShippingRates();
-		foreach ($methods as $method){
-			foreach ($method as $rate){
-				if ($rate->getCode() == $_SESSION['shipping_code']){
-					if ($shippingTax == 0){
-						$lShippingPrice = $rate->getPrice();
-						$_SESSION['billmate_shipping_tax'] = 0;
-					}
-					else {
-						$lShippingPrice = ($rate->getPrice()*(1+($shippingTax/100)));
-						$_SESSION['billmate_shipping_tax'] = ($rate->getPrice()*(1+($shippingTax/100)))-$rate->getPrice();
-					}
-					$shippingAddress->setShippingMethod($rate->getCode());
-					$shippingAddress->save();
-					$this->shippingRate->setCode($rate->getCode());
-					$this->shippingPrice = $lShippingPrice;
-					$_SESSION['shippingPrice'] = $lShippingPrice;
-					$_SESSION['shipping_code'] = $rate->getCode();
-					$shippingStr .= "<div class=\"ship_methods\" ><input type=\"radio\" class=\"radio\" id=\"" . $rate->getCode() . "\" name=\method\" value=\"" . $rate->getCode() . "\" checked> <label for=\"" . $rate->getCode() . "\" class=\"radio_lable\" >" . $rate->getMethodTitle() . " " . $priceHelper->currency($lShippingPrice, true, false) . "</label></div>";
-				}
-				else{
-					if ($shippingTax == 0){
-						$shippingStr .= "<div class=\"ship_methods\" ><input type=\"radio\" class=\"radio\" id=\"" . $rate->getCode() . "\" name=\method\" value=\"" . $rate->getCode() . "\"><label for=\"" . $rate->getCode() . "\" class=\"radio_lable\" >" . $rate->getMethodTitle() . " " . $priceHelper->currency($rate->getPrice(), true, false) . "</label></div>";
-					}
-					else {
-						$shippingStr .= "<div class=\"ship_methods\" ><input type=\"radio\" class=\"radio\" id=\"" . $rate->getCode() . "\" name=\method\" value=\"" . $rate->getCode() . "\"><label for=\"" . $rate->getCode() . "\" class=\"radio_lable\" >" . $rate->getMethodTitle() . " " . $priceHelper->currency(($rate->getPrice()*(1+($shippingTax/100))), true, false) . "</label></div>";
-					}
-				}
-			}
-		}
-        $shippingStr .= "</form>";
-		$shippingStr .= "</div>";
-		
-		$str .= "<h2>" . __('Shopping Cart') . "</h2>";
-		$str .= "<div class=\"table-responsive\">";
-        $str .= "<div class=\"billmate-checkout-cart-table\">";
-        $str .= "<div class=\"billmate-checkout-table-head\"><div class=\"billmate-checkout-product-head\">" . __('Product') . "</div><div class=\"billmate-checkout-price-head\">".__('Price')."</div><div class=\"billmate-checkout-qty-head\">".__('Quantity')."</div><div class=\"billmate-checkout-sum-head\">".__('Sum')."</div></div><span id=\"billmate-checkout-line\" class=\"billmate-checkout-line\"></span>";
-
-        $productLoader = $objectManager->get('\Magento\Catalog\Model\Product');
-        $sum = 0;
-		$sumex = 0;
-        $taxAmount = 0;
-        $imageHelper  = $objectManager->get('\Magento\Catalog\Helper\Image');
-        $imgs = array();
-        foreach ($itemsVisible as $item){
-			$productLoader2 = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Catalog\Api\ProductRepositoryInterface');
-			$product = $productLoader2->get($item->getSku());
-			array_push($imgs, $imageHelper->init($product, 'product_page_image_small')->setImageFile($product->getFile())->resize(80, 80)->getUrl());
-		}
-		$i = 0;
-        foreach ($itemsVisible as $item){
-            $image_url = "";
-			$productLoader2 = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Catalog\Api\ProductRepositoryInterface');
-			$product = $productLoader2->get($item->getSku());
-            $taxClassId = $product->getTaxClassId();
-            $percent = $taxCalculation->getRate($request->setProductClassId($taxClassId));
-            $image_url = $imageHelper->init($product, 'product_page_image_small')->setImageFile($product->getFile())->resize(80, 80)->getUrl();
-            
-			$area = 0;
-			$attributes = $item->getProduct()->getAttributes();
-			foreach ($attributes as $attribute) {
-				if ($attribute->getIsVisibleOnFront() == 1){
-					if ($product->getAttributeText($attribute->getAttributeCode()) || $product->getData($attribute->getAttributeCode()) != null){
-						if ($attribute->getAttributeCode() == 'm2_per_package'){
-							if ($product->getAttributeText($attribute->getAttributeCode())){
-								$area = $product->getAttributeText($attribute->getAttributeCode());
-							}
-							else {
-								$area = $product->getData($attribute->getAttributeCode());
-							}
-						}
-					}
-				}
-			}
-			if ($area == 0 || $this->getShowAttribute()){
-				$activeOptions = "";
-				$str .= "<div class=\"billmate-checkout-product-row\"><div class=\"billmate-checkout-img\"><img src=\"".$imgs[$i]."\" alt=\"logo\"></div><div class=\"billmate-checkout-name\"><p>".$item->getName()."</p>".$activeOptions."</div><div class=\"billmate-checkout-price\" id=\"price_".$item->getId()."\">". $priceHelper->currency(($item->getPrice()*(1+($percent/100))), true, false) ."</div>";
-				if ($this->getBtnEnable()){
-					$str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><button class=\"billmate-checkout-button-sub sub\" id=\"bm-sub-btn sub_" . $item->getId() . "\" name=\"sub\">-</button><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div><button id=\"bm-inc-btn inc_" . $item->getId() . "\" class=\"billmate-checkout-button-inc inc\" name=\"inc\">+</button></div>";
-				}
-				else {
-					$str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div></div>";
-				}
-			}
-			else {
-				$activeOptions = "<span><strong>Pris/m²</strong>: " . $priceHelper->currency($objectManager->get('\Caupo\M2\Block\M2')->getCorrectPrice($item->getProduct(), $item->getQty()*$area), true, false) . "</span><span><strong>Pris/förp</strong>: " . $priceHelper->currency(($item->getPrice()*(1+($percent/100))), true, false) . "</span>";
-				$str .= "<div class=\"billmate-checkout-product-row\"><div class=\"billmate-checkout-img\"><img src=\"".$imgs[$i]."\" alt=\"logo\"></div><div class=\"billmate-checkout-name\"><p>".$item->getName()."</p>".$activeOptions."</div><div class=\"billmate-checkout-price\" id=\"price_".$item->getId()."\">". $priceHelper->currency(($item->getPrice()*(1+($percent/100))), true, false) ."</div>";
-				if ($this->getBtnEnable()){
-					$str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><button class=\"billmate-checkout-button-sub sub\" id=\"bm-sub-btn sub_" . $item->getId() . "\" name=\"sub\">-</button><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div><button id=\"bm-inc-btn inc_" . $item->getId() . "\" class=\"billmate-checkout-button-inc inc\" name=\"inc\">+</button><span class=\"area\" id=\"area\">" . ($item->getQty()*floatval($area)) . "m²</span></div>";
-				}
-				else {
-					$str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div><span class=\"area\" id=\"area\">" . ($item->getQty()*floatval($area)) . "m²</span></div>";
-				}
-			}
-            $str .= "<div class=\"billmate-checkout-sum\" id=\"sum_".$item->getId()."\">".$priceHelper->currency(($item->getPrice()*$item->getQty()*(1+($percent/100))), true, false)."</div><div class=\"billmate-checkout-del-but\"><span id=\"bm-del-btn del_" . $item->getId() . "\" class=\"billmate-checkout-button-del del\" name=\"del\"></span></div><span id=\"billmate-checkout-line\" class=\"billmate-checkout-line\"></span></div>";
-
-            $taxAmount = $taxAmount + (($item->getPrice()*(1+($percent/100)) - $item->getPrice())*$item->getQty());
-			$sumex = $sumex + $item->getPrice()*$item->getQty();
-            $sum = $sum + $item->getPrice()*$item->getQty()*(1+($percent/100));
-			$i = $i +1;
-        }
-        $str .= "</div></div><table class=\"totals\">";
-        $str .= "<tr><td class=\"name\">" . __('Shipping') . "</td><td class=\"price\">" . $priceHelper->currency($lShippingPrice, true, false) . "</td></tr>";
-        if ($cart->getQuote()->getSubtotal() != $cart->getQuote()->getSubtotalWithDiscount()){
-            $str .= "<tr><td class=\"name\">" . __('Discount') . "</td><td class=\"price\">" . $priceHelper->currency(($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount())*(0-1), true, false) . "</td></tr>";
-        }
-		$str .= "<tr><td class=\"name\">" . __('Tax') . "</td><td class=\"price\">" . $priceHelper->currency(($sum-$sumex+$_SESSION['billmate_shipping_tax']+(($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount())/(1+($shippingTax/100)))-($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount())), true, false) . "</td></tr>";
-        $str .= "<tr><td class=\"name\">" . __('Total') . "</td><td class=\"price\">" . $priceHelper->currency(($sum+$lShippingPrice-($cart->getQuote()->getSubtotal()-$cart->getQuote()->getSubtotalWithDiscount())), true, false) . "</td></tr>";
-        $str .= "</table>";
-        $str .= "<div class=\"billmate-checkout-discount\">";
-        $str .= "<h1>" . __('Discount Codes') . "</h1><form action=\"javascript:void(0);\"><input type=\"text\" name=\"code\" id=\"code\" class=\"code\" ><input type=\"button\" id=\"codeButton\" class=\"codeButton\" value=\"" . __('Apply Discount') . "\"></form></div>
-        <script>
-            document.getElementById(\"code\").addEventListener(\"keyup\", function(event) {
-                event.preventDefault();
-                if (event.keyCode == 13) {
-                    document.getElementById(\"codeButton\").click();
-                }
-            });
-        </script>
-		
-		";
-        $str .= $shippingStr;
-        return $str;
-	}
+    /**
+     * @return string
+     */
+    public function getCart()
+    {
+        $layout = $this->layoutFactory->create();
+        return $layout->createBlock('Billmate\BillmateCheckout\Block\Cart\Content')
+            ->setTemplate('cart/content.phtml')->toHtml();
+    }
 	
 	public function setShippingAddress($input){
 
@@ -508,42 +288,28 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		}
 		$_SESSION['billmate_email'] = $input['email'];
 	}
-	
-    public function setShippingMethod($methodInput){
-		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-		$shippingAddress = $cart->getQuote()->getShippingAddress();
-		$shippingAddress->setCollectShippingRates(true)->collectShippingRates();//->setShippingMethod($methodInput);
-		$currentStore = $this->_storeManager->getStore();
-		$currentStoreId = $currentStore->getId();
-		$taxCalculation = $objectManager->get('\Magento\Tax\Model\Calculation');
-		$request = $taxCalculation->getRateRequest(null, null, null, $currentStoreId);
-		$shippingTaxClass = $this->getShippingTaxClass();
-		$shippingTax = $taxCalculation->getRate($request->setProductClassId($shippingTaxClass));
-		$rates = $shippingAddress->getAllShippingRates();
-		$_SESSION['shipping_code'] = $methodInput;
-        foreach ($rates as $rate){
-            if ($rate->getCode() == $methodInput){
-				if ($shippingTax == 0){
-					$lShippingPrice = $rate->getPrice();
-				}
-				else {
-					$lShippingPrice = ($rate->getPrice()*(1+($shippingTax/100)));
-				}
-				$shippingAddress->setShippingMethod($rate->getCode());
-				$shippingAddress->save();
-				$first = false;
-				$this->shippingRate->setCode($rate->getCode());
-				$this->shippingPrice = $lShippingPrice;
-				$_SESSION['shippingPrice'] = $lShippingPrice;
-				$_SESSION['shipping_code'] = $rate->getCode();
-				$_SESSION['billmate_shipping_tax'] = $rate->getShippingTaxAmount();
-			}
-        }
+
+    /**
+     * @param $methodInput
+     */
+    public function setShippingMethod($methodInput)
+    {
+		$shippingAddress = $this->getQuote()->getShippingAddress();
+        $shippingAddress->setShippingMethod($methodInput);
+		$shippingAddress->setCollectShippingRates(true)
+            ->collectShippingRates();
+		$this->getQuote()->collectTotals();
     }
 
-    public function setDiscountCode($code){
-	    $this->checkoutSession->getQuote()->setCouponCode($code)->collectTotals()->save();
+    /**
+     * @param $code
+     */
+    public function setDiscountCode($code)
+    {
+	    $this->getQuote()
+            ->setCouponCode($code)
+            ->collectTotals()
+            ->save();
 	    $_SESSION['billmate_applied_discount_code'] = $code;
     }
 
@@ -960,24 +726,33 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_ATTRIBUTES, $storeScope);
 	}
 
-	public function setBmPaymentMethod($method){
-		switch ($method){
+	public function setBmPaymentMethod($methodCode){
+
+        /*$methods = [
+            1 =>  'billmate_invoice',
+            4 =>  'billmate_partpay',
+            8 =>  'billmate_card',
+            16 =>  'billmate_bank',
+        ];*/
+		switch ($methodCode) {
 			case "1":
-				$_SESSION['billmate_payment_method'] = 'billmate_invoice';
+                $method = 'billmate_invoice';
 			break;
 			case "4":
-				$_SESSION['billmate_payment_method'] = 'billmate_partpay';
+                $method = 'billmate_partpay';
 			break;
 			case "8":
-				$_SESSION['billmate_payment_method'] = 'billmate_card';
+                $method = 'billmate_card';
 			break;
 			case "16":
-				$_SESSION['billmate_payment_method'] = 'billmate_bank';
+                $method = 'billmate_bank';
 			break;
 			default:
-				$_SESSION['billmate_payment_method'] = 'billmate_invoice';
+				$method = 'billmate_invoice';
 			break;
 		}
+
+        $_SESSION['billmate_payment_method'] = $method;
 	}
 	
 	public function def(){
@@ -1011,5 +786,86 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
     public function priceToCents($price)
     {
         return $price * 100;
+    }
+
+    /**
+     * @return \Magento\Quote\Model\Quote\Item[]
+     */
+    public function getItems()
+    {
+       return $this->getQuote()->getAllVisibleItems();
+    }
+
+    /**
+     * @return \Magento\Quote\Model\Quote
+     */
+    public function getQuote()
+    {
+        if (!$this->_quote) {
+            $this->_quote = $this->_getCheckoutSession()->getQuote();
+        }
+
+        return $this->_quote;
+    }
+
+    /**
+     * @return array
+     */
+    public function getShippingMethodsRates()
+    {
+        $shippingAddress = $this->getQuote()->getShippingAddress();
+        $shippingAddress->setCollectShippingRates(true)->collectShippingRates();
+        return $shippingAddress->getAllShippingRates();
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     *
+     * @return \Magento\Checkout\Model\Session
+     */
+    public function setSessionData($key, $value)
+    {
+        return $this->_getCheckoutSession()->setData($key, $value);
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     *
+     * @return mixed
+     */
+    public function getSessionData($key)
+    {
+        return $this->_getCheckoutSession()->getData($key);
+    }
+
+    /**
+     * @return \Magento\Checkout\Model\Session
+     */
+    protected function _getCheckoutSession()
+    {
+        return $this->checkoutSession;
+    }
+
+    /**
+     * @param $methodCode
+     *
+     * @return bool
+     */
+    public function isActiveShippingMethod($methodCode)
+    {
+        $activeMethod = $this->getQuote()
+            ->getShippingAddress()
+            ->getShippingMethod();
+        return  $activeMethod == $methodCode;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getAddress()
+    {
+        return $this->defaultAddress;
     }
 }

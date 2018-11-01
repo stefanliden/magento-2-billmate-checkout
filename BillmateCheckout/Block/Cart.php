@@ -2,8 +2,8 @@
 
 namespace Billmate\BillmateCheckout\Block;
  
-class Cart extends \Magento\Checkout\Block\Onepage {
-
+class Cart extends \Magento\Checkout\Block\Onepage
+{
     /**
      * @var \Billmate\BillmateCheckout\Helper\Data
      */

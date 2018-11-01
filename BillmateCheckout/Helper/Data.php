@@ -24,7 +24,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
     protected $quote;
     protected $orderInterface;
 	protected $shippingPrice;
-	protected $_cart;
+	protected $checkoutCart;
 
     /**
      * @var \Magento\Framework\View\LayoutFactory
@@ -84,7 +84,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		\Magento\Quote\Model\QuoteFactory $quote, 
 		\Magento\Quote\Api\ShippingMethodManagementInterface $_shippingMethodManagementInterface, 
 		\Magento\Quote\Model\ResourceModel\Quote\CollectionFactory $quoteCollectionFactory,
-		\Magento\Checkout\Model\Cart $_cart,
+		\Magento\Checkout\Model\Cart $checkoutCart,
         \Magento\Framework\View\LayoutFactory $layoutFactory,
         ProductMetadataInterface $metaData
 	){
@@ -96,7 +96,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         $this->customerRepository = $customerRepository;
         $this->cartRepositoryInterface = $cartRepositoryInterface;
         $this->cartManagementInterface = $cartManagementInterface;
-		$this->_cart = $_cart;
+		$this->checkoutCart = $checkoutCart;
         $this->shippingRate = $shippingRate;
         $this->shipconfig = $shipconfig;
         $this->resource = $resource;
@@ -262,9 +262,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$input['street'] = str_replace('Ã¶','ö',$input['street']);
 		$input['city'] = str_replace('Ã¶','ö',$input['city']);
 
-		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-		$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-		$cart->getQuote()->getBillingAddress()->addData(array(
+
+		$this->getQuote()->getBillingAddress()->addData(array(
             'firstname' => $input['firstname'],
             'lastname' => $input['lastname'],
             'street' => $input['street'],
@@ -867,5 +866,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
     protected function getAddress()
     {
         return $this->defaultAddress;
+    }
+
+    /**
+     * @return \Magento\Checkout\Model\Cart
+     */
+    public function getCheckoutCart()
+    {
+        return $this->checkoutCart;
     }
 }

@@ -44,104 +44,119 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action
 	public function execute() {
 		$result = $this->resultJsonFactory->create();
 		if ($this->getRequest()->isAjax()) {
-			$changed = false;
-			if ($_POST['field2'] == 'sub'){
-				$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-				$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-				$product = $objectManager->get('\Magento\Catalog\Model\Product');
-				$allItems = $cart->getQuote()->getAllVisibleItems();
-				$id = explode('_', $_POST['field3'])[1];
-				foreach ($allItems as $item) {
-					if ($item->getId() == $id){
-						$qty = $item->getQty();
-						if ($qty > 1){
-							$item->setQty($qty-1);
-						}
-						else {
-							if (count($allItems) == 1){
-								$this->helper->clearSession();
-								return $result->setData("redirect");
-							}
-							else {
-								$cart->getQuote()->removeItem($item->getId());
-							}
-						}
-						$cart->save();
-						$changed = true;
-					}
-				}
-			}
-			else if ($_POST['field2'] == 'inc'){
-				$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-				$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-				$product = $objectManager->get('\Magento\Catalog\Model\Product');
-				$allItems = $cart->getQuote()->getAllVisibleItems();
-				$id = explode('_', $_POST['field3'])[1];
-				foreach ($allItems as $item){
-					if ($item->getId() == $id){
-						if ($item->getProduct()->getTypeId() == 'configurable'){
-							$params = array(
-								'form_key' => $this->formKey->getFormKey(),
-								'product' => $item->getProduct()->getId(),
-								'super_attribute' => $item->getBuyRequest()->getData()['super_attribute'],
-								'qty' => 1,
-								'price' => $item->getProduct()->getPrice()
-							);
-						}
-						else {
-							$params = array(
-								'form_key' => $this->formKey->getFormKey(),
-								'product' => $item->getProduct()->getId(),
-								'qty' => 1,
-								'price' => $item->getProduct()->getPrice()
-							);
-						}
-						$_product = $product->load($item->getProduct()->getId());
-						$cart->addProduct($_product, $params);
-						$cart->save();
-						$changed = true;
-					}
-				}
-			}
-			else if ($this->getRequest()->getParam('field2') == 'radio'){
-				$price = $this->helper->setShippingMethod($this->getRequest()->getParam('field3'));
-				$changed = true;
-			}	
-			else if ($this->getRequest()->getParam('field2') == 'submit'){
+            $itemId = $this->getItemIdFromRequest();
+			if ($this->getRequest()->getParam('field2') == 'sub') {
+				$this->decreaseQty($itemId);
+			}elseif ($this->getRequest()->getParam('field2') == 'inc') {
+                $this->increaseQty($itemId);
+			}elseif ($this->getRequest()->getParam('field2') == 'radio'){
+				$this->helper->setShippingMethod($this->getRequest()->getParam('field3'));
+			}elseif ($this->getRequest()->getParam('field2') == 'submit'){
 				$this->helper->setDiscountCode($this->getRequest()->getParam('field3'));
-				$changed = true;
+			}elseif ($this->getRequest()->getParam('field2') == 'del'){
+                $this->removeItem($itemId);
 			}
-			else if ($_POST['field2'] == 'del'){
-				$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-				$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-				$product = $objectManager->get('\Magento\Catalog\Model\Product');
-				$allItems = $cart->getQuote()->getAllVisibleItems();
-				$id = explode('_', $_POST['field3'])[1];
-				foreach ($allItems as $item) {
-					if ($item->getId() == $id){
-						if (count($allItems) == 1){
-							$this->helper->clearSession();
-							return $result->setData("redirect");
-						}
-						else {
-							$cart->getQuote()->removeItem($item->getId());
-						}
-						$cart->save();
-						$changed = true;
-					}
-				}
-			}else if ($_POST['field2'] == 'update') {
-				$changed = true;
-			}
-			if ($changed) {
-				$cart = $this->helper->getCart();
-				$iframe = $this->iframeHelper->updateIframe();
-				$return = array(
-					'iframe' => $iframe,
-					'cart' => $cart
-				);
-				return $result->setData($return);
-			}
+
+            if (!$this->helper->getQuote()->getItemsQty()) {
+                return $result->setData("redirect");
+            }
+
+            $cartBlockContent = $this->helper->getCart();
+            $iframeUrl = $this->iframeHelper->updateIframe();
+            $return = array(
+                'iframe' => $iframeUrl,
+                'cart' => $cartBlockContent
+            );
+            return $result->setData($return);
 		}
 	}
+
+    /**
+     * @param $id
+     */
+	protected function increaseQty($id)
+    {
+        $item = $this->helper->getQuote()->getItemById($id);
+        if ($item->getId()) {
+            $product = $item->getProduct();
+            if ($product->getTypeId() == 'configurable') {
+                $params = array(
+                    'form_key' => $this->formKey->getFormKey(),
+                    'product' =>$product->getId(),
+                    'super_attribute' => $item->getBuyRequest()->getData()['super_attribute'],
+                    'qty' => 1,
+                    'price' => $product->getPrice()
+                );
+            } else {
+                $params = array(
+                    'form_key' => $this->formKey->getFormKey(),
+                    'product' => $product->getId(),
+                    'qty' => 1,
+                    'price' => $product->getPrice()
+                );
+            }
+
+            $cart = $this->getCheckoutCart();
+            $cart->addProduct($product, $params);
+            $cart->save();
+        }
+    }
+
+    /**
+     * @param $id
+     */
+    protected function removeItem($id)
+    {
+        $cart = $this->getCheckoutCart();
+        $item = $this->helper->getQuote()->getItemById($id);
+
+        if ($item->getId()) {
+            $this->helper->getQuote()->removeItem($item->getId());
+            $cart->save();
+        }
+    }
+
+    /**
+     * @return \Magento\Checkout\Model\Cart
+     */
+    protected function getCheckoutCart()
+    {
+        return $this->helper->getCheckoutCart();
+    }
+
+    /**
+     * @param $id
+     *
+     * @return $this
+     */
+    protected function decreaseQty($id)
+    {
+        $cart = $this->getCheckoutCart();
+        $item = $this->helper->getQuote()->getItemById($id);
+        if ($item->getId()) {
+
+            $qty = $item->getQty();
+            if ($qty > 1){
+                $item->setQty($qty-1);
+                $cart->save();
+            } else {
+                $this->removeItem($item->getId());
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    protected function getItemIdFromRequest()
+    {
+        $itemRowRequest = $this->getRequest()->getParam('field3');
+        $explodedRow = explode('_', $itemRowRequest);
+        if (isset($explodedRow[1])) {
+            return $explodedRow[1];
+        }
+        return false;
+    }
 }

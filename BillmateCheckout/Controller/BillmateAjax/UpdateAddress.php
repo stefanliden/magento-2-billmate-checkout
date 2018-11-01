@@ -27,10 +27,10 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
 		parent::__construct($context);
 	}
 	
-	public function execute(){
-		$result = $this->resultJsonFactory->create();
-		if ($_POST['status'] == 'Step2Loaded'){
-			if (array_key_exists("Billing",$_POST['Customer'])){
+	public function execute()
+    {
+		if ($this->getRequest()->getParam('status') == 'Step2Loaded') {
+			if (array_key_exists("Billing",$this->getRequest()->getParam('Customer'))) {
 				$input = array(
 					'email'=>$_POST['Customer']['Billing']['email'],
 					'firstname'=>$_POST['Customer']['Billing']['firstname'],
@@ -43,10 +43,10 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
 				);
 				$_SESSION['billmate_country'] = $_POST['Customer']['Billing']['country'];
 				$this->helper->setBillingAddress($input);
-			}
-			else if (array_key_exists("billingAddress",$_POST)){
-                $_email = (isset($_POST['email'])) ? $_POST['email'] : '';
-                $_email = ($_email == '' && isset($_POST['billingAddress']['email'])) ? $_POST['billingAddress']['email'] : '';
+			}else if (array_key_exists("billingAddress",$_POST)) {
+                $_email = $this->getRequest()->getParam('email','');
+                $billingAddress = $this->getRequest()->getParam('billingAddress',[]);
+                $_email = ($_email == '' && isset($billingAddress['email'])) ? $billingAddress['email'] : '';
 				$input = array(
 					'email'=> $_email,
 					'firstname'=>$_POST['billingAddress']['firstname'],
@@ -60,11 +60,10 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
 				$_SESSION['billmate_country'] = $_POST['billingAddress']['country'];
 				$this->helper->setBillingAddress($input);
 			}
-			if (array_key_exists("shippingAddress",$_POST)){
-				if (array_key_exists('country',$_POST['shippingAddress'])){
+			if (array_key_exists("shippingAddress",$_POST)) {
+				if (array_key_exists('country',$_POST['shippingAddress'])) {
 					$country = $_POST['shippingAddress']['country'];
-				}
-				else {
+				} else {
 					$country = $_SESSION['billmate_country'];
 				}
 				$input = array(
@@ -76,8 +75,7 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
 					'postcode'=>$_POST['shippingAddress']['zip']
 				);
 				$this->helper->setShippingAddress($input);
-			}
-			else if (array_key_exists("Shipping",$_POST['Customer'])){
+			} else if (array_key_exists("Shipping",$_POST['Customer'])) {
 				if (array_key_exists("street",$_POST['Customer']['Shipping'])){
 					$input = array(
 						'firstname'=>$_POST['Customer']['Shipping']['firstname'],
@@ -90,6 +88,7 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
 					$this->helper->setShippingAddress($input);
 				}
 			}
+            $result = $this->resultJsonFactory->create();
 			$iframe = $this->iframeHelper->updateIframe();
 			$cart = $this->helper->getCart();
 			$return = array(

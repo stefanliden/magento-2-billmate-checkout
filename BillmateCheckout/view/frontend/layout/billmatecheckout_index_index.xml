@@ -13,6 +13,8 @@
 		<referenceContainer name="page.wrapper">
 			<container name="bm-cart" htmlTag="div" htmlClass="bm-cart-wrapper" after="main">
 				<block class="Billmate\BillmateCheckout\Block\Cart" ifconfig="billmate_billmatecheckout/general/enable" cacheable="false" name="billmatecart" template="cart.phtml" before="main" after="header-wrapper">
+					<block class="Billmate\BillmateCheckout\Block\Cart" ifconfig="billmate_billmatecheckout/general/enable"
+					   cacheable="false" name="billmate.cart.content" template="cart/content.phtml" />
 				</block>
 			</container>
 			<container name="bm-checkout" htmlTag="div" htmlClass="bm-checkout-wrapper" after="bm-cart">

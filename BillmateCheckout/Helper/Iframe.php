@@ -72,7 +72,7 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
         parent::__construct($context);
     }
 
-    public function getIframe($method='initCheckout')
+    public function getIframeData($method='initCheckout')
     {
 		$this->getQuote()->getBillingAddress()->addData($this->getAddress());
         $shippingAddress = $this->getQuote()->getShippingAddress()->addData($this->getAddress());
@@ -200,7 +200,7 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function updateIframe()
     {
-        $response = $this->getIframe('updateCheckout');
+        $response = $this->getIframeData('updateCheckout');
 
         if(isset($response['url'])) {
             return $response['url'];

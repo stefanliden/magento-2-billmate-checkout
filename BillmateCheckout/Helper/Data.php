@@ -93,26 +93,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $cart = $this->_cart;
         $itemsVisible = $cart->getQuote()->getAllVisibleItems();
-        $allItems = $cart->getQuote()->getAllItems();
-        $quote = $cart->getQuote();
-        $allmethods = $objectManager->get('\Magento\Shipping\Model\Config\Source\Allmethods');
-        $str = "";
 
-        if (empty($itemsVisible)){
-            if (empty($allItems)){
-                if (!is_object($cart->getQuote())){
-                    if (!is_object($cart)){
-                        if (!is_object($objectManager)){
-                            return "";
-                        }
-                        return "";
-                    }
-                    return "";
-                }
-                return "";
-            }
-            return "";
-        }
 		$cart->getQuote()->getBillingAddress()->addData(array(
             'firstname' => 'Testperson',
             'lastname' => 'Approved',
@@ -138,12 +119,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$shippingTax = $taxCalculation->getRate($request->setProductClassId($shippingTaxClass));
 		$shippingAddress = $cart->getQuote()->getShippingAddress();
 		$shippingAddress->setCollectShippingRates(true)->collectShippingRates();
-		$shippingStr = "<div class=\"billmate_shipping_methos\">";
-        $shippingStr .= "<h1>" . __('Shipping Methods') . "</h1><form>";
         $first = true;
-		$rates = array();
 		$rates = $shippingAddress->getAllShippingRates();
-		$priceHelper = $objectManager->create('Magento\Framework\Pricing\Helper\Data');
+
 		if (isset($_SESSION['shipping_code'])){
 			foreach ($rates as $rate){
 				if ($rate->getCode() == $_SESSION['shipping_code']){
@@ -161,15 +139,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 					$this->shippingPrice = $lShippingPrice;
 					$_SESSION['shippingPrice'] = $lShippingPrice;
 					$_SESSION['shipping_code'] = $rate->getCode();
-					$shippingStr .= "<div class=\"ship_methods\" ><input type=\"radio\" class=\"radio\" id=\"" . $rate->getCode() . "\" name=\method\" value=\"" . $rate->getCode() . "\" checked> <label for=\"" . $rate->getCode() . "\" class=\"radio_lable\" >" . $rate->getMethodTitle() . " " . $priceHelper->currency($lShippingPrice, true, false) . "</label></div>";
-				}
-				else{
-					if ($shippingTax == 0){
-						$shippingStr .= "<div class=\"ship_methods\" ><input type=\"radio\" class=\"radio\" id=\"" . $rate->getCode() . "\" name=\method\" value=\"" . $rate->getCode() . "\"><label for=\"" . $rate->getCode() . "\" class=\"radio_lable\" >" . $rate->getMethodTitle() . " " . $priceHelper->currency($rate->getPrice(), true, false) . "</label></div>";
-					}
-					else {
-						$shippingStr .= "<div class=\"ship_methods\" ><input type=\"radio\" class=\"radio\" id=\"" . $rate->getCode() . "\" name=\method\" value=\"" . $rate->getCode() . "\"><label for=\"" . $rate->getCode() . "\" class=\"radio_lable\" >" . $rate->getMethodTitle() . " " . $priceHelper->currency(($rate->getPrice()*(1+($shippingTax/100))), true, false) . "</label></div>";
-					}
 				}
 			}
 		}
@@ -193,15 +162,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 						$_SESSION['shipping_code'] = $rate->getCode();
 						$cart->getQuote()->collectTotals();
 						$cart->getQuote()->save();
-						$shippingStr .= "<div class=\"ship_methods\" ><input type=\"radio\" class=\"radio\" id=\"" . $rate->getCode() . "\" name=\method\" value=\"" . $rate->getCode() . "\" checked> <label for=\"" . $rate->getCode() . "\" class=\"radio_lable\" >" . $rate->getMethodTitle() . " " . $lShippingPrice . " kr" . "</label></div>";
-					}
-					else{
-						if ($shippingTax == 0){
-							$shippingStr .= "<div class=\"ship_methods\" ><input type=\"radio\" class=\"radio\" id=\"" . $rate->getCode() . "\" name=\method\" value=\"" . $rate->getCode() . "\"><label for=\"" . $rate->getCode() . "\" class=\"radio_lable\" >" . $rate->getMethodTitle() . " " . $rate->getPrice() . " kr" . "</label></div>";
-						}
-						else {
-							$shippingStr .= "<div class=\"ship_methods\" ><input type=\"radio\" class=\"radio\" id=\"" . $rate->getCode() . "\" name=\method\" value=\"" . $rate->getCode() . "\"><label for=\"" . $rate->getCode() . "\" class=\"radio_lable\" >" . $rate->getMethodTitle() . " " . ($rate->getPrice()*(1+($shippingTax/100))) . " kr" . "</label></div>";
-						}
 					}
 				}
 			}
@@ -211,15 +171,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$cart->getQuote()->getShippingAddress()->unsetData('cached_items_nonnominal');
 		$cart->getQuote()->collectTotals();
 		$cart->getQuote()->getShippingAddress()->collectShippingRates();
-        $shippingStr .= "</form>";
-        $shippingStr .= "</div>";
-		
-		$str .= "<h2>" . __('Shopping Cart') . "</h2>";
-		$str .= "<div class=\"table-responsive\">";
-		$str .= "<div class=\"billmate-checkout-cart-table\">";
-		$str .= "<div class=\"billmate-checkout-table-head\"><div class=\"billmate-checkout-product-head\">" . __('Product') . "</div><div class=\"billmate-checkout-price-head\">".__('Price')."</div><div class=\"billmate-checkout-qty-head\">".__('Quantity')."</div><div class=\"billmate-checkout-sum-head\">".__('Sum')."</div></div><span id=\"billmate-checkout-line\" class=\"billmate-checkout-line\"></span>";
-			
-		$productLoader = $objectManager->get('\Magento\Catalog\Model\Product');
+
 		$sum = 0;
         $taxAmount = 0;
         $imageHelper  = $objectManager->get('\Magento\Catalog\Helper\Image');
@@ -231,13 +183,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		}
 		$i = 0;
 		
-        foreach ($itemsVisible as $item){
-            $image_url = "";
+        foreach ($itemsVisible as $item) {
 			$productLoader2 = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Catalog\Api\ProductRepositoryInterface');
 			$product = $productLoader2->get($item->getSku());
             $taxClassId = $product->getTaxClassId();
             $percent = $taxCalculation->getRate($request->setProductClassId($taxClassId));
-            $image_url = $imageHelper->init($product, 'product_page_image_small')->setImageFile($product->getFile())->resize(80, 80)->getUrl();
             $activeOptions = "";
             if ($item->getProduct()->getTypeId() == 'configurable'){
                 $productTypeInstance = $objectManager->get('Magento\ConfigurableProduct\Model\Product\Type\Configurable');
@@ -254,50 +204,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 }
             }
 
-            $str .= "<div class=\"billmate-checkout-product-row\"><div class=\"billmate-checkout-img\"><img src=\"".$imgs[$i]."\" alt=\"logo\"></div><div class=\"billmate-checkout-name\"><p>".$item->getName()."</p>".$activeOptions."</div><div class=\"billmate-checkout-price\" id=\"price_".$item->getId()."\">".round(($item->getPrice()*(1+($percent/100))),2)."</div>";
-
-            if ($this->getBtnEnable()){
-                $str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><button class=\"billmate-checkout-button-sub sub\" id=\"sub_" . $item->getId() . "\" name=\"sub\">-</button><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div><button id=\"inc_" . $item->getId() . "\" class=\"billmate-checkout-button-inc inc\" name=\"inc\">+</button></div>";
-            }
-            else {
-                $str .="<div class=\"billmate-checkout-qty\" id=\"qty_" . $item->getId() . "\"><div class=\"billmate-checkout-product-qty\">".$item->getQty()."</div></div>";
-            }
-			$str .= "<div class=\"billmate-checkout-sum\" id=\"sum_".$item->getId()."\">".round(($item->getPrice()*$item->getQty()*(1+($percent/100))),2)."</div><div class=\"billmate-checkout-del-but\"><span id=\"del_" . $item->getId() . "\" class=\"billmate-checkout-button-del del\" name=\"del\"></span></div><span id=\"billmate-checkout-line\" class=\"billmate-checkout-line\"></span></div>";
-
 			$taxAmount = $taxAmount + (($item->getPrice()*(1+($percent/100)) - $item->getPrice())*$item->getQty());
 
 			$sum = $sum + $item->getPrice()*$item->getQty();
 			$i = $i +1;
 		}
-		
-		
-        $str .= "</div></div><table class=\"totals\">";
-		$sum = $sum*(1+($percent/100));
-        $str .= "<tr><td class=\"name\">" . __('Shipping') . "</td><td class=\"price\">" . $lShippingPrice . "</td></tr>";
-		
-		
-		if ($sum > $cart->getQuote()->getGrandTotal()){
-			$str .= "<tr><td class=\"name\">" . __('Discount') . "</td><td class=\"price\">" . round(($cart->getQuote()->getGrandTotal()-$sum),2) . "</td></tr>";
-		}
-		if ($shippingTax == 0){
-			$str .= "<tr><td class=\"name\">" . __('Tax') . "</td><td class=\"price\">" . ($taxAmount) . "</td></tr>";
-		}
-		else {
-			$str .= "<tr><td class=\"name\">" . __('Tax') . "</td><td class=\"price\">" . ($taxAmount+(($lShippingPrice)-($lShippingPrice/(1+($shippingTax/100))))) . "</td></tr>";
-		}
-		$str .= "<tr><td class=\"name\">" . __('Total') . "</td><td class=\"price\">" . ($cart->getQuote()->getGrandTotal()) . "</td></tr>";
-		$str .= "</table>";
-		$str .= "<div class=\"billmate-checkout-discount\">";
-        $str .= "<h1>" . __('Discount Codes') . "</h1><form action=\"javascript:void(0);\"><input type=\"text\" name=\"code\" placeholder=\"".__('Discount Code')."\" id=\"code\" class=\"code\" ><input type=\"button\" id=\"codeButton\" class=\"codeButton\" value=\"" . __('Apply Discount') . "\"></form></div>
-        <script>
-        	document.getElementById(\"code\").addEventListener(\"keyup\", function(event) {
-			    event.preventDefault();
-			    if (event.keyCode == 13) {
-			        document.getElementById(\"codeButton\").click();
-			    }
-			});
-        </script>";
-        $str .= $shippingStr;
+
         return $this->updateCart();
     }
 
@@ -305,25 +217,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
         $itemsVisible = $cart->getQuote()->getAllVisibleItems();
-        $allItems = $cart->getQuote()->getAllItems();
-        $quote = $cart->getQuote();
-        $allmethods = $objectManager->get('\Magento\Shipping\Model\Config\Source\Allmethods');
         $str = "";
-		if (empty($itemsVisible)){
-            if (empty($allItems)){
-                if (!is_object($cart->getQuote())){
-                    if (!is_object($cart)){
-                        if (!is_object($objectManager)){
-                            return "";
-                        }
-                        return "";
-                    }
-                    return "";
-                }
-                return "";
-            }
-            return "";
-		}
+
 		$lShippingPrice = 0;
 		$priceHelper = $objectManager->create('Magento\Framework\Pricing\Helper\Data');
 		$currentStore = $this->_storeManager->getStore();
@@ -333,7 +228,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         $shippingTaxClass = $this->getShippingTaxClass();
 		$shippingTax = $taxCalculation->getRate($request->setProductClassId($shippingTaxClass));
 		$shippingAddress = $cart->getQuote()->getShippingAddress();
-		$shippingAddress->setCollectShippingRates(true)->collectShippingRates();//->setShippingMethod('freeshipping_freeshipping');
+		$shippingAddress->setCollectShippingRates(true)->collectShippingRates();
 		$shippingStr = "<div class=\"billmate_shipping_methos\">";
         $shippingStr .= "<h1>" . __('Shipping Methods') . "</h1><form>";
 		$methods = $shippingAddress->getGroupedAllShippingRates();
@@ -970,57 +865,68 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		session_unset();
 	}
 
-    public function getEnable(){
+    public function getEnable()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_ENABLE, $storeScope);
     }
 
-    public function getBtnEnable(){
+    public function getBtnEnable()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_BTN, $storeScope);
     }
 
-    public function getBillmateId(){
+    public function getBillmateId()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_CREDENTIALS_ID, $storeScope);
     }
 
-    public function getBillmateSecret(){
+    public function getBillmateSecret()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_CREDENTIALS_KEY, $storeScope);
     }
 
-    public function getPushEvents(){
+    public function getPushEvents()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_PUSHORDEREVENTS, $storeScope);
     }
 
-    public function getCustomCss(){
+    public function getCustomCss()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_CUSTOMCSS, $storeScope);
     }
 
-    public function getTestMode(){
+    public function getTestMode()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_TESTMODE, $storeScope);
     }
 
-    public function getFetch(){
+    public function getFetch()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_PENDING_FETCH, $storeScope);
     }
 
-    public function getMultiSelect(){
+    public function getMultiSelect()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_PENDING_MULTISELECT, $storeScope);
     }
 
-    public function getPendingControl(){
+    public function getPendingControl()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_PENDING_PENDING_CONTROL, $storeScope);
     }
 
-    public function getDeny(){
+    public function getDeny()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_PENDING_DENY, $storeScope);
     }
@@ -1030,31 +936,30 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         return $this->scopeConfig->getValue(self::XML_PATH_PENDING_ACTIVATED, $storeScope);
     }
 	
-	public function getShippingTaxClass(){
+	public function getShippingTaxClass()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue('tax/classes/shipping_tax_class', $storeScope);
     }
 
-    public function getCanceled(){
+    public function getCanceled()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_PENDING_CANCELED, $storeScope);
     }
 
-    public function getBmEnable(){
+    public function getBmEnable()
+    {
         $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_PENDING_ENABLE, $storeScope);
     }
 	
-	public function getShowAttribute(){
+	public function getShowAttribute()
+    {
 		$storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
         return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_ATTRIBUTES, $storeScope);
 	}
-	
-	public function getTermsURL(){
-		$storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_TERMS_URL, $storeScope);
-	}
-	
+
 	public function setBmPaymentMethod($method){
 		switch ($method){
 			case "1":

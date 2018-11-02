@@ -37,6 +37,12 @@ class Billmate {
     const BILLMATE_LANGUAGE = 'sv';
 
     const BILLMATE_SERVER = '2.1.7';
+
+    /**
+     * @var \Billmate\BillmateCheckout\Helper\Config
+     */
+    protected $configHelper;
+
     /**
      * @var \Billmate\BillmateCheckout\Helper\Data
      */
@@ -55,14 +61,17 @@ class Billmate {
     /**
      * Billmate constructor.
      *
-     * @param \Billmate\BillmateCheckout\Helper\Data $_helper
-     * @param array                                  $data
+     * @param \Billmate\BillmateCheckout\Helper\Config $configHelper
+     * @param \Billmate\BillmateCheckout\Helper\Data   $helper
+     * @param array                                    $data
      */
 	public function __construct(
-        \Billmate\BillmateCheckout\Helper\Data $_helper,
+        \Billmate\BillmateCheckout\Helper\Config $configHelper,
+        \Billmate\BillmateCheckout\Helper\Data $helper,
         $data = []
     ) {
-        $this->helper = $_helper;
+        $this->configHelper = $configHelper;
+        $this->helper = $helper;
         $this->initDefines($data);
 	}
 
@@ -71,9 +80,9 @@ class Billmate {
      */
 	protected function initDefines($data)
     {
-        $this->ID = $this->helper->getBillmateId();
-        $this->KEY = $this->helper->getBillmateSecret();
-        $this->TEST = $this->helper->getTestMode();
+        $this->ID = $this->configHelper->getBillmateId();
+        $this->KEY = $this->configHelper->getBillmateSecret();
+        $this->TEST = $this->configHelper->getTestMode();
         $this->client = $this->helper->getClientVersion();
         if (isset($data['ssl'])) {
             $this->SSL = $data['ssl'];
@@ -90,7 +99,8 @@ class Billmate {
      *
      * @return array|mixed|void
      */
-	public function __call($name,$args){
+	public function __call($name,$args)
+    {
 	 	if(count($args)==0) return; //Function call should be skipped
 	 	return $this->call($name,$args[0]);
 	}
@@ -207,7 +217,8 @@ class Billmate {
      *
      * @return string
      */
-    public function hash($args) {
+    public function hash($args)
+    {
 		$this->out("TO BE HASHED DATA",$args);
     	return hash_hmac('sha512',$args,$this->KEY);
     }

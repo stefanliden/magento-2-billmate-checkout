@@ -1,5 +1,4 @@
 <?php
-
 namespace Billmate\BillmateCheckout\Block;
  
 class Cart extends \Magento\Checkout\Block\Onepage
@@ -21,6 +20,7 @@ class Cart extends \Magento\Checkout\Block\Onepage
      * @param \Magento\Framework\Data\Form\FormKey             $formKey
      * @param \Magento\Checkout\Model\CompositeConfigProvider  $configProvider
      * @param \Billmate\BillmateCheckout\Helper\Data           $_helper
+     * @param \Billmate\BillmateCheckout\Helper\Iframe         $iframeHelper
      * @param \Magento\Checkout\Model\Session                  $checkoutSession
      * @param \Magento\Checkout\Helper\Data                    $checkoutHelper
      * @param array                                            $layoutProcessors
@@ -40,14 +40,6 @@ class Cart extends \Magento\Checkout\Block\Onepage
         parent::__construct($context, $formKey, $configProvider, $layoutProcessors, $data);
 		$this->helper = $_helper;
 		$this->iframeHelper = $iframeHelper;
-	}
-
-    /**
-     * @return mixed
-     */
-	public function getCart()
-    {
-		return $this->helper->getCart();
 	}
 
     /**

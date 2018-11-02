@@ -2,22 +2,61 @@
 namespace Billmate\BillmateCheckout\Controller\Callback;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Framework\App\Action\Context;
-require_once(realpath(__DIR__."/Billmate.php"));
-class Callback extends \Magento\Framework\App\Action\Action {
-	
+
+class Callback extends \Magento\Framework\App\Action\Action
+{
+    /**
+     * @var PageFactory
+     */
 	protected $resultPageFactory;
+
+    /**
+     * @var \Magento\Catalog\Api\ProductRepositoryInterface
+     */
 	private $productRepository;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Helper\Data
+     */
 	protected $helper;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Helper\Config
+     */
+	protected $configHelper;
+
+    /**
+     * @var \Magento\Sales\Api\Data\OrderInterface
+     */
 	protected $orderInterface;
+
+    /**
+     * @var \Magento\Sales\Model\Service\InvoiceService
+     */
 	protected $invoiceService;
+
+    /**
+     * @var \Billmate\Billmate\Model\Billmate
+     */
+    protected $billmateProvider;
 	
-	public function __construct(Context $context, PageFactory $resultPageFactory, \Magento\Catalog\Api\ProductRepositoryInterface $productRepository, \Billmate\BillmateCheckout\Helper\Data $_helper, 
-		\Magento\Sales\Api\Data\OrderInterface $order, \Magento\Sales\Model\Service\InvoiceService $_invoiceService){
+	public function __construct(
+	    Context $context,
+        PageFactory $resultPageFactory,
+        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
+        \Billmate\BillmateCheckout\Helper\Data $_helper,
+        \Billmate\BillmateCheckout\Helper\Config $configHelper,
+		\Magento\Sales\Api\Data\OrderInterface $order,
+        \Magento\Sales\Model\Service\InvoiceService $_invoiceService,
+        \Billmate\Billmate\Model\Billmate $billmateProvider
+    ){
 		$this->resultPageFactory = $resultPageFactory;
 	    $this->productRepository = $productRepository;
 		$this->invoiceService = $_invoiceService;
 		$this->helper = $_helper;
+		$this->configHelper = $configHelper;
 		$this->orderInterface = $order;
+        $this->billmateProvider = $billmateProvider;
 		parent::__construct($context);
 	}
 	
@@ -29,23 +68,14 @@ class Callback extends \Magento\Framework\App\Action\Action {
 			$res['credentials'] = json_decode($_POST['credentials'], true);
 			$res['data'] = json_decode($_POST['data'],true);
 		}
-		$hash = hash_hmac('sha512', json_encode($res['data']), $this->helper->getBillmateSecret());
+		$hash = hash_hmac('sha512', json_encode($res['data']), $this->configHelper->getBillmateSecret());
 		
 		if ($hash == $res['credentials']['hash']){
-			$test = $this->helper->getTestMode();
-			$ssl = true;
-			$debug = false;
-
-			$id = $this->helper->getBillmateId();
-			$key = $this->helper->getBillmateSecret();
-			$bm = new BillMate($id, $key, $this->helper, $ssl, $test, $debug);
 			$values = array(
 				"number" => $res['data']['number']
 			);
-			$paymentInfo = $bm->getPaymentinfo($values);
+			$paymentInfo = $this->billmateProvider->getPaymentinfo($values);
 			$this->helper->setBmPaymentMethod($paymentInfo['PaymentData']['method']);
-			$shipping_address = array();
-			$billing_address = array();
 			$useShipping = false;
 			$order = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Sales\Api\Data\OrderInterface')->loadByIncrementId($paymentInfo['PaymentData']['orderid']);
 			if (!is_string($order->getIncrementId())){
@@ -118,7 +148,7 @@ class Callback extends \Magento\Framework\App\Action\Action {
 				$articles = $paymentInfo['Articles'];
 				foreach($articles as $article){
 					if ($article['artnr'] == 'discount_code'){
-						$_SESSION['billmate_applied_discount_code'] = $article['title'];
+                        $this->helper->setSessionData('billmate_applied_discount_code', $article['title']);
 					}
 					else if ($article['artnr'] == 'shipping_code'){
 						$this->helper->setShippingMethod($article['title']);
@@ -145,12 +175,11 @@ class Callback extends \Magento\Framework\App\Action\Action {
 			}
 			$order->setData('billmate_invoice_id', $res['data']['number']);
 			$order->save();
-			if ($paymentInfo['PaymentData']['status'] == 'Created' || ($paymentInfo['PaymentData']['status'] == 'Paid' && !$this->helper->getBmEnable())){
+			if ($paymentInfo['PaymentData']['status'] == 'Created' || ($paymentInfo['PaymentData']['status'] == 'Paid' && !$this->configHelper->getBmEnable())){
 				$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
 				$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
 				$order->save();
-			}
-			else if ($paymentInfo['PaymentData']['status'] == 'Paid' && $this->helper->getBmEnable()){
+			} else if ($paymentInfo['PaymentData']['status'] == 'Paid' && $this->configHelper->getBmEnable()) {
 				if ($res['data']['status']=='Paid'){
 					$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
 					$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
@@ -161,14 +190,12 @@ class Callback extends \Magento\Framework\App\Action\Action {
 					$transactionSave = \Magento\Framework\App\ObjectManager::getInstance()->create('Magento\Framework\DB\Transaction')->addObject($invoice)->addObject($invoice->getOrder());
 					$transactionSave->save();
 				}
-			}
-			else if ($paymentInfo['PaymentData']['status'] == 'Pending'){
-				$orderState = $this->helper->getPendingControl();
+			} else if ($paymentInfo['PaymentData']['status'] == 'Pending'){
+				$orderState = $this->configHelper->getPendingControl();
 				$order->setState($orderState)->setStatus($orderState);
 				$order->save();
-			}
-			else {
-				$orderState = $this->helper->getDeny();
+			} else {
+				$orderState = $this->configHelper->getDeny();
 				$order->setState($orderState)->setStatus($orderState);
 				$order->save();
 			}

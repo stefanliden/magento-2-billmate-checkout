@@ -77,8 +77,12 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function getFetch()
     {
-        
         return $this->getConfig(self::XML_PATH_PENDING_FETCH);
+    }
+
+    public function getPushEvents()
+    {
+        return $this->getConfig(self::XML_PATH_GENERAL_PUSHORDEREVENTS);
     }
 
     /**
@@ -151,5 +155,13 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     public function getTermsURL()
     {
         return $this->getConfig(self::XML_PATH_GENERAL_TERMS_URL);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCustomCss()
+    {
+        return $this->getConfig(self::XML_PATH_GENERAL_CUSTOMCSS);
     }
 }

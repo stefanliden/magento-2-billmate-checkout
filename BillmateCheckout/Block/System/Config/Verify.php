@@ -12,7 +12,8 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 /**
  * Verify button renderer
  */
-class Verify extends Field {
+class Verify extends Field
+{
     /**
      * @var string
      */
@@ -69,12 +70,11 @@ class Verify extends Field {
      */
     public function getButtonHtml()
     {
-        $button = $this->getLayout()->createBlock('Magento\Backend\Block\Widget\Button')->setData(
-            [
+        $button = $this->getLayout()->createBlock('Magento\Backend\Block\Widget\Button')
+            ->setData([
                 'id' => 'verify_button',
                 'label' => __('Verify'),
-            ]
-        );
+            ]);
 
         return $button->toHtml();
     }

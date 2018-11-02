@@ -90,7 +90,7 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
 			}
             $result = $this->resultJsonFactory->create();
 			$iframe = $this->iframeHelper->updateIframe();
-			$cart = $this->helper->getCart();
+			$cart = $this->helper->getCartContent();
 			$return = array(
 				'iframe'=>$iframe,
 				'cart'=>$cart

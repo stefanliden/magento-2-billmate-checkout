@@ -4,18 +4,18 @@ namespace Billmate\BillmateCheckout\Plugin;
 class Url {
 
     /**
-     * @var \Billmate\BillmateCheckout\Helper\Data
+     * @var \Billmate\BillmateCheckout\Helper\Config
      */
-    protected $helper;
+    protected $configHelper;
 
     /**
      * Url constructor.
      *
-     * @param \Billmate\BillmateCheckout\Helper\Data $helper
+     * @param \Billmate\BillmateCheckout\Helper\Config $configHelper
      */
-    public function __construct(\Billmate\BillmateCheckout\Helper\Data $helper)
+    public function __construct(\Billmate\BillmateCheckout\Helper\Config $configHelper)
     {
-        $this->helper = $helper;
+        $this->configHelper = $configHelper;
     }
 
     /**
@@ -26,7 +26,7 @@ class Url {
      */
     public function afterGetCheckoutUrl($subject,$result)
     {
-        if ($this->helper->getEnable()) {
+        if ($this->configHelper->getEnable()) {
             return $subject->getUrl('billmatecheckout');
         }
         return $result;

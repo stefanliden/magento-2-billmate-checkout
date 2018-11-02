@@ -1,9 +1,8 @@
 <?php
-
 namespace Billmate\BillmateCheckout\Block;
  
-class Checkout extends \Billmate\BillmateCheckout\Block\Cart {
-
+class Checkout extends \Billmate\BillmateCheckout\Block\Cart
+{
     /**
      * @return string
      */

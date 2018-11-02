@@ -116,177 +116,102 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 
     public function prepareCheckout()
     {
-        /*if (!$this->getQuote()->getShippingAddress()->getShippingMethod()) {*/
+        if (!$this->getQuote()->getShippingAddress()->getShippingMethod()) {
             $this->getQuote()->getBillingAddress()->addData($this->getAddress());
             $shippingAddress = $this->getQuote()->getShippingAddress()->addData($this->getAddress());
             $shippingAddress->setCollectShippingRates(true)
                 ->collectShippingRates()
             ->setShippingMethod('freeshipping_freeshipping');
-        /*}*/
+        }
         return $this;
     }
 
     /**
      * @return string
      */
-    public function getCart()
+    public function getCartContent()
     {
         $layout = $this->layoutFactory->create();
         return $layout->createBlock('Billmate\BillmateCheckout\Block\Cart\Content')
             ->setTemplate('cart/content.phtml')->toHtml();
     }
-	
-	public function setShippingAddress($input){
 
-		$input['firstname'] = str_replace('Ã…','Å',$input['firstname']);
-		$input['lastname'] = str_replace('Ã…','Å',$input['lastname']);
-		$input['street'] = str_replace('Ã…','Å',$input['street']);
-		$input['city'] = str_replace('Ã…','Å',$input['city']);
+    /**
+     * @param $row
+     *
+     * @return mixed
+     */
+    public function correctSymbols($row)
+    {
+        $replaceFrom = ['Ã…','Ã„','Ã–','Ã¥','Ã¤','Ã¶'];
+        $replaceTo = ['Å','Ä','Ö','å','ä','ö'];
+        return str_replace($replaceFrom,$replaceTo,$row);
+    }
 
-		$input['firstname'] = str_replace('Ã„','Ä',$input['firstname']);
-		$input['lastname'] = str_replace('Ã„','Ä',$input['lastname']);
-		$input['street'] = str_replace('Ã„','Ä',$input['street']);
-		$input['city'] = str_replace('Ã„','Ä',$input['city']);
+    /**
+     * @param $input
+     */
+	public function setShippingAddress($shippingData)
+    {
+        $shippingData = $this->prepareShippingData($shippingData);
+        $quote = $this->getQuote();
+        $billmateTelephone = $this->getSessionData('billmate_telephone');
+        $shippingAddress = [
+            'firstname' => $shippingData['firstname'],
+            'lastname' => $shippingData['lastname'],
+            'street' => $shippingData['street'],
+            'city' => $shippingData['city'],
+            'country_id' => $shippingData['country_id'],
+            'postcode' => $shippingData['postcode'],
+        ];
+        if (isset($shippingData['telephone']) || $billmateTelephone) {
+            $shippingAddress['telephone'] = $billmateTelephone?$billmateTelephone:$shippingData['telephone'];
+        }
 
-		$input['firstname'] = str_replace('Ã–','Ö',$input['firstname']);
-		$input['lastname'] = str_replace('Ã–','Ö',$input['lastname']);
-		$input['street'] = str_replace('Ã–','Ö',$input['street']);
-		$input['city'] = str_replace('Ã–','Ö',$input['city']);
+        $quote->getShippingAddress()->addData($shippingAddress);
+        $this->setSessionData('billmate_shipping_address',$shippingAddress);
+	}
 
-		$input['firstname'] = str_replace('Ã¥','å',$input['firstname']);
-		$input['lastname'] = str_replace('Ã¥','å',$input['lastname']);
-		$input['street'] = str_replace('Ã¥','å',$input['street']);
-		$input['city'] = str_replace('Ã¥','å',$input['city']);
+    /**
+     * @param $shippingData
+     */
+	public function setBillingAddress($shippingData)
+    {
+        $shippingData = $this->prepareShippingData($shippingData);
+        $billingAddress = [
+            'firstname' => $shippingData['firstname'],
+            'lastname' => $shippingData['lastname'],
+            'street' => $shippingData['street'],
+            'city' => $shippingData['city'],
+            'country_id' => $shippingData['country_id'],
+            'postcode' => $shippingData['postcode'],
+            'telephone' => $shippingData['telephone']
+        ];
 
-		$input['firstname'] = str_replace('Ã¤','ä',$input['firstname']);
-		$input['lastname'] = str_replace('Ã¤','ä',$input['lastname']);
-		$input['street'] = str_replace('Ã¤','ä',$input['street']);
-		$input['city'] = str_replace('Ã¤','ä',$input['city']);
+        $this->getQuote()->getBillingAddress()->addData($billingAddress);
+        $this->setSessionData('billmate_billing_address', $billingAddress);
+        $this->setSessionData('billmate_telephone', $shippingData['telephone']);
+        $this->setSessionData('billmate_email', $shippingData['email']);
 
-		$input['firstname'] = str_replace('Ã¶','ö',$input['firstname']);
-		$input['lastname'] = str_replace('Ã¶','ö',$input['lastname']);
-		$input['street'] = str_replace('Ã¶','ö',$input['street']);
-		$input['city'] = str_replace('Ã¶','ö',$input['city']);
-
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-		if (array_key_exists('telephone', $input)){
-			$cart->getQuote()->getShippingAddress()->addData(array(
-				'firstname' => $input['firstname'],
-				'lastname' => $input['lastname'],
-				'street' => $input['street'],
-				'city' => $input['city'],
-				'country_id' => $input['country_id'],
-				'postcode' => $input['postcode'],
-				'telephone' => $input['telephone']
-			));
-			$_SESSION['billmate_shipping_address'] = array(
-				'firstname' => $input['firstname'],
-				'lastname' => $input['lastname'],
-				'street' => $input['street'],
-				'city' => $input['city'],
-				'country_id' => $input['country_id'],
-				'postcode' => $input['postcode'],
-				'telephone' => $input['telephone']
-			);
-		}
-		else if (isset($_SESSION['billmate_telephone'])){
-			$cart->getQuote()->getShippingAddress()->addData(array(
-				'firstname' => $input['firstname'],
-				'lastname' => $input['lastname'],
-				'street' => $input['street'],
-				'city' => $input['city'],
-				'country_id' => $input['country_id'],
-				'postcode' => $input['postcode'],
-				'telephone' => $_SESSION['billmate_telephone']
-			));
-			$_SESSION['billmate_shipping_address'] = array(
-				'firstname' => $input['firstname'],
-				'lastname' => $input['lastname'],
-				'street' => $input['street'],
-				'city' => $input['city'],
-				'country_id' => $input['country_id'],
-				'postcode' => $input['postcode'],
-				'telephone' => $_SESSION['billmate_telephone']
-			);
-		}
-		else {
-			$cart->getQuote()->getShippingAddress()->addData(array(
-				'firstname' => $input['firstname'],
-				'lastname' => $input['lastname'],
-				'street' => $input['street'],
-				'city' => $input['city'],
-				'country_id' => $input['country_id'],
-				'postcode' => $input['postcode']
-			));
-			$_SESSION['billmate_shipping_address'] = array(
-				'firstname' => $input['firstname'],
-				'lastname' => $input['lastname'],
-				'street' => $input['street'],
-				'city' => $input['city'],
-				'country_id' => $input['country_id'],
-				'postcode' => $input['postcode']
-			);
+		if ($this->getSessionData('billmate_shipping_address')) {
+			$this->setShippingAddress($shippingData);
 		}
 	}
-	
-	public function setBillingAddress($input){
 
-		$input['firstname'] = str_replace('Ã…','Å',$input['firstname']);
-		$input['lastname'] = str_replace('Ã…','Å',$input['lastname']);
-		$input['street'] = str_replace('Ã…','Å',$input['street']);
-		$input['city'] = str_replace('Ã…','Å',$input['city']);
+    /**
+     * @param $shippingData
+     *
+     * @return array
+     */
+	protected function prepareShippingData($shippingData)
+    {
+        $shippingData['firstname'] = $this->correctSymbols($shippingData['firstname']);
+        $shippingData['lastname'] = $this->correctSymbols($shippingData['lastname']);
+        $shippingData['street'] = $this->correctSymbols($shippingData['street']);
+        $shippingData['city'] = $this->correctSymbols($shippingData['city']);
 
-		$input['firstname'] = str_replace('Ã„','Ä',$input['firstname']);
-		$input['lastname'] = str_replace('Ã„','Ä',$input['lastname']);
-		$input['street'] = str_replace('Ã„','Ä',$input['street']);
-		$input['city'] = str_replace('Ã„','Ä',$input['city']);
-
-		$input['firstname'] = str_replace('Ã–','Ö',$input['firstname']);
-		$input['lastname'] = str_replace('Ã–','Ö',$input['lastname']);
-		$input['street'] = str_replace('Ã–','Ö',$input['street']);
-		$input['city'] = str_replace('Ã–','Ö',$input['city']);
-
-		$input['firstname'] = str_replace('Ã¥','å',$input['firstname']);
-		$input['lastname'] = str_replace('Ã¥','å',$input['lastname']);
-		$input['street'] = str_replace('Ã¥','å',$input['street']);
-		$input['city'] = str_replace('Ã¥','å',$input['city']);
-
-		$input['firstname'] = str_replace('Ã¤','ä',$input['firstname']);
-		$input['lastname'] = str_replace('Ã¤','ä',$input['lastname']);
-		$input['street'] = str_replace('Ã¤','ä',$input['street']);
-		$input['city'] = str_replace('Ã¤','ä',$input['city']);
-
-		$input['firstname'] = str_replace('Ã¶','ö',$input['firstname']);
-		$input['lastname'] = str_replace('Ã¶','ö',$input['lastname']);
-		$input['street'] = str_replace('Ã¶','ö',$input['street']);
-		$input['city'] = str_replace('Ã¶','ö',$input['city']);
-
-
-		$this->getQuote()->getBillingAddress()->addData(array(
-            'firstname' => $input['firstname'],
-            'lastname' => $input['lastname'],
-            'street' => $input['street'],
-            'city' => $input['city'],
-            'country_id' => $input['country_id'],
-            'postcode' => $input['postcode'],
-            'telephone' => $input['telephone']
-        ));
-		$_SESSION['billmate_billing_address'] = array(
-            'firstname' => $input['firstname'],
-            'lastname' => $input['lastname'],
-            'street' => $input['street'],
-            'city' => $input['city'],
-            'country_id' => $input['country_id'],
-            'postcode' => $input['postcode'],
-            'telephone' => $input['telephone']
-        );
-		$_SESSION['billmate_telephone'] = $input['telephone'];
-		if (!isset($_SESSION['billmate_shipping_address'])){
-			$this->setShippingAddress($input);
-		}
-		$_SESSION['billmate_email'] = $input['email'];
-	}
+        return $shippingData;
+    }
 
     /**
      * @param $methodInput
@@ -309,10 +234,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             ->setCouponCode($code)
             ->collectTotals()
             ->save();
-	    $_SESSION['billmate_applied_discount_code'] = $code;
+        $this->setSessionData('billmate_applied_discount_code', $code);
     }
 
-    public function getCheckout(){
+    public function getCheckout()
+    {
         $str = "<p>" . __("We'll email you an order confirmation with details and tracking info.") . "</p>";
         $str .= "<p>" . __('Your order # is: <span>%1</span>.', $_SESSION['bm-inc-id']) . "</p>";
         $str .= "<form action=\"//" . $_SERVER['HTTP_HOST'] . "\">
@@ -335,9 +261,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '' => ''
             ), true));
 
-			$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-			if ($orderID == ''){
-				$orderID = \Magento\Framework\App\ObjectManager::getInstance()->get('\Magento\Checkout\Model\Cart')->getQuote()->getReservedOrderId();
+			if ($orderID == '') {
+				$orderID = $this->getQuote()->getReservedOrderId();
 			}
 
             $this->logger->error(print_r(array(
@@ -355,11 +280,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			if ($exOrder->getIncrementId()){
 				return;
 			}
-			else{
-			}
-			if (isset($_SESSION['billmate_applied_discount_code'])){
-				$discountCode = $_SESSION['billmate_applied_discount_code'];
-			}
 
             $this->logger->error(print_r(array(
                 '__FILE__' => __FILE__,
@@ -368,14 +288,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aac',
-                'isset.session.billmate_applied_discount_code' => (isset($_SESSION['billmate_applied_discount_code'])),
-                'isset.session.shipping_code' => (isset($_SESSION['shipping_code'])),
-                'session.billmate_applied_discount_code' => ((isset($_SESSION['billmate_applied_discount_code'])) ? $_SESSION['billmate_applied_discount_code'] : ''),
-                'session.shipping_code' => ((isset($_SESSION['shipping_code'])) ? $_SESSION['shipping_code'] : ''),
+                'isset.session.billmate_applied_discount_code' => (bool)($this->getSessionData('billmate_applied_discount_code')),
+                'isset.session.shipping_code' => (bool)($this->getSessionData('shipping_code')),
+                'session.billmate_applied_discount_code' => ($this->getSessionData('billmate_applied_discount_code') ?
+                    $this->getSessionData('billmate_applied_discount_code') : ''),
+                'session.shipping_code' => (($this->getSessionData('shipping_code')) ? $this->getSessionData('shipping_code') : ''),
                 '' => ''
             ), true));
 
-			$shippingCode = $_SESSION['shipping_code'];
+			$shippingCode = $this->getSessionData('shipping_code');
 			
 			$actual_quote = $this->quoteCollectionFactory->create()->addFieldToFilter("reserved_order_id", $orderID)->getFirstItem();
 			
@@ -441,9 +362,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '' => ''
             ), true));
 
-			if (isset($_SESSION['billmate_applied_discount_code'])){
-				$actual_quote->setCouponCode($discountCode);
-			}
+            if ($this->getSessionData('billmate_applied_discount_code')){
+                $discountCode = $this->getSessionData('billmate_applied_discount_code');
+                $actual_quote->setCouponCode($discountCode);
+            }
+
+           $billmateShippingAddress = $this->getSessionData('billmate_shipping_address');
+           $billmateBillingAddress = $this->getSessionData('billmate_billing_address');
 
             $this->logger->error(print_r(array(
                 '__FILE__' => __FILE__,
@@ -452,18 +377,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aag',
-                'isset.session.billmate_shipping_address' => (isset($_SESSION['billmate_shipping_address'])),
-                'isset.session.billmate_billing_address' => (isset($_SESSION['billmate_billing_address'])),
+                'isset.session.billmate_shipping_address' => (bool)$billmateShippingAddress,
+                'isset.session.billmate_billing_address' => (bool)$billmateBillingAddress,
                 '' => ''
             ), true));
 
 			//Set Address to quote @todo add section in order data for seperate billing and handle it
-			$actual_quote->getBillingAddress()->addData($_SESSION['billmate_billing_address']);
-			if (isset($_SESSION['billmate_shipping_address'])){
-				$actual_quote->getShippingAddress()->addData($_SESSION['billmate_shipping_address']);
-			}
-			else {
-				$actual_quote->getShippingAddress()->addData($_SESSION['billmate_billing_address']);
+			$actual_quote->getBillingAddress()->addData($billmateBillingAddress);
+			if ($billmateShippingAddress){
+				$actual_quote->getShippingAddress()->addData($billmateShippingAddress);
+			} else {
+				$actual_quote->getShippingAddress()->addData($billmateBillingAddress);
 			}
 
             $this->logger->error(print_r(array(
@@ -479,13 +403,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			// Collect Rates and Set Shipping & Payment Method
 			$this->shippingRate->setCode($shippingCode)->getPrice();
 			$shippingAddress = $actual_quote->getShippingAddress();
-			//@todo set in order data
+            $billmatePaymentMethod = $this->getSessionData('billmate_payment_method');
 			$shippingAddress->setCollectShippingRates(true)
 					->collectShippingRates()
 					->setShippingMethod($shippingCode); //shipping method
 			$actual_quote->getShippingAddress()->addShippingRate($this->shippingRate);
-			$actual_quote->setPaymentMethod($_SESSION['billmate_payment_method']); //payment method
-			$actual_quote->getPayment()->importData(['method' => $_SESSION['billmate_payment_method']]);
+			$actual_quote->setPaymentMethod($billmatePaymentMethod); //payment method
+			$actual_quote->getPayment()->importData(['method' => $billmatePaymentMethod]);
 			$actual_quote->setReservedOrderId($orderID);
 			// Collect total and save
 			$actual_quote->collectTotals();
@@ -505,12 +429,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			$cart = $this->cartRepositoryInterface->get($actual_quote->getId());
 			$cart->setCustomerEmail($orderData['email']);
 			$cart->setCustomerId($customer->getId());
-			$cart->getBillingAddress()->addData($_SESSION['billmate_billing_address']);
-			if (isset($_SESSION['billmate_shipping_address'])){
-				$cart->getShippingAddress()->addData($_SESSION['billmate_shipping_address']);
+			$cart->getBillingAddress()->addData($billmateBillingAddress);
+			if ($billmateShippingAddress){
+				$cart->getShippingAddress()->addData($billmateShippingAddress);
 			}
 			else {
-				$cart->getShippingAddress()->addData($_SESSION['billmate_billing_address']);
+				$cart->getShippingAddress()->addData($billmateBillingAddress);
 			}
 			$cart->getBillingAddress()->setCustomerId($customer->getId());
 			$cart->getShippingAddress()->setCustomerId($customer->getId());
@@ -554,7 +478,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'order_id' => $order_id,
                 '' => ''
             ), true));
-
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 			$order = $objectManager->create('\Magento\Sales\Model\Order')->load($order_id);
 			$emailSender = $objectManager->create('\Magento\Sales\Model\Order\Email\Sender\OrderSender');
 			$emailSender->send($order);
@@ -614,125 +538,30 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
             return 0;
 		}
     }
-	
-	public function clearSession(){
+
+	public function clearSession()
+    {
 		$this->checkoutSession->clearStorage();
 		$this->checkoutSession->clearQuote();
-		$_SESSION['shippingPrice'] = null;
-		$_SESSION['shipping_code'] = null;
-		$_SESSION['billmate_shipping_tax'] = null;
-		$_SESSION['billmate_shipping_address'] = null;
-		$_SESSION['billmate_billing_address'] = null;
-		$_SESSION['billmate_email'] = null;
-		$_SESSION['billmate_applied_discount_code'] = null;
-		$_SESSION['billmate_checkout_id'] = null;
-		$_SESSION['billmate_payment_method'] = null;
+        $this->setSessionData('shippingPrice', null);
+        $this->setSessionData('shipping_code', null);
+        $this->setSessionData('billmate_shipping_tax', null);
+        $this->setSessionData('billmate_shipping_address', null);
+        $this->setSessionData('billmate_billing_address', null);
+        $this->setSessionData('billmate_email', null);
+        $this->setSessionData('billmate_applied_discount_code', null);
+        $this->setSessionData('billmate_checkout_id', null);
+        $this->setSessionData('billmate_payment_method', null);
+
 		session_unset();
 	}
 
-    public function getEnable()
+    /**
+     * @param $methodCode int
+     */
+	public function setBmPaymentMethod($methodCode)
     {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_ENABLE, $storeScope);
-    }
 
-    public function getBtnEnable()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_BTN, $storeScope);
-    }
-
-    public function getBillmateId()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_CREDENTIALS_ID, $storeScope);
-    }
-
-    public function getBillmateSecret()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_CREDENTIALS_KEY, $storeScope);
-    }
-
-    public function getPushEvents()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_PUSHORDEREVENTS, $storeScope);
-    }
-
-    public function getCustomCss()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_CUSTOMCSS, $storeScope);
-    }
-
-    public function getTestMode()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_TESTMODE, $storeScope);
-    }
-
-    public function getFetch()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_PENDING_FETCH, $storeScope);
-    }
-
-    public function getMultiSelect()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_PENDING_MULTISELECT, $storeScope);
-    }
-
-    public function getPendingControl()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_PENDING_PENDING_CONTROL, $storeScope);
-    }
-
-    public function getDeny()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_PENDING_DENY, $storeScope);
-    }
-
-    public function getActivated(){
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_PENDING_ACTIVATED, $storeScope);
-    }
-	
-	public function getShippingTaxClass()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue('tax/classes/shipping_tax_class', $storeScope);
-    }
-
-    public function getCanceled()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_PENDING_CANCELED, $storeScope);
-    }
-
-    public function getBmEnable()
-    {
-        $storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_PENDING_ENABLE, $storeScope);
-    }
-	
-	public function getShowAttribute()
-    {
-		$storeScope = \Magento\Store\Model\ScopeInterface::SCOPE_STORE;
-        return $this->scopeConfig->getValue(self::XML_PATH_GENERAL_ATTRIBUTES, $storeScope);
-	}
-
-	public function setBmPaymentMethod($methodCode){
-
-        /*$methods = [
-            1 =>  'billmate_invoice',
-            4 =>  'billmate_partpay',
-            8 =>  'billmate_card',
-            16 =>  'billmate_bank',
-        ];*/
 		switch ($methodCode) {
 			case "1":
                 $method = 'billmate_invoice';
@@ -751,10 +580,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 			break;
 		}
 
-        $_SESSION['billmate_payment_method'] = $method;
+        $this->setSessionData('billmate_payment_method', $method);
 	}
 	
-	public function def(){
+	public function def()
+    {
 		define("BILLMATE_SERVER", "2.1.7");
 		define("BILLMATE_CLIENT", $this->getClientVersion());
 		define("BILLMATE_LANGUAGE", "sv");

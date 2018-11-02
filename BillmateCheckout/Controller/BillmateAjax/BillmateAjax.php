@@ -24,7 +24,17 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action
      * @var \Magento\Checkout\Model\Session
      */
 	protected $checkoutSession;
-	
+
+    /**
+     * BillmateAjax constructor.
+     *
+     * @param Context                                          $context
+     * @param \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
+     * @param \Magento\Framework\Data\Form\FormKey             $formKey
+     * @param \Magento\Checkout\Model\Session                  $_checkoutSession
+     * @param \Billmate\BillmateCheckout\Helper\Data           $_helper
+     * @param \Billmate\BillmateCheckout\Helper\Iframe         $iframeHelper
+     */
 	public function __construct(
 		Context $context, 
 		\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
@@ -61,7 +71,7 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action
                 return $result->setData("redirect");
             }
 
-            $cartBlockContent = $this->helper->getCart();
+            $cartBlockContent = $this->helper->getCartContent();
             $iframeUrl = $this->iframeHelper->updateIframe();
             $return = array(
                 'iframe' => $iframeUrl,
@@ -148,7 +158,7 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action
     }
 
     /**
-     * @return bool
+     * @return bool|int
      */
     protected function getItemIdFromRequest()
     {

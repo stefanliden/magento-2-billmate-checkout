@@ -35,7 +35,7 @@ class Success extends \Magento\Framework\App\Action\Action {
             '__LINE__' => __LINE__,
             'date' => date('Y-m-d H:i:s'),
             'note' => 'aaa',
-            '' => ''
+
         ), true));
 
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
@@ -47,7 +47,7 @@ class Success extends \Magento\Framework\App\Action\Action {
             '__LINE__' => __LINE__,
             'date' => date('Y-m-d H:i:s'),
             'note' => 'aab',
-            '' => ''
+
         ), true));
 
 		$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
@@ -59,7 +59,6 @@ class Success extends \Magento\Framework\App\Action\Action {
             '__LINE__' => __LINE__,
             'date' => date('Y-m-d H:i:s'),
             'note' => 'aac',
-            '' => ''
         ), true));
 
 		$resultPage = $this->resultPageFactory->create();
@@ -72,19 +71,20 @@ class Success extends \Magento\Framework\App\Action\Action {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aba',
-                'isset.session.bm-inc-id' => (isset($_SESSION['bm-inc-id'])),
-                '' => ''
+                'isset.session.bm-inc-id' => (bool)$this->getSessionData('bm-inc-id'),
             ), true));
 
-			if (!isset($_SESSION['bm-inc-id'])){
+			if (!$this->getSessionData('bm-inc-id')){
 				$orderData = array(
-					'email'=>$_SESSION['billmate_email'],
-					'shipping_address'=>$_SESSION['billmate_billing_address']
+					'email' => $this->getSessionData('billmate_email'),
+					'shipping_address' => $this->getSessionData('billmate_billing_address')
 				);
 				$orderId = $this->helper->createOrder($orderData);
-				$_SESSION['bm_order_id'] = $orderId;
+
+                $this->setSessionData('bm_order_id', $orderId);
+
 			}
-			$order = $objectManager->get('\Magento\Sales\Model\Order')->loadByIncrementId($_SESSION['bm-inc-id']);
+			$order = $objectManager->get('\Magento\Sales\Model\Order')->loadByIncrementId($this->getSessionData('bm-inc-id'));
 			$orderId = $order->getId();
 
             $this->logger->error(print_r(array(
@@ -95,14 +95,13 @@ class Success extends \Magento\Framework\App\Action\Action {
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'abb',
                 'orderId' => $orderId,
-                '' => ''
             ), true));
 
 			$this->eventManager->dispatch(
 				'checkout_onepage_controller_success_action',
 				['order_ids' => [$order->getId()]]
 			);
-			
+
 			$this->checkoutSession->setLastSuccessQuoteId($cart->getQuote()->getId());
 			$this->checkoutSession->setLastQuoteId($cart->getQuote()->getId());
 			$this->checkoutSession->setLastOrderId($orderId);
@@ -116,7 +115,6 @@ class Success extends \Magento\Framework\App\Action\Action {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'abc',
-                '' => ''
             ), true));
 
 			$url = $storeManager->getStore()->getBaseUrl() . "checkout/onepage/success";
@@ -130,20 +128,17 @@ class Success extends \Magento\Framework\App\Action\Action {
                 'note' => 'abd',
                 'url' => $url,
                 'headers_sent' => (headers_sent()),
-                '' => ''
             ), true));
 
-			if (headers_sent()){
+			if (headers_sent()) {
 				die('<script type="text/javascript">window.location.href="' . $url . '";</script>');
-			}
-			else{
+			} else {
 				header('Location: ' . $url);
 				die();
 			}
 		}
 		catch (\Exception $e){
-			$_SESSION['bm-inc-id'] = $cart->getQuote()->getReservedOrderId();
-
+            $this->setSessionData('bm-inc-id',$cart->getQuote()->getReservedOrderId());
             $this->logger->error(print_r(array(
                 'note' => 'could not redirect customer to store order confirmation page',
                 '__FILE__' => __FILE__,
@@ -153,7 +148,6 @@ class Success extends \Magento\Framework\App\Action\Action {
                 'exception.message' => $e->getMessage(),
                 'exception.file' => $e->getFile(),
                 'exception.line' => $e->getLine(),
-                '' => ''
             ), true));
 		}
 
@@ -165,7 +159,6 @@ class Success extends \Magento\Framework\App\Action\Action {
             '__LINE__' => __LINE__,
             'date' => date('Y-m-d H:i:s'),
             'note' => 'done Return content of resultPage',
-            '' => ''
         ), true));
 
 		return $resultPage;

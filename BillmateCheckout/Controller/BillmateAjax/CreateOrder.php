@@ -1,19 +1,14 @@
 <?php
 namespace Billmate\BillmateCheckout\Controller\BillmateAjax;
-use Magento\Framework\View\Result\PageFactory;
+
 use Magento\Framework\App\Action\Context;
 
 class CreateOrder extends \Magento\Framework\App\Action\Action
 {
     /**
-     * @var PageFactory
+     * @var \Magento\Framework\Controller\Result\JsonFactory
      */
-	protected $resultPageFactory;
-
-    /**
-     * @var \Magento\Catalog\Api\ProductRepositoryInterface
-     */
-	private $productRepository;
+	protected $resultJsonFactory;
 
     /**
      * @var \Billmate\BillmateCheckout\Helper\Data
@@ -21,48 +16,18 @@ class CreateOrder extends \Magento\Framework\App\Action\Action
 	protected $helper;
 
     /**
-     * @var \Magento\Sales\Api\Data\OrderInterface
-     */
-	protected $orderInterface;
-
-    /**
-     * @var \Magento\Framework\Event\Manager
-     */
-	protected $eventManager;
-
-    /**
-     * @var \Magento\Checkout\Model\Session
-     */
-	protected $checkoutSession;
-
-    /**
      * CreateOrder constructor.
      *
      * @param Context                                          $context
-     * @param PageFactory                                      $resultPageFactory
      * @param \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
-     * @param \Magento\Catalog\Api\ProductRepositoryInterface  $productRepository
      * @param \Billmate\BillmateCheckout\Helper\Data           $_helper
-     * @param \Magento\Framework\Event\Manager                 $eventManager
-     * @param \Magento\Sales\Api\Data\OrderInterface           $order
-     * @param \Magento\Checkout\Model\Session                  $_session
      */
-	public function __construct(Context $context, 
-		PageFactory $resultPageFactory,
+	public function __construct(Context $context,
 		\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
-		\Magento\Catalog\Api\ProductRepositoryInterface $productRepository, 
-		\Billmate\BillmateCheckout\Helper\Data $_helper, 
-		\Magento\Framework\Event\Manager $eventManager,
-		\Magento\Sales\Api\Data\OrderInterface $order,
-		\Magento\Checkout\Model\Session $_session
+		\Billmate\BillmateCheckout\Helper\Data $_helper
 	) {
-		$this->eventManager = $eventManager;
 		$this->resultJsonFactory = $resultJsonFactory;
-		$this->resultPageFactory = $resultPageFactory;
-	    $this->productRepository = $productRepository;
 		$this->helper = $_helper;
-		$this->orderInterface = $order;
-		$this->checkoutSession = $_session;
 		parent::__construct($context);
 	}
 
@@ -71,7 +36,7 @@ class CreateOrder extends \Magento\Framework\App\Action\Action
      */
 	public function execute()
     {
-		if ($this->getRequest()->getParam('status') == 'Step2Loaded'){
+		if ($this->getRequest()->getParam('status') == 'Step2Loaded') {
 			if ($this->helper->getSessionData('billmate_email')){
                 $orderData = array(
 					'email' => $this->helper->getSessionData('billmate_email'),

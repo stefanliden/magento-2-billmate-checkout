@@ -41,7 +41,8 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
 					'postcode'=>$_POST['Customer']['Billing']['zip'],
 					'telephone'=>$_POST['Customer']['Billing']['phone']
 				);
-				$_SESSION['billmate_country'] = $_POST['Customer']['Billing']['country'];
+
+                $this->setSessionData('billmate_country',$_POST['Customer']['Billing']['country']);
 				$this->helper->setBillingAddress($input);
 			}else if (array_key_exists("billingAddress",$_POST)) {
                 $_email = $this->getRequest()->getParam('email','');
@@ -57,14 +58,14 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
 					'postcode'=>$_POST['billingAddress']['zip'],
 					'telephone'=>$_POST['billingAddress']['phone']
 				);
-				$_SESSION['billmate_country'] = $_POST['billingAddress']['country'];
+                $this->setSessionData('billmate_country', $_POST['billingAddress']['country']);
 				$this->helper->setBillingAddress($input);
 			}
 			if (array_key_exists("shippingAddress",$_POST)) {
 				if (array_key_exists('country',$_POST['shippingAddress'])) {
 					$country = $_POST['shippingAddress']['country'];
 				} else {
-					$country = $_SESSION['billmate_country'];
+                    $country = $this->getSessionData('billmate_country');
 				}
 				$input = array(
 					'firstname'=>$_POST['shippingAddress']['firstname'],

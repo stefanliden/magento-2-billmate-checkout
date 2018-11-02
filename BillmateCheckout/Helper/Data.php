@@ -223,6 +223,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 		$shippingAddress->setCollectShippingRates(true)
             ->collectShippingRates();
 		$this->getQuote()->collectTotals();
+        $this->getQuote()->save();
     }
 
     /**
@@ -240,17 +241,18 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
     public function getCheckout()
     {
         $str = "<p>" . __("We'll email you an order confirmation with details and tracking info.") . "</p>";
-        $str .= "<p>" . __('Your order # is: <span>%1</span>.', $_SESSION['bm-inc-id']) . "</p>";
+        $str .= "<p>" . __('Your order # is: <span>%1</span>.', $this->getSessionData('bm-inc-id')) . "</p>";
         $str .= "<form action=\"//" . $_SERVER['HTTP_HOST'] . "\">
 					<input type=\"submit\" value=\"" . __('Continue Shopping') . "\" />
 				</form>";
-		$_SESSION['bm-inc-id'] = null;
+        $this->setSessionData('bm-inc-id',null);
 		return $str;
     }
 
-    public function createOrder($orderData, $orderID = '', $paymentID = ''){
+    public function createOrder($orderData, $orderID = '', $paymentID = '')
+    {
 		try {
-
+		    $this->addLog();
             $this->logger->error(print_r(array(
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
@@ -258,7 +260,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aaa',
-                '' => ''
             ), true));
 
 			if ($orderID == '') {
@@ -273,7 +274,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aab',
                 'orderID' => $orderID,
-                '' => ''
+
             ), true));
 
 			$exOrder = $this->orderInterface->loadByIncrementId($orderID);
@@ -293,7 +294,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'session.billmate_applied_discount_code' => ($this->getSessionData('billmate_applied_discount_code') ?
                     $this->getSessionData('billmate_applied_discount_code') : ''),
                 'session.shipping_code' => (($this->getSessionData('shipping_code')) ? $this->getSessionData('shipping_code') : ''),
-                '' => ''
+
             ), true));
 
 			$shippingCode = $this->getSessionData('shipping_code');
@@ -310,7 +311,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aad',
                 'actual_quote_id' => $actual_quote_id,
-                '' => ''
+
             ), true));
 			
 			//init the store id and website id @todo pass from array
@@ -324,7 +325,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aae',
-                '' => ''
+
             ), true));
 
 			//init the customer
@@ -359,7 +360,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aaf assignCustomer to quote',
-                '' => ''
+
             ), true));
 
             if ($this->getSessionData('billmate_applied_discount_code')){
@@ -379,7 +380,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'note' => 'aag',
                 'isset.session.billmate_shipping_address' => (bool)$billmateShippingAddress,
                 'isset.session.billmate_billing_address' => (bool)$billmateBillingAddress,
-                '' => ''
+
             ), true));
 
 			//Set Address to quote @todo add section in order data for seperate billing and handle it
@@ -397,7 +398,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aah',
-                '' => ''
+
             ), true));
 
 			// Collect Rates and Set Shipping & Payment Method
@@ -423,7 +424,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aai',
-                '' => ''
+
             ), true));
 
 			$cart = $this->cartRepositoryInterface->get($actual_quote->getId());
@@ -447,7 +448,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aaj',
-                '' => ''
+
             ), true));
 
 			$cart->getBillingAddress()->setCustomerId($customer->getId());
@@ -463,7 +464,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aak',
-                '' => ''
+
             ), true));
 
 			$order_id = $this->cartManagementInterface->placeOrder($cart->getId());
@@ -476,7 +477,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aal',
                 'order_id' => $order_id,
-                '' => ''
+
             ), true));
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 			$order = $objectManager->create('\Magento\Sales\Model\Order')->load($order_id);
@@ -490,10 +491,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aam',
-                '' => ''
+
             ), true));
 
-			$_SESSION['bm-inc-id'] = $order->getIncrementId();
+            $this->setSessionData('bm-inc-id', $order->getIncrementId());
 			
             $this->logger->error(print_r(array(
                 '__FILE__' => __FILE__,
@@ -502,8 +503,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aan',
-                'session.bm-inc-id' => $_SESSION['bm-inc-id'],
-                '' => ''
+                'session.bm-inc-id' => $this->getSessionData('bm-inc-id'),
             ), true));
 
 			$orderState = \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT;
@@ -518,7 +518,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aao',
                 'order_id' => $order_id,
-                '' => ''
             ), true));
 			
 			return $order_id;
@@ -533,7 +532,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'exception.message' => $e->getMessage(),
                 'exception.file' => $e->getFile(),
                 'exception.line' => $e->getLine(),
-                '' => ''
             ), true));
             return 0;
 		}
@@ -704,5 +702,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
     public function getCheckoutCart()
     {
         return $this->checkoutCart;
+    }
+
+    public function addLog($data)
+    {
+        $logData = [
+            'date' => date('Y-m-d H:i:s'),
+        ];
+        $logData += $data;
+        $this->logger->error(print_r($logData, true));
     }
 }

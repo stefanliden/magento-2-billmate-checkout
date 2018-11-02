@@ -24,7 +24,8 @@ class SetPaymentMethod extends \Magento\Framework\App\Action\Action {
 		parent::__construct($context);
 	}
 
-	public function execute() {
-		$this->helper->setBmPaymentMethod($_POST['method']);
+	public function execute()
+    {
+		$this->helper->setBmPaymentMethod($this->getRequest()->getParam('method'));
 	}
 }

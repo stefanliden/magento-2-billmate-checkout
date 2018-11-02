@@ -3,7 +3,8 @@ namespace Billmate\BillmateCheckout\Controller\Success;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Framework\App\Action\Context;
 use \Magento\Checkout\Model\Session as CheckoutSession;
-class Success extends \Magento\Framework\App\Action\Action {
+class Success extends \Magento\Framework\App\Action\Action
+{
 	
 	protected $resultPageFactory;
 	protected $helper;
@@ -26,39 +27,15 @@ class Success extends \Magento\Framework\App\Action\Action {
 		parent::__construct($context);
 	}
 	
-	public function execute(){
-
+	public function execute()
+    {
         $this->logger->error(print_r(array(
             '__FILE__' => __FILE__,
             '__CLASS__' => __CLASS__,
             '__FUNCTION__' => __FUNCTION__,
             '__LINE__' => __LINE__,
             'date' => date('Y-m-d H:i:s'),
-            'note' => 'aaa',
-
-        ), true));
-
-		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-
-        $this->logger->error(print_r(array(
-            '__FILE__' => __FILE__,
-            '__CLASS__' => __CLASS__,
-            '__FUNCTION__' => __FUNCTION__,
-            '__LINE__' => __LINE__,
-            'date' => date('Y-m-d H:i:s'),
-            'note' => 'aab',
-
-        ), true));
-
-		$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-
-         $this->logger->error(print_r(array(
-            '__FILE__' => __FILE__,
-            '__CLASS__' => __CLASS__,
-            '__FUNCTION__' => __FUNCTION__,
-            '__LINE__' => __LINE__,
-            'date' => date('Y-m-d H:i:s'),
-            'note' => 'aac',
+            'note' => 'aaa'
         ), true));
 
 		$resultPage = $this->resultPageFactory->create();
@@ -84,7 +61,7 @@ class Success extends \Magento\Framework\App\Action\Action {
                 $this->setSessionData('bm_order_id', $orderId);
 
 			}
-			$order = $objectManager->get('\Magento\Sales\Model\Order')->loadByIncrementId($this->getSessionData('bm-inc-id'));
+			$order = $this->helper->getOrderByIncrementId($this->getSessionData('bm-inc-id'));
 			$orderId = $order->getId();
 
             $this->logger->error(print_r(array(
@@ -102,11 +79,9 @@ class Success extends \Magento\Framework\App\Action\Action {
 				['order_ids' => [$order->getId()]]
 			);
 
-			$this->checkoutSession->setLastSuccessQuoteId($cart->getQuote()->getId());
-			$this->checkoutSession->setLastQuoteId($cart->getQuote()->getId());
+			$this->checkoutSession->setLastSuccessQuoteId($this->helper->getQuote()->getId());
+			$this->checkoutSession->setLastQuoteId($this->helper->getQuote()->getId());
 			$this->checkoutSession->setLastOrderId($orderId);
-			$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-			$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
 
             $this->logger->error(print_r(array(
                 '__FILE__' => __FILE__,
@@ -117,7 +92,7 @@ class Success extends \Magento\Framework\App\Action\Action {
                 'note' => 'abc',
             ), true));
 
-			$url = $storeManager->getStore()->getBaseUrl() . "checkout/onepage/success";
+            $url = $this->_url->getUrl('checkout/onepage/success');
 
             $this->logger->error(print_r(array(
                 '__FILE__' => __FILE__,
@@ -138,7 +113,7 @@ class Success extends \Magento\Framework\App\Action\Action {
 			}
 		}
 		catch (\Exception $e){
-            $this->setSessionData('bm-inc-id',$cart->getQuote()->getReservedOrderId());
+            $this->setSessionData('bm-inc-id',$this->helper->getQuote()->getReservedOrderId());
             $this->logger->error(print_r(array(
                 'note' => 'could not redirect customer to store order confirmation page',
                 '__FILE__' => __FILE__,

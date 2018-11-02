@@ -4,20 +4,16 @@ namespace Billmate\BillmateCheckout\Helper;
 
 use Magento\Framework\App\ProductMetadataInterface;
 
-class Data extends \Magento\Framework\App\Helper\AbstractHelper {
-
+class Data extends \Magento\Framework\App\Helper\AbstractHelper
+{
     protected $_storeManager;
-    protected $_productFactory;
     protected $customerFactory;
     protected $customerRepository;
     protected $cartRepositoryInterface;
     protected $cartManagementInterface;
     protected $shippingRate;
     protected $quoteCollectionFactory;
-    protected $shipconfig;
     protected $resource;
-    protected $_product;
-    protected $scopeConfig;
     protected $checkoutSession;
     protected $shippingMethodManagementInterface;
     protected $quoteManagement;
@@ -68,15 +64,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 
     public function __construct(
 		\Magento\Framework\App\Helper\Context $context, 
-		\Magento\Store\Model\StoreManagerInterface $storeManager, 
-		\Magento\Catalog\Model\ProductFactory $productfact, 
-		\Magento\Catalog\Model\Product $product, 
+		\Magento\Store\Model\StoreManagerInterface $storeManager,
 		\Magento\Customer\Model\CustomerFactory $customerFactory, 
 		\Magento\Customer\Api\CustomerRepositoryInterface $customerRepository, 
 		\Magento\Quote\Api\CartRepositoryInterface $cartRepositoryInterface, 
 		\Magento\Quote\Api\CartManagementInterface $cartManagementInterface, 
-		\Magento\Quote\Model\Quote\Address\Rate $shippingRate, 
-		\Magento\Shipping\Model\Config $shipconfig, 
+		\Magento\Quote\Model\Quote\Address\Rate $shippingRate,
 		\Magento\Sales\Api\Data\OrderInterface $order, 
 		\Magento\Framework\App\ResourceConnection $resource, 
 		\Magento\Checkout\Model\Session $_checkoutSession, 
@@ -88,19 +81,15 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         \Magento\Framework\View\LayoutFactory $layoutFactory,
         ProductMetadataInterface $metaData
 	){
-        $this->_product = $product;
         $this->orderInterface = $order;
         $this->_storeManager = $storeManager;
-        $this->_productFactory = $productfact;
         $this->customerFactory = $customerFactory;
         $this->customerRepository = $customerRepository;
         $this->cartRepositoryInterface = $cartRepositoryInterface;
         $this->cartManagementInterface = $cartManagementInterface;
 		$this->checkoutCart = $checkoutCart;
         $this->shippingRate = $shippingRate;
-        $this->shipconfig = $shipconfig;
         $this->resource = $resource;
-        $this->scopeConfig = $context->getScopeConfig();
         $this->checkoutSession = $_checkoutSession;
         $this->quoteManagement = $quoteManagement;
         $this->quote = $quote;
@@ -252,8 +241,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
     public function createOrder($orderData, $orderID = '', $paymentID = '')
     {
 		try {
-		    $this->addLog();
-            $this->logger->error(print_r(array(
+            $this->addLog(print_r(array(
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
@@ -277,7 +265,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
 
             ), true));
 
-			$exOrder = $this->orderInterface->loadByIncrementId($orderID);
+            $exOrder = $this->getOrderByIncrementId($orderID);
 			if ($exOrder->getIncrementId()){
 				return;
 			}
@@ -313,8 +301,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'actual_quote_id' => $actual_quote_id,
 
             ), true));
-			
-			//init the store id and website id @todo pass from array
+
 			$store = $this->_storeManager->getStore();
 			$websiteId = $this->_storeManager->getStore()->getWebsiteId();
 
@@ -479,8 +466,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
                 'order_id' => $order_id,
 
             ), true));
+
+            $order = $this->getOrderById($order_id);
             $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-			$order = $objectManager->create('\Magento\Sales\Model\Order')->load($order_id);
 			$emailSender = $objectManager->create('\Magento\Sales\Model\Order\Email\Sender\OrderSender');
 			$emailSender->send($order);
 
@@ -711,5 +699,39 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper {
         ];
         $logData += $data;
         $this->logger->error(print_r($logData, true));
+    }
+
+    /**
+     * @param $type
+     *
+     * @return \Magento\Quote\Model\Quote\Address\Total
+     */
+    public function getTotalRow($type)
+    {
+        $totals = $this->getQuote()->getTotals();
+        if(isset($totals[$type])) {
+            return $totals[$type];
+        }
+        return current($totals);
+    }
+
+    /**
+     * @param $orderId
+     *
+     * @return \Magento\Sales\Model\Order
+     */
+    public function getOrderByIncrementId($orderIncId)
+    {
+        return $this->orderInterface->loadByIncrementId($orderIncId);
+    }
+
+    /**
+     * @param $orderId
+     *
+     * @return \Magento\Sales\Model\Order
+     */
+    public function getOrderById($orderId)
+    {
+        return $this->orderInterface->loadByIncrementId($orderId);
     }
 }

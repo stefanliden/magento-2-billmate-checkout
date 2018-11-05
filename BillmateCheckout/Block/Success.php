@@ -24,13 +24,9 @@ class Success extends \Magento\Framework\View\Element\Template
 		$this->helper = $_helper;
 	}
 
-    /**
-     * @return string
-     */
-	public function getSuccess()
+	public function getLastOrderIncId()
     {
-		$str = $this->helper->getCheckout();
-		$this->helper->clearSession();
-		return $str;
-	}
+        return $this->helper->getSessionData('bm-inc-id');
+        $this->helper->setSessionData('bm-inc-id',null);
+    }
 }

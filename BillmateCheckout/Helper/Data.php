@@ -227,17 +227,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->setSessionData('billmate_applied_discount_code', $code);
     }
 
-    public function getCheckout()
-    {
-        $str = "<p>" . __("We'll email you an order confirmation with details and tracking info.") . "</p>";
-        $str .= "<p>" . __('Your order # is: <span>%1</span>.', $this->getSessionData('bm-inc-id')) . "</p>";
-        $str .= "<form action=\"//" . $_SERVER['HTTP_HOST'] . "\">
-					<input type=\"submit\" value=\"" . __('Continue Shopping') . "\" />
-				</form>";
-        $this->setSessionData('bm-inc-id',null);
-		return $str;
-    }
-
     public function createOrder($orderData, $orderID = '', $paymentID = '')
     {
 		try {

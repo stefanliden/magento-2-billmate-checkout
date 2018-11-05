@@ -2,6 +2,7 @@
 namespace Billmate\BillmateCheckout\Controller\Callback;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\DB\TransactionFactory;
 
 class Callback extends \Magento\Framework\App\Action\Action
 {
@@ -41,6 +42,11 @@ class Callback extends \Magento\Framework\App\Action\Action
      * @var \Billmate\Billmate\Model\Billmate
      */
     protected $billmateProvider;
+
+    /**
+     * @var TransactionFactory
+     */
+    protected $_transactionFactory;
 	
 	public function __construct(
 	    Context $context,
@@ -50,7 +56,8 @@ class Callback extends \Magento\Framework\App\Action\Action
         \Billmate\BillmateCheckout\Helper\Config $configHelper,
 		\Magento\Sales\Api\Data\OrderInterface $order,
         \Magento\Sales\Model\Service\InvoiceService $_invoiceService,
-        \Billmate\Billmate\Model\Billmate $billmateProvider
+        \Billmate\Billmate\Model\Billmate $billmateProvider,
+        TransactionFactory $transactionFactory
     ){
 		$this->resultPageFactory = $resultPageFactory;
 	    $this->productRepository = $productRepository;
@@ -59,6 +66,7 @@ class Callback extends \Magento\Framework\App\Action\Action
 		$this->configHelper = $configHelper;
 		$this->orderInterface = $order;
         $this->billmateProvider = $billmateProvider;
+        $this->_transactionFactory = $transactionFactory;
 		parent::__construct($context);
 	}
 	
@@ -104,7 +112,8 @@ class Callback extends \Magento\Framework\App\Action\Action
 					$invoice = $this->invoiceService->prepareInvoice($order);
 					$invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
 					$invoice->register();
-					$transactionSave = \Magento\Framework\App\ObjectManager::getInstance()->create('Magento\Framework\DB\Transaction')->addObject($invoice)->addObject($invoice->getOrder());
+                    $transaction = $this->_transactionFactory->create();
+					$transactionSave = $transaction->addObject($invoice)->addObject($invoice->getOrder());
 					$transactionSave->save();
 				}
 			} elseif ($paymentInfo['PaymentData']['status'] == 'Pending') {

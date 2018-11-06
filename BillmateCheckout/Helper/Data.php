@@ -324,7 +324,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 			$actual_quote->setCurrency();
 			$actual_quote->assignCustomer($customer);
 
-            $this->logger->error(print_r(array(
+            $this->addLog([
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
@@ -332,9 +332,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aaf assignCustomer to quote',
 
-            ), true));
+            ]);
 
-            if ($this->getSessionData('billmate_applied_discount_code')){
+            if ($this->getSessionData('billmate_applied_discount_code')) {
                 $discountCode = $this->getSessionData('billmate_applied_discount_code');
                 $actual_quote->setCouponCode($discountCode);
             }

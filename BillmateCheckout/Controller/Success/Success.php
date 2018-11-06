@@ -38,7 +38,8 @@ class Success extends \Magento\Framework\App\Action\Action
 		\Billmate\BillmateCheckout\Helper\Data $_helper, 
 		CheckoutSession $checkoutSession,
         \Psr\Log\LoggerInterface $logger,
-        \Magento\Framework\Registry $registry
+        \Magento\Framework\Registry $registry,
+        \Magento\Checkout\Model\Session\SuccessValidator $successValidator
 	) {
 		$this->eventManager = $eventManager;
 		$this->resultPageFactory = $resultPageFactory;
@@ -46,13 +47,15 @@ class Success extends \Magento\Framework\App\Action\Action
 		$this->helper = $_helper;
         $this->logger = $logger;
         $this->registry = $registry;
+        $this->successValidator = $successValidator;
 		parent::__construct($context);
 	}
 	
 	public function execute()
     {
-        $incId = $this->helper->getSessionData('bm-inc-id');
-        $this->registry->register('bm-inc-id', $incId);
+        if (!$this->successValidator->isValid()) {
+            //return $this->resultRedirectFactory->create()->setPath('checkout/cart');
+        }
         $this->logger->error(print_r(array(
             '__FILE__' => __FILE__,
             '__CLASS__' => __CLASS__,
@@ -75,7 +78,7 @@ class Success extends \Magento\Framework\App\Action\Action
                 'isset.session.bm-inc-id' => (bool)$this->helper->getSessionData('bm-inc-id'),
             ), true));
 
-			if (!$this->helper->getSessionData('bm-inc-id')){
+			if (!$this->helper->getSessionData('bm-inc-id')) {
 				$orderData = array(
 					'email' => $this->helper->getSessionData('billmate_email'),
 					'shipping_address' => $this->helper->getSessionData('billmate_billing_address')
@@ -86,6 +89,7 @@ class Success extends \Magento\Framework\App\Action\Action
 
 			}
 			$order = $this->helper->getOrderByIncrementId($this->helper->getSessionData('bm-inc-id'));
+            $this->registry->register('bm-inc-id', $this->helper->getSessionData('bm-inc-id'));
 			$orderId = $order->getId();
 
             $this->logger->error(print_r(array(

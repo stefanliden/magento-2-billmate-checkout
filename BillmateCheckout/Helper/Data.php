@@ -230,49 +230,44 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function createOrder($orderData, $orderID = '', $paymentID = '')
     {
 		try {
-            $this->addLog(print_r(array(
+            $this->addLog([
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
                 '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
                 'note' => 'aaa',
-            ), true));
+            ]);
 
 			if ($orderID == '') {
 				$orderID = $this->getQuote()->getReservedOrderId();
 			}
 
-            $this->logger->error(print_r(array(
+            $this->addLog([
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
                 '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
                 'note' => 'aab',
                 'orderID' => $orderID,
-
-            ), true));
+            ]);
 
             $exOrder = $this->getOrderByIncrementId($orderID);
 			if ($exOrder->getIncrementId()){
 				return;
 			}
 
-            $this->logger->error(print_r(array(
+            $this->addLog([
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
                 '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
                 'note' => 'aac',
                 'isset.session.billmate_applied_discount_code' => (bool)($this->getSessionData('billmate_applied_discount_code')),
                 'isset.session.shipping_code' => (bool)($this->getSessionData('shipping_code')),
                 'session.billmate_applied_discount_code' => ($this->getSessionData('billmate_applied_discount_code') ?
                     $this->getSessionData('billmate_applied_discount_code') : ''),
                 'session.shipping_code' => (($this->getSessionData('shipping_code')) ? $this->getSessionData('shipping_code') : ''),
-
-            ), true));
+            ]);
 
 			$shippingCode = $this->getSessionData('shipping_code');
 			
@@ -527,6 +522,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->setSessionData('billmate_applied_discount_code', null);
         $this->setSessionData('billmate_checkout_id', null);
         $this->setSessionData('billmate_payment_method', null);
+        $this->setSessionData('bm-inc-id',null);
 
 		session_unset();
 	}
@@ -686,7 +682,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $logData = [
             'date' => date('Y-m-d H:i:s'),
         ];
-        $logData += $data;
+        $logData = $logData + $data;
         $this->logger->error(print_r($logData, true));
     }
 

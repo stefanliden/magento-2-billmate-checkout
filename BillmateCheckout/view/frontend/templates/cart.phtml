@@ -1,3 +1,10 @@
+<?php
+/**
+ * Shopping cart content template
+ *
+ * @var $block \Billmate\BillmateCheckout\Block\Cart
+ */
+?>
 <script>
   require(
     ['jquery', 'Billmate_BillmateCheckout/js/ajax'],
@@ -8,5 +15,5 @@
   );
 </script>
 <div id="billmate-cart">
-    <?php echo $this->getChildHtml('billmate.cart.content'); ?>
+    <?php echo $block->getChildHtml('billmate.cart.content'); ?>
 </div>

@@ -9,6 +9,11 @@ class Success extends \Magento\Framework\View\Element\Template
     protected $helper;
 
     /**
+     * @var \Magento\Framework\Registry
+     */
+    protected $registry;
+
+    /**
      * Success constructor.
      *
      * @param \Magento\Framework\View\Element\Template\Context $context
@@ -18,15 +23,16 @@ class Success extends \Magento\Framework\View\Element\Template
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
         \Billmate\BillmateCheckout\Helper\Data $_helper,
+        \Magento\Framework\Registry $registry,
         array $data = []
     ) {
         parent::__construct($context, $data);
 		$this->helper = $_helper;
+        $this->registry = $registry;
 	}
 
 	public function getLastOrderIncId()
     {
-        return $this->helper->getSessionData('bm-inc-id');
-        $this->helper->setSessionData('bm-inc-id',null);
+        return $this->registry->registry('bm-inc-id');
     }
 }

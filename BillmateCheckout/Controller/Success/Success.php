@@ -5,11 +5,31 @@ use Magento\Framework\App\Action\Context;
 use \Magento\Checkout\Model\Session as CheckoutSession;
 class Success extends \Magento\Framework\App\Action\Action
 {
-	
+
+    /**
+     * @var PageFactory
+     */
 	protected $resultPageFactory;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Helper\Data
+     */
 	protected $helper;
+
+    /**
+     * @var CheckoutSession
+     */
 	protected $checkoutSession;
+
+    /**
+     * @var \Magento\Framework\Event\Manager
+     */
 	protected $eventManager;
+
+    /**
+     * @var \Magento\Framework\Registry
+     */
+    protected $registry;
 	
 	public function __construct(
 		Context $context,
@@ -17,18 +37,22 @@ class Success extends \Magento\Framework\App\Action\Action
 		\Magento\Framework\Event\Manager $eventManager,
 		\Billmate\BillmateCheckout\Helper\Data $_helper, 
 		CheckoutSession $checkoutSession,
-        \Psr\Log\LoggerInterface $logger
+        \Psr\Log\LoggerInterface $logger,
+        \Magento\Framework\Registry $registry
 	) {
 		$this->eventManager = $eventManager;
 		$this->resultPageFactory = $resultPageFactory;
 		$this->checkoutSession = $checkoutSession;
 		$this->helper = $_helper;
         $this->logger = $logger;
+        $this->registry = $registry;
 		parent::__construct($context);
 	}
 	
 	public function execute()
     {
+        $incId = $this->helper->getSessionData('bm-inc-id');
+        $this->registry->register('bm-inc-id', $incId);
         $this->logger->error(print_r(array(
             '__FILE__' => __FILE__,
             '__CLASS__' => __CLASS__,
@@ -48,20 +72,20 @@ class Success extends \Magento\Framework\App\Action\Action
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aba',
-                'isset.session.bm-inc-id' => (bool)$this->getSessionData('bm-inc-id'),
+                'isset.session.bm-inc-id' => (bool)$this->helper->getSessionData('bm-inc-id'),
             ), true));
 
-			if (!$this->getSessionData('bm-inc-id')){
+			if (!$this->helper->getSessionData('bm-inc-id')){
 				$orderData = array(
-					'email' => $this->getSessionData('billmate_email'),
-					'shipping_address' => $this->getSessionData('billmate_billing_address')
+					'email' => $this->helper->getSessionData('billmate_email'),
+					'shipping_address' => $this->helper->getSessionData('billmate_billing_address')
 				);
 				$orderId = $this->helper->createOrder($orderData);
 
-                $this->setSessionData('bm_order_id', $orderId);
+                $this->helper->setSessionData('bm_order_id', $orderId);
 
 			}
-			$order = $this->helper->getOrderByIncrementId($this->getSessionData('bm-inc-id'));
+			$order = $this->helper->getOrderByIncrementId($this->helper->getSessionData('bm-inc-id'));
 			$orderId = $order->getId();
 
             $this->logger->error(print_r(array(
@@ -105,15 +129,10 @@ class Success extends \Magento\Framework\App\Action\Action
                 'headers_sent' => (headers_sent()),
             ), true));
 
-			if (headers_sent()) {
-				die('<script type="text/javascript">window.location.href="' . $url . '";</script>');
-			} else {
-				header('Location: ' . $url);
-				die();
-			}
+            $this->helper->clearSession();
 		}
 		catch (\Exception $e){
-            $this->setSessionData('bm-inc-id',$this->helper->getQuote()->getReservedOrderId());
+            $this->helper->setSessionData('bm-inc-id',$this->helper->getQuote()->getReservedOrderId());
             $this->logger->error(print_r(array(
                 'note' => 'could not redirect customer to store order confirmation page',
                 '__FILE__' => __FILE__,

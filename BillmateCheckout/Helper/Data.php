@@ -18,6 +18,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $shippingMethodManagementInterface;
     protected $quoteManagement;
     protected $quote;
+
+    /**
+     * @var OrderSender
+     */
+    protected $orderSender;
+
     protected $orderInterface;
 	protected $shippingPrice;
 	protected $checkoutCart;
@@ -74,7 +80,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 		\Magento\Framework\App\ResourceConnection $resource, 
 		\Magento\Checkout\Model\Session $_checkoutSession, 
 		\Magento\Quote\Model\QuoteManagement $quoteManagement, 
-		\Magento\Quote\Model\QuoteFactory $quote, 
+		\Magento\Quote\Model\QuoteFactory $quote,
+        \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
 		\Magento\Quote\Api\ShippingMethodManagementInterface $_shippingMethodManagementInterface, 
 		\Magento\Quote\Model\ResourceModel\Quote\CollectionFactory $quoteCollectionFactory,
 		\Magento\Checkout\Model\Cart $checkoutCart,
@@ -93,6 +100,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->checkoutSession = $_checkoutSession;
         $this->quoteManagement = $quoteManagement;
         $this->quote = $quote;
+        $this->orderSender = $orderSender;
         $this->shippingMethodManagementInterface = $_shippingMethodManagementInterface;
         $this->quoteCollectionFactory = $quoteCollectionFactory;
         $this->logger = $context->getLogger();
@@ -375,7 +383,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 			// Collect Rates and Set Shipping & Payment Method
 			$this->shippingRate->setCode($shippingCode)->getPrice();
 			$shippingAddress = $actual_quote->getShippingAddress();
-            $billmatePaymentMethod = $this->getSessionData('billmate_payment_method');
+            if (!$this->getSessionData('billmate_payment_method')) {
+                $this->setBmPaymentMethod('default');
+            }
+            $billmatePaymentMethod = $this->getSessionData('billmate_payment_method') ;
 			$shippingAddress->setCollectShippingRates(true)
 					->collectShippingRates()
 					->setShippingMethod($shippingCode); //shipping method
@@ -438,7 +449,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
             ), true));
 
-			$order_id = $this->cartManagementInterface->placeOrder($cart->getId());
+			$orderId = $this->cartManagementInterface->placeOrder($cart->getId());
 
             $this->logger->error(print_r(array(
                 '__FILE__' => __FILE__,
@@ -447,14 +458,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aal',
-                'order_id' => $order_id,
+                'order_id' => $orderId,
 
             ), true));
 
-            $order = $this->getOrderById($order_id);
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-			$emailSender = $objectManager->create('\Magento\Sales\Model\Order\Email\Sender\OrderSender');
-			$emailSender->send($order);
+            $order = $this->getOrderById($orderId);
+
+			$this->orderSender->send($order);
 
             $this->logger->error(print_r(array(
                 '__FILE__' => __FILE__,
@@ -468,18 +478,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
             $this->setSessionData('bm-inc-id', $order->getIncrementId());
 			
-            $this->logger->error(print_r(array(
+            $this->addLog([
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
                 '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
                 'note' => 'aan',
                 'session.bm-inc-id' => $this->getSessionData('bm-inc-id'),
-            ), true));
+            ]);
 
 			$orderState = \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT;
-			$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
+			$order->setState($orderState)->setStatus($orderState);
 			$order->save();
 
             $this->logger->error(print_r(array(
@@ -532,7 +541,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
 	public function setBmPaymentMethod($methodCode)
     {
-
 		switch ($methodCode) {
 			case "1":
                 $method = 'billmate_invoice';
@@ -717,6 +725,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getOrderById($orderId)
     {
-        return $this->orderInterface->loadByIncrementId($orderId);
+        return $this->orderInterface->load($orderId);
     }
 }

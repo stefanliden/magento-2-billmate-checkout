@@ -16,7 +16,7 @@
 </script>
 
 <p><?= __("We'll email you an order confirmation with details and tracking info.") ?></p>
-<p><?= __("Your order # is: <span>%1</span>.", 'asdf', $block->getLastOrderIncId()) ?></p>
+<p><?= __("Your order # is: <span>%1</span>.", $block->getLastOrderIncId()) ?></p>
 <form action="<?= $block->getUrl() ?>">
     <input type="submit" value="<?= __('Continue Shopping') ?>" />
 </form>

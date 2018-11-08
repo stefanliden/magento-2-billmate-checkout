@@ -62,7 +62,7 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
             $billingAddressReq = $this->getBillingAddress();
 			if ($billingAddressReq) {
                 $this->helper->setBillingAddress($billingAddressReq);
-                $this->setSessionData('billmate_country', $billingAddressReq['country_id']);
+                $this->helper->setSessionData('billmate_country', $billingAddressReq['country_id']);
             }
 
             $shippingAddressReq = $this->getShippingAddress();

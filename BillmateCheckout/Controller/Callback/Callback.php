@@ -101,16 +101,15 @@ class Callback extends \Magento\Framework\App\Action\Action
 				$order = $this->helper->getOrderById($order_id);
 			}
 			$order->setData('billmate_invoice_id', $requestData['data']['number']);
+            $orderStateActivated = $this->configHelper->getActivated();
 			if (
 			    $paymentInfo['PaymentData']['status'] == 'Created'||
                 ($paymentInfo['PaymentData']['status'] == 'Paid' && !$this->configHelper->getBmEnable())
             ) {
-				$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
-				$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+				$order->setState($orderStateActivated)->setStatus($orderStateActivated);
 			} elseif ($paymentInfo['PaymentData']['status'] == 'Paid' && $this->configHelper->getBmEnable()) {
 				if ($requestData['data']['status']=='Paid') {
-					$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
-					$order->setState($orderState)->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+					$order->setState($orderStateActivated)->setStatus($orderStateActivated);
 					$order->save();
 					$invoice = $this->invoiceService->prepareInvoice($order);
 					$invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);

@@ -102,7 +102,7 @@ class CheckPending
 						$order->setState($orderState)->setStatus($orderState);
 						$order->save();
 					} elseif ($paymentInfo['PaymentData']['status'] == 'Paid' && $this->configHelper->getBmEnable()){
-						if ($res['data']['status']=='Paid') {
+						if ($paymentInfo['PaymentData']['status']=='Paid') {
 							$orderState = $this->configHelper->getActivated();
 							$order->setState($orderState)->setStatus($orderState);
 							$order->save();

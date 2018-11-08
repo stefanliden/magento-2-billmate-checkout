@@ -466,15 +466,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
 			$this->orderSender->send($order);
 
-            $this->logger->error(print_r(array(
+            $this->addLog([
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
                 '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
                 'note' => 'aam',
-
-            ), true));
+            ]);
 
             $this->setSessionData('bm-inc-id', $order->getIncrementId());
 			
@@ -498,7 +496,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 '__LINE__' => __LINE__,
                 'date' => date('Y-m-d H:i:s'),
                 'note' => 'aao',
-                'order_id' => $order_id,
+                'order_id' => $orderId,
             ), true));
 			
 			return $order_id;
@@ -687,6 +685,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function addLog($data)
     {
+        if (!is_array($data)) {
+            $data = ['data' => $data];
+        }
+
         $logData = [
             'date' => date('Y-m-d H:i:s'),
         ];

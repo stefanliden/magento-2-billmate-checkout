@@ -72,16 +72,19 @@ class Callback extends \Magento\Framework\App\Action\Action
 	
 	public function execute()
     {
+        /** @var return json row $paramsRow */
         $paramsRow = file_get_contents('php://input');
 
         $params = $this->getRequest()->getParams();
-
         $requestData = empty($paramsRow) ? $params : json_decode($paramsRow,true);;
 
-		if(is_array($requestData)) {
-            $requestData['credentials'] = json_decode($requestData['credentials'], true);
-            $requestData['data'] = json_decode($requestData['data'],true);
+		if (is_array($requestData) && $params) {
+		    if (!is_array($params['credentials']) && !is_array($params['data'])) {
+                $requestData['credentials'] = json_decode($params['credentials'], true);
+                $requestData['data'] = json_decode($params['data'],true);
+            }
 		}
+
 		$hash = $this->getHashCode($requestData);
 		
 		if ($hash == $requestData['credentials']['hash']) {

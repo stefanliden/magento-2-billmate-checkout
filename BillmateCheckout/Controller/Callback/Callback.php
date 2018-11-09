@@ -98,8 +98,12 @@ class Callback extends \Magento\Framework\App\Action\Action
 			if (!is_string($order->getIncrementId())) {
                 $orderInfo = $this->getOrderInfo($paymentInfo);
 				$order_id = $this->helper->createOrder($orderInfo, $paymentInfo['PaymentData']['orderid']);
+                if (!$order_id) {
+                    return;
+                }
 				$order = $this->helper->getOrderById($order_id);
 			}
+
 			$order->setData('billmate_invoice_id', $requestData['data']['number']);
             $orderStateActivated = $this->configHelper->getActivated();
 			if (

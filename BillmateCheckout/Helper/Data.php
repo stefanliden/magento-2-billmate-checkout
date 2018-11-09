@@ -499,7 +499,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 'order_id' => $orderId,
             ), true));
 			
-			return $order_id;
+			return $orderId;
 		}
 		catch (\Exception $e){
             $this->logger->error(print_r(array(

@@ -84,6 +84,11 @@ class Success extends \Magento\Framework\App\Action\Action
 					'shipping_address' => $this->helper->getSessionData('billmate_billing_address')
 				);
 				$orderId = $this->helper->createOrder($orderData);
+                if (!$orderId) {
+                    throw new \Exception(
+                        __('An error occurred on the server. Please try to place the order again.')
+                    );
+                }
 
                 $this->helper->setSessionData('bm_order_id', $orderId);
 
@@ -147,6 +152,7 @@ class Success extends \Magento\Framework\App\Action\Action
                 'exception.file' => $e->getFile(),
                 'exception.line' => $e->getLine(),
             ), true));
+            return $this->resultRedirectFactory->create()->setPath('billmatecheckout/success/error');
 		}
 
         $this->logger->error(print_r(array(

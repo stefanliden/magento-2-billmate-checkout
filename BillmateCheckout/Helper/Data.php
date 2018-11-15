@@ -621,8 +621,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $this->prepareCheckout();
         $shippingAddress = $this->getQuote()->getShippingAddress();
-        $shippingAddress->setCollectShippingRates(true)->collectShippingRates();
-        return $shippingAddress->getAllShippingRates();
+        return $shippingAddress->collectShippingRates()->getAllShippingRates();
+
     }
 
     /**

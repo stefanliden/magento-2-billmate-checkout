@@ -74,7 +74,6 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
 
     public function getIframeData($method='initCheckout')
     {
-
         $this->dataHelper->prepareCheckout();
         $quoteAddress = $this->dataHelper->getQuote()->getShippingAddress();
         $lShippingPrice = $quoteAddress->getShippingAmount();
@@ -86,74 +85,18 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
         $this->setSessionData('shipping_code', $quoteAddress->getShippingMethod());
         $this->setSessionData('billmate_shipping_tax', $quoteAddress->getShippingTaxAmount());
 
-
-
-        if (empty($this->getQuote()->getReservedOrderId())){
+        if (empty($this->getQuote()->getReservedOrderId())) {
             $this->getQuote()->reserveOrderId()->save();
         }
 
         $data = $this->getRequestData();
 
-		$currentStore = $this->_storeManager->getStore();
-		$currentStoreId = $currentStore->getId();
-        $taxCalculation = $this->getTaxCalculation();
-        $request = $taxCalculation->getRateRequest(null, null, null, $currentStoreId);
-
-		$taxAmount = 0;
-		$discounts = array();
-        $itemsVisible = $this->getQuote()->getAllVisibleItems();
-        foreach ($itemsVisible as $item) {
-
-			$product = $item->getProduct();
-			$taxClassId = $product->getTaxClassId();
-			$percent = $taxCalculation->getRate($request->setProductClassId($taxClassId));
-
-            $prod = array(
-                'quantity' => $item->getQty(),
-                'artnr' => $item->getSku(),
-                'title' => $item->getName(),
-                'aprice' => $this->toCents($item->getPriceInclTax()),
-                'taxrate' => $item->getTaxPercent(),
-                'discount' => ($item->getDiscountPercent()),
-                'withouttax' => $this->toCents($item->getRowTotal())
-            );
-
-			if (isset($discounts[$percent])) {
-                $discounts[$percent] += $this->toCents($item->getRowTotal());
-			} else {
-				$discounts[$percent] = $this->toCents($item->getRowTotal());
-			}
-			$taxAmount = $taxAmount + ((($this->toCents($item->getRowTotal())) * (1+($percent/100))) - ($this->toCents($item->getRowTotal())));
-			$taxAmount = round($taxAmount,0);
-            $data['Articles'][] = $prod;
-        }
-
-        $subtotal = $this->toCents($this->getQuote()->getSubtotal());
-
-        if (($this->getQuote()->getSubtotal()-$this->getQuote()->getSubtotalWithDiscount()) > 0){
-            $totalDiscountAmount = ($this->getQuote()->getSubtotal()-$this->getQuote()->getSubtotalWithDiscount());
-            foreach ($discounts as $key => $val){
-                $discountPercent = ($val / $subtotal) * 100;
-                $discountAmount = $discountPercent * $totalDiscountAmount;
-                array_push($data['Articles'], array(
-                    'quantity' => '1',
-                    'artnr' => 'discount_' . $key . '%',
-                    'title' => 'discount_' . $key . '%',
-                    'aprice' => $discountAmount/(1+($key/100))*(0-1),
-                    'taxrate' => $key,
-                    'discount' => '0',
-                    'withouttax' => $discountAmount/(1+($key/100))*(0-1)
-                ));
-            }
-        }
+        $itemsData = $this->getItemsData();
+        $data['Articles'] = array_merge($data['Articles'], $itemsData);
 
         $shippingAddressTotal = $this->getQuote()->getShippingAddress();
         $shippingTaxRate = $this->getShippingTaxRate();
-        $round = $shippingAddressTotal->getGrandTotal() -
-            (
-                $shippingAddressTotal->getSubtotal() + $shippingAddressTotal->getShippingAmount() +
-                $shippingAddressTotal->getTaxAmount()
-            );
+
         $data['Cart'] = [
             'Shipping' => [
                 'withouttax' => $this->toCents($shippingAddressTotal->getShippingAmount()),
@@ -161,9 +104,9 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
                 'withtax' => $this->toCents($shippingAddressTotal->getShippingInclTax()),
             ],
             'Total' => [
-                'withouttax' => $this->toCents($shippingAddressTotal->getSubtotal() + $shippingAddressTotal->getShippingAmount()),
+                'withouttax' => $this->toCents($shippingAddressTotal->getGrandTotal() - $shippingAddressTotal->getTaxAmount()),
                 'tax' => $this->toCents($shippingAddressTotal->getTaxAmount()),
-                'rounding' => $round,
+                'rounding' => $this->toCents(0),
                 'withtax' => $this->toCents($shippingAddressTotal->getGrandTotal()),
             ]
         ];
@@ -180,6 +123,29 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
         return $response;
 	}
 
+
+    /**
+     * @return array
+     */
+	protected function getItemsData()
+    {
+        $itemsData = [];
+        $itemsVisible = $this->getQuote()->getAllVisibleItems();
+
+        foreach ($itemsVisible as $item) {
+            $itemsData[] = [
+                'quantity' => $item->getQty(),
+                'artnr' => $item->getSku(),
+                'title' => $item->getName(),
+                'aprice' => $this->toCents($item->getPriceInclTax()),
+                'taxrate' => $item->getTaxPercent(),
+                'discount' => ($item->getDiscountPercent()),
+                'withouttax' => $this->toCents($item->getRowTotal())
+            ];
+        }
+
+        return $itemsData;
+    }
     /**
      * @return string
      */
@@ -213,6 +179,7 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
             'terms' => $this->configHelper->getTermsURL(),
             'redirectOnSuccess'=>'true'
         ];
+
         $data['PaymentData'] = [
             'method' => '93',
             'currency' => 'SEK',
@@ -228,30 +195,32 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
             $data['PaymentData']['number'] = $this->getSessionData('billmate_checkout_id');
         }
 
-       /* need to check this data */
-       /**  $shippingAddressTotal = $this->getQuote()->getShippingAddress();
+        $shippingAddressTotal = $this->getQuote()->getShippingAddress();
         $data['Articles'] = [
             [
                 'quantity' => '1',
                 'artnr' => 'shipping_code',
                 'title' => $shippingAddressTotal->getShippingMethod(),
-                'aprice' => $this->toCents($shippingAddressTotal->getShippingInclTax()),
-                'taxrate' => $this->getShippingTaxRate(),
-                'discount' => $this->toCents($shippingAddressTotal->getShippingDiscountAmount()),
-                'withouttax' => $this->toCents($shippingAddressTotal->getShippingAmount())
-            ]
-        ];*/
-        $data['Cart'] = [];
-
-        if ($this->getSessionData('billmate_applied_discount_code')) {
-            $data['Articles'][] = [
-                'quantity' => '1',
-                'artnr' => 'discount_code',
-                'title' => $this->getSessionData('billmate_applied_discount_code'),
                 'aprice' => '0',
                 'taxrate' => '0',
                 'discount' => '0',
                 'withouttax' => '0'
+
+            ]
+        ];
+
+        $discountAmount = $shippingAddressTotal->getDiscountAmount();
+        if ($discountAmount) {
+            $data['Articles'][] = [
+                'quantity' => '1',
+                'artnr' => 'discount_code',
+                'title' => $shippingAddressTotal->getCouponCode()?
+                    $shippingAddressTotal->getCouponCode():
+                    __('Discount rules ids: ') . $shippingAddressTotal->getAppliedRuleIds(),
+                'aprice' => $this->toCents($discountAmount),
+                'taxrate' => '0',
+                'discount' => '0',
+                'withouttax' => $this->toCents($discountAmount)
             ];
         }
 

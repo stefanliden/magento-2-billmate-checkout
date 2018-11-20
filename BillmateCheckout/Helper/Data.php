@@ -19,6 +19,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $quoteManagement;
     protected $quote;
 
+
+    /**
+     * @var \Magento\Quote\Model\Quote\TotalsCollector
+     */
+    protected $totalsCollector;
+
     /**
      * @var OrderSender
      */
@@ -86,7 +92,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 		\Magento\Quote\Model\ResourceModel\Quote\CollectionFactory $quoteCollectionFactory,
 		\Magento\Checkout\Model\Cart $checkoutCart,
         \Magento\Framework\View\LayoutFactory $layoutFactory,
-        ProductMetadataInterface $metaData
+        ProductMetadataInterface $metaData,
+        \Magento\Quote\Model\Quote\TotalsCollector $totalsCollector
 	){
         $this->orderInterface = $order;
         $this->_storeManager = $storeManager;
@@ -106,6 +113,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->logger = $context->getLogger();
         $this->metaData = $metaData;
         $this->layoutFactory = $layoutFactory;
+        $this->totalsCollector = $totalsCollector;
 
         parent::__construct($context);
     }
@@ -116,9 +124,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         if (!$this->getQuote()->getShippingAddress()->getShippingMethod()) {
             $this->getQuote()->getBillingAddress()->addData($this->getAddress());
             $shippingAddress = $this->getQuote()->getShippingAddress()->addData($this->getAddress());
-            $shippingAddress->setCollectShippingRates(true)
-                ->collectShippingRates()
-            ->setShippingMethod('freeshipping_freeshipping');
+            $this->getQuote()->setShippingAddress($shippingAddress);
+            $shippingAddress->save();
+            $shippingAddress->setCollectShippingRates(true)->collectShippingRates();
         }
         return $this;
     }
@@ -215,10 +223,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function setShippingMethod($methodInput)
     {
+        $this->prepareCheckout();
 		$shippingAddress = $this->getQuote()->getShippingAddress();
         $shippingAddress->setShippingMethod($methodInput);
-		$shippingAddress->setCollectShippingRates(true)
-            ->collectShippingRates();
+		$shippingAddress->collectShippingRates();
+        $shippingAddress->save();
 		$this->getQuote()->collectTotals();
         $this->getQuote()->save();
     }
@@ -620,8 +629,26 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getShippingMethodsRates()
     {
         $this->prepareCheckout();
+        $methods = [];
+        $quote = $this->getQuote();
         $shippingAddress = $this->getQuote()->getShippingAddress();
-        return $shippingAddress->collectShippingRates()->getAllShippingRates();
+        $shippingAddress->setCollectShippingRates(true);
+
+        $this->totalsCollector->collectAddressTotals($quote, $shippingAddress);
+        $shippingRates = $shippingAddress->getGroupedAllShippingRates();
+        foreach ($shippingRates as $carrierRates) {
+            foreach ($carrierRates as $rate) {
+                $methods[] = $rate;
+            }
+        }
+
+        if (!$shippingAddress->getShippingMethod() && $methods) {
+            $rate = current($methods);
+            $this->setShippingMethod($rate->getCode());
+        }
+
+        return $methods;
+
     }
 
     /**
@@ -703,6 +730,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getTotalRow($type)
     {
+        $this->getQuote()->getShippingAddress()->getData();
         $totals = $this->getQuote()->getTotals();
         if(isset($totals[$type])) {
             return $totals[$type];

@@ -138,14 +138,16 @@ class Content extends \Magento\Checkout\Block\Onepage
      */
     public function getTotalValue()
     {
-        $grandTotal = $this->helper->getTotalRow('grand_total');
-        return $grandTotal->getValue();
+        return $this->helper->getQuote()
+            ->getShippingAddress()
+            ->getData('grand_total');
     }
 
     public function getTaxValue()
     {
-        $tax = $this->helper->getTotalRow('tax');
-        return $tax->getValue();
+        $shippingAddressTotal = $this->helper->getQuote()
+            ->getShippingAddress();
+        return $shippingAddressTotal->getTaxAmount() + $shippingAddressTotal->getShippingTaxAmount();
     }
 
     /**
@@ -153,7 +155,8 @@ class Content extends \Magento\Checkout\Block\Onepage
      */
     public function getShippingValue()
     {
-        $shipping = $this->helper->getTotalRow('shipping');
-        return $shipping->getValue();
+        return $this->helper->getQuote()
+            ->getShippingAddress()
+            ->getShippingInclTax();
     }
 }

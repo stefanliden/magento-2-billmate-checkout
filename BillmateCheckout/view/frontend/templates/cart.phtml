@@ -1,0 +1,19 @@
+<?php
+/**
+ * Shopping cart content template
+ *
+ * @var $block \Billmate\BillmateCheckout\Block\Cart
+ */
+?>
+<script>
+  require(
+    ['jquery', 'Billmate_BillmateCheckout/js/ajax'],
+    function($, BillmateAjax) {
+      var ajaxUrl = '<?php echo $block->getAjaxUrl(); ?>';
+      BillmateAjax.call(ajaxUrl);
+    }
+  );
+</script>
+<div id="billmate-cart">
+    <?php echo $block->getChildHtml('billmate.cart.content'); ?>
+</div>

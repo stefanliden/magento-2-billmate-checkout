@@ -6,6 +6,9 @@ use Magento\Framework\App\ProductMetadataInterface;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
+
+    const PLUGIN_VERSION = '0.11.0b';
+
     protected $_storeManager;
     protected $customerFactory;
     protected $customerRepository;
@@ -56,23 +59,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @var \Magento\Quote\Model\Quote
      */
     protected $_quote = false;
-
-    const XML_PATH_GENERAL_ENABLE = 'billmate_billmatecheckout/general/enable';
-    const XML_PATH_GENERAL_PUSHORDEREVENTS = 'billmate_billmatecheckout/general/pushorderevents';
-    const XML_PATH_GENERAL_CUSTOMCSS = 'billmate_billmatecheckout/general/customcss';
-    const XML_PATH_GENERAL_BTN = 'billmate_billmatecheckout/general/inc_dec_btns';
-	const XML_PATH_GENERAL_ATTRIBUTES = 'billmate_billmatecheckout/general/show_attributes_cart';
-	const XML_PATH_GENERAL_TERMS_URL = 'billmate_billmatecheckout/general/terms_url';
-    const XML_PATH_CREDENTIALS_ID = 'billmate_billmatecheckout/credentials/billmate_id';
-    const XML_PATH_CREDENTIALS_KEY = 'billmate_billmatecheckout/credentials/billmate_key';
-    const XML_PATH_GENERAL_TESTMODE = 'billmate_billmatecheckout/credentials/testmode';
-    const XML_PATH_PENDING_FETCH = 'billmate_billmatecheckout/pending_settings/fetch';
-    const XML_PATH_PENDING_MULTISELECT = 'billmate_billmatecheckout/pending_settings/multiselect';
-    const XML_PATH_PENDING_PENDING_CONTROL = 'billmate_billmatecheckout/pending_settings/bm_pending_control';
-    const XML_PATH_PENDING_DENY = 'billmate_billmatecheckout/pending_settings/bm_deny';
-    const XML_PATH_PENDING_ACTIVATED = 'billmate_billmatecheckout/pending_settings/bm_activated';
-    const XML_PATH_PENDING_CANCELED = 'billmate_billmatecheckout/pending_settings/bm_canceled';
-    const XML_PATH_PENDING_ENABLE = 'billmate_billmatecheckout/pending_settings/enable';
 
     public function __construct(
 		\Magento\Framework\App\Helper\Context $context, 
@@ -568,20 +554,13 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 
         $this->setSessionData('billmate_payment_method', $method);
 	}
-	
-	public function def()
-    {
-		define("BILLMATE_SERVER", "2.1.7");
-		define("BILLMATE_CLIENT", $this->getClientVersion());
-		define("BILLMATE_LANGUAGE", "sv");
-	}
 
     /**
      * @return string
      */
     public function getClientVersion()
     {
-        return "Magento:".$this->getMagentoVersion()." PLUGIN:0.9.3b";
+        return "Magento:".$this->getMagentoVersion()." PLUGIN:" . $this->getPluginVersion();
     }
 
     /**
@@ -591,6 +570,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         $version = $this->metaData->getVersion();
         return $version;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPluginVersion()
+    {
+        return self::PLUGIN_VERSION;
     }
 
     /**

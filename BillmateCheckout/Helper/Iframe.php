@@ -181,7 +181,6 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
         ];
 
         $data['PaymentData'] = [
-            'method' => '93',
             'currency' => 'SEK',
             'language' => 'sv',
             'country' => 'SE',

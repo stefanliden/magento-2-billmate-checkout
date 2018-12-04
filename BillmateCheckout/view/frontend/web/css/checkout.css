@@ -12,29 +12,39 @@
 	display: none !important;
 }
 
-.billmate-checkout-price{
-    margin-top: -20px;
-    margin-left: 54%;
+.billmate-checkout-price {
     color:#7c7c7c;
 	font-weight: bold;
+    float: left;
+    margin-left: 30px;
+    margin-top: 8px;
 }
 .billmate-checkout-price-head{
     margin-top: -20px;
     margin-left: 54%;
 }
-.billmate-checkout-qty{
-    margin-top: -20px;
-    margin-left: 72%;
+
+.billmate-checkout-del-but {
+    margin-top: 28px;
 }
+
 .billmate-checkout-qty-head{
     margin-top: -20px;
     margin-left: 73%;
 }
+
+.billmate-checkout-qty{
+    display: block;
+    float: left;
+    margin-left: 50px
+}
+
 .billmate-checkout-sum{
-    margin-top: -47px;
-    margin-left: 85%;
+    margin-left: 18px;
     color:#7c7c7c;
 	font-weight: bold;
+    float: left;
+    margin-top: 8px;
 }
 .billmate-checkout-sum-head{
     margin-top: -20px;
@@ -95,41 +105,23 @@ div.column.main{
     display:none;
 }
 
-button.inc {
+.billmate-checkout-qty button {
     width: 35px;
     height: 37px;
     color:#000;
     background-color:#fff;
-    margin-top: -56px;
-    margin-left: 44px;
-	border: 1px solid #f3f3f3;
-	  border-top-right-radius: 3px !important;
-    border-bottom-right-radius: 3px !important;
-    font-weight:bold;
-    font-size: 24px;
-}
-
-button.sub {
-    width: 35px;
-    height: 37px;
-    color:#000;
-    background-color:#fff;	
-    margin-top:-9px;
-    margin-left: -25px;
-	border: 1px solid #f3f3f3;
+    border: 1px solid #f3f3f3;
     border-top-left-radius: 3px !important;
     border-bottom-left-radius: 3px !important;
     font-weight:bold;
     font-size: 25px;
-} 
+    display: inline;
+}
 .billmate-checkout-product-qty{
-    height:17px;
-    width:19px;
     background-color:#f3f3f3;
-    padding:10px 12px 10px;
-    margin-top: -37px;
-    margin-left:10px;
+    padding:8px 12px 10px;
 	font-weight: bold;
+    display: inline;
 }
 .bm-cart-wrapper{
     padding-left: 0px;
@@ -225,10 +217,9 @@ iframe#checkout {
 .billmate-checkout-product-row .billmate-checkout-name{
     margin-top: 0;
     float: left;
+    min-height:50px;
 }
-.billmate-checkout-price {
-    margin-top: 10px;
-}
+
 .billmate-checkout-product-row .billmate-checkout-name span {
     font-size: 14px;
     color: #7c7c7c;
@@ -297,8 +288,8 @@ table.totals td {
 }
 .billmate-checkout-product-row .billmate-checkout-name ,.billmate-checkout-sum ,.billmate-checkout-price{
     font-size: 16px;
-	
 }
+
 table.totals td.price {
     text-align: justify;
     text-align-last: right;
@@ -340,24 +331,19 @@ table.totals td.name {
     margin-left: 68%;
 }
 .billmate-checkout-qty {
-    margin-top: 20px; 
-    margin-left: 66%;
+    margin-left: 172px;
 }
 .billmate-checkout-sum-head {
-    /* margin-top: 20px; */
     margin-left: 80%;
     color: #7c7c7c;
 }
 .billmate-checkout-sum {
-    margin-top: -51px;
-    margin-left: 80%;
     color: #7c7c7c;
 }
 .billmate-checkout-product-row .billmate-checkout-name p {
     margin-bottom: 2px;
     width: 190px;
     word-wrap: break-word;
-    /* top: 0px; */
 }
 .billmate-checkout-product-row .billmate-checkout-name span {
     font-size: 14px;
@@ -371,10 +357,6 @@ table.totals td.name {
 }
 .billmate-checkout-price{display: none;}
 
-.billmate-checkout-del-but {
-margin-top: 0;
-
-}
 .area{
 position:relative;
 	left: -31%;
@@ -391,19 +373,12 @@ position:relative;
         }
 	.billmate-checkout-qty {
 		position: absolute;
-		bottom: 0;
-		left: 40px;
+		bottom: 8px;
 		margin: 5px;
 	}
 	.billmate-checkout-product-row{
 		padding-bottom: 70px;
 		position: relative;
-	}
-	.billmate-checkout-price {
-		position: absolute;
-		margin: 0;
-		bottom: 0;
-		right: 0;
 	}
 
 	.billmate-checkout-del-but {

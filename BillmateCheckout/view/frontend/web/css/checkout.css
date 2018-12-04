@@ -36,7 +36,17 @@
 .billmate-checkout-qty{
     display: block;
     float: left;
-    margin-left: 50px
+    margin-left: 50px;
+    width: 110px;
+}
+
+.billmate-checkout-qty.no-buttons {
+
+}
+
+.billmate-checkout-qty.no-buttons .billmate-checkout-product-qty{
+    display: block;
+    margin-left: 50px;
 }
 
 .billmate-checkout-sum{
@@ -122,6 +132,7 @@ div.column.main{
     padding:8px 12px 10px;
 	font-weight: bold;
     display: inline;
+    width: 14px;
 }
 .bm-cart-wrapper{
     padding-left: 0px;
@@ -159,7 +170,7 @@ div.checkout{
     background-color:#fff;
     background-image:url(../img/span.png);
     float:right;
-    margin-top:-22px;
+    margin-top:-20px;
     cursor:pointer;
 }
 
@@ -376,6 +387,9 @@ position:relative;
 		bottom: 8px;
 		margin: 5px;
 	}
+    .billmate-checkout-qty.no-buttons .billmate-checkout-product-qty {
+        margin-left: 30px;
+    }
 	.billmate-checkout-product-row{
 		padding-bottom: 70px;
 		position: relative;

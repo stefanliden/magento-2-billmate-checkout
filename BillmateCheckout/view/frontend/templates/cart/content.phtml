@@ -27,7 +27,7 @@
             </div>
             <div class="billmate-checkout-name"><p><?= $block->escapeHtml($item->getName()) ?></p></div>
             <div class="billmate-checkout-price" id="price_<?= $item->getId() ?>"><?= $block->formatPrice($item->getPrice()) ?></div>
-            <div class="billmate-checkout-qty" id="qty_<?= $item->getId() ?>">
+            <div class="billmate-checkout-qty <?= !$isEnabledButtons? 'no-buttons' : '' ?>" id="qty_<?= $item->getId() ?>">
                 <?php if($isEnabledButtons): ?>
                     <button class="billmate-checkout-button-sub sub" id="bm-sub-btn sub_<?= $item->getId() ?>" name="sub">-</button>
                 <?php endif ?>

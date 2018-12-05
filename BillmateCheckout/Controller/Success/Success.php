@@ -53,30 +53,25 @@ class Success extends \Magento\Framework\App\Action\Action
 	
 	public function execute()
     {
-        if (!$this->successValidator->isValid()) {
-            //return $this->resultRedirectFactory->create()->setPath('checkout/cart');
-        }
-        $this->logger->error(print_r(array(
+        $this->helper->addLog([
             '__FILE__' => __FILE__,
             '__CLASS__' => __CLASS__,
             '__FUNCTION__' => __FUNCTION__,
             '__LINE__' => __LINE__,
-            'date' => date('Y-m-d H:i:s'),
             'note' => 'aaa'
-        ), true));
+        ]);
 
 		$resultPage = $this->resultPageFactory->create();
 		try{
 
-            $this->logger->error(print_r(array(
+            $this->helper->addLog([
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
                 '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
                 'note' => 'aba',
                 'isset.session.bm-inc-id' => (bool)$this->helper->getSessionData('bm-inc-id'),
-            ), true));
+            ]);
 
 			if (!$this->helper->getSessionData('bm-inc-id')) {
 				$orderData = array(
@@ -97,15 +92,14 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->registry->register('bm-inc-id', $this->helper->getSessionData('bm-inc-id'));
 			$orderId = $order->getId();
 
-            $this->logger->error(print_r(array(
+            $this->helper->addLog([
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
                 '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
                 'note' => 'abb',
                 'orderId' => $orderId,
-            ), true));
+            ]);
 
 			$this->eventManager->dispatch(
 				'checkout_onepage_controller_success_action',
@@ -116,34 +110,36 @@ class Success extends \Magento\Framework\App\Action\Action
 			$this->checkoutSession->setLastQuoteId($this->helper->getQuote()->getId());
 			$this->checkoutSession->setLastOrderId($orderId);
 
-            $this->logger->error(print_r(array(
+            if (!$this->successValidator->isValid()) {
+                return $this->resultRedirectFactory->create()->setPath('checkout/cart');
+            }
+
+            $this->helper->addLog([
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
                 '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
                 'note' => 'abc',
-            ), true));
+            ]);
 
             $url = $this->_url->getUrl('checkout/onepage/success');
 
-            $this->logger->error(print_r(array(
+            $this->helper->addLog([
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
                 '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
                 'note' => 'abd',
                 'url' => $url,
                 'headers_sent' => (headers_sent()),
-            ), true));
+            ]);
 
             $this->helper->clearSession();
 		}
 		catch (\Exception $e){
             $this->helper->setSessionData('bm-inc-id',$this->helper->getQuote()->getReservedOrderId());
-            $this->logger->error(print_r(array(
-                'note' => 'could not redirect customer to store order confirmation page',
+            $this->helper->addLog([
+                'note' => 'Could not redirect customer to store order confirmation page',
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
@@ -151,19 +147,18 @@ class Success extends \Magento\Framework\App\Action\Action
                 'exception.message' => $e->getMessage(),
                 'exception.file' => $e->getFile(),
                 'exception.line' => $e->getLine(),
-            ), true));
+            ]);
             return $this->resultRedirectFactory->create()->setPath('billmatecheckout/success/error');
 		}
 
-        $this->logger->error(print_r(array(
-            'note' => 'could not redirect customer to store order confirmation page',
+        $this->helper->addLog([
+            'note' => 'Customer redirected to the success page',
             '__FILE__' => __FILE__,
             '__CLASS__' => __CLASS__,
             '__FUNCTION__' => __FUNCTION__,
             '__LINE__' => __LINE__,
-            'date' => date('Y-m-d H:i:s'),
             'note' => 'done Return content of resultPage',
-        ), true));
+        ]);
 
 		return $resultPage;
 	}

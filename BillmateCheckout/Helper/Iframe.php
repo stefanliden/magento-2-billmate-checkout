@@ -4,14 +4,35 @@ namespace Billmate\BillmateCheckout\Helper;
 
 class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
 {
+    /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
     protected $_storeManager;
+
+    /**
+     * @var \Magento\Quote\Model\Quote\Address\Rate
+     */
     protected $shippingRate;
+
+    /**
+     * @var \Magento\Checkout\Model\Session
+     */
     protected $checkoutSession;
-    protected $shippingMethodManagementInterface;
-    protected $quoteManagement;
-    protected $quote;
+
+    /**
+     * @var float
+     */
 	protected $shippingPrice;
-	protected $_cart;
+
+    /**
+     * @var bool
+     */
+    protected $_updateProcessRun = false;
+
+    /**
+     * @var string
+     */
+    protected $_apiCallMethod = 'initCheckout';
 
     /**
      * @var \Billmate\BillmateCheckout\Helper\Data
@@ -30,11 +51,6 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
         'postcode' => '12345',
         'telephone' => '0700123456'
     ];
-
-    /**
-     * @var \Magento\Quote\Model\Quote
-     */
-    protected $_quote = false;
 
     /**
      * Iframe constructor.
@@ -61,9 +77,6 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
         $this->_storeManager = $storeManager;
         $this->shippingRate = $shippingRate;
         $this->checkoutSession = $_checkoutSession;
-
-        $this->logger = $context->getLogger();
-
         $this->billmateProvider = $billmateProvider;
         $this->configHelper = $configHelper;
         $this->dataHelper = $dataHelper;
@@ -72,9 +85,14 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
         parent::__construct($context);
     }
 
-    public function getIframeData($method='initCheckout')
+    /**
+     * @return array|mixed
+     */
+    public function getIframeData()
     {
         $this->dataHelper->prepareCheckout();
+        $this->runCheckIsUpdateCheckout();
+
         $quoteAddress = $this->dataHelper->getQuote()->getShippingAddress();
         $lShippingPrice = $quoteAddress->getShippingAmount();
 
@@ -111,12 +129,13 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
             ]
         ];
 
+        $method = $this->getApiMethod();
         $response = $this->billmateProvider->call(
             $method,
             $data
         );
 
-        if (isset ($response['number'])) {
+        if (isset($response['number'])) {
             $this->setSessionData('billmate_checkout_id', $response['number']);
         }
 
@@ -146,12 +165,13 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
 
         return $itemsData;
     }
+
     /**
      * @return string
      */
     public function updateIframe()
     {
-        $response = $this->getIframeData('updateCheckout');
+        $response = $this->getIframeData();
 
         if(isset($response['url'])) {
             return $response['url'];
@@ -160,38 +180,34 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @return \Magento\Quote\Model\Quote
-     */
-    protected function getQuote()
-    {
-        return $this->dataHelper->getQuote();
-    }
-
-    /**
      * @return array
      */
     protected function getRequestData()
     {
         $data = [];
-        $data['CheckoutData'] = [
-            'windowmode' => 'iframe',
-            'sendreciept' => 'yes',
-            'terms' => $this->configHelper->getTermsURL(),
-            'redirectOnSuccess'=>'true'
-        ];
-
         $data['PaymentData'] = [
             'currency' => 'SEK',
             'language' => 'sv',
             'country' => 'SE',
             'orderid' => $this->getQuote()->getReservedOrderId(),
-            'callbackurl' => $this->_getUrl('billmatecheckout/callback/callback'),
-            'accepturl' =>  $this->_getUrl('billmatecheckout/success/success/'),
-            'cancelurl' =>  $this->_getUrl('billmatecheckout')
         ];
 
-        if ($this->getSessionData('billmate_checkout_id')) {
-            $data['PaymentData']['number'] = $this->getSessionData('billmate_checkout_id');
+        if (!$this->_updateProcessRun) {
+            $data['PaymentData']['callbackurl'] = $this->_getUrl('billmatecheckout/callback/callback');
+            $data['PaymentData']['accepturl'] = $this->_getUrl('billmatecheckout/success/success/');
+            $data['PaymentData']['cancelurl'] = $this->_getUrl('billmatecheckout');
+
+            $data['CheckoutData'] = [
+                'windowmode' => 'iframe',
+                'sendreciept' => 'yes',
+                'terms' => $this->configHelper->getTermsURL(),
+                'redirectOnSuccess'=>'true'
+            ];
+        }
+
+        $billmateCheckoutId = $this->getBillmateCheckoutId();
+        if ($billmateCheckoutId) {
+            $data['PaymentData']['number'] = $billmateCheckoutId;
         }
 
         $shippingAddressTotal = $this->getQuote()->getShippingAddress();
@@ -227,6 +243,35 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * @return int | null
+     */
+    protected function getBillmateCheckoutId()
+    {
+        return $this->getSessionData('billmate_checkout_id');
+    }
+
+
+    /**
+     * @return $this
+     */
+    protected function runCheckIsUpdateCheckout()
+    {
+        if ($this->getBillmateCheckoutId()) {
+            $this->_updateProcessRun = true;
+            $this->_apiCallMethod = 'updateCheckout';
+        }
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getApiMethod()
+    {
+        return $this->_apiCallMethod;
+    }
+
+    /**
      * @param $key
      * @param $value
      *
@@ -246,6 +291,14 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
     protected function getSessionData($key)
     {
         return $this->dataHelper->getSessionData($key);
+    }
+
+    /**
+     * @return \Magento\Quote\Model\Quote
+     */
+    protected function getQuote()
+    {
+        return $this->dataHelper->getQuote();
     }
 
     /**
@@ -278,5 +331,4 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
         $shippingTaxClass = $this->configHelper->getShippingTaxClass();
         return $taxCalculation->getRate($request->setProductClassId($shippingTaxClass));
     }
-
 }

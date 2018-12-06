@@ -15,7 +15,7 @@
 					<frontend_model>Billmate\BillmateCheckout\Block\System\Config\Version</frontend_model>
 				</field>
 				<field id="enable" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Active</label>
+					<label>Enabled</label>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 					<comment>
 						Enable/Disable Billmate Checkout

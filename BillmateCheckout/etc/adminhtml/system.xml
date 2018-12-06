@@ -40,12 +40,12 @@
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 				</field>
 				<field id="terms_url" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Terms URL</label>
-					<comment>Full URL to terms and conditions</comment>
+					<label>Store terms</label>
+					<comment>Put here full URL to terms and conditions</comment>
 				</field>
 				<field id="privacy_policy_url" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Privacy Policy URL</label>
-					<comment>Put here full URL privacy policy (ex: https://youdomain.com/privacy-policy-url)</comment>
+					<label>Privacy Policy</label>
+					<comment>Put here full URL to privacy policy (ex: https://youdomain.com/privacy-policy-url)</comment>
 				</field>
 			</group>
 			<group id="credentials" translate="label" type="text" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="1">

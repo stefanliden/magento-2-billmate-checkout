@@ -201,8 +201,14 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
                 'windowmode' => 'iframe',
                 'sendreciept' => 'yes',
                 'terms' => $this->configHelper->getTermsURL(),
-                'redirectOnSuccess'=>'true'
+                'redirectOnSuccess'=>'true',
+
             ];
+
+            $privacyPolicyURL = $this->configHelper->getPPURL();
+            if ($privacyPolicyURL) {
+                $data['CheckoutData']['privacyPolicy'] = $privacyPolicyURL;
+            }
         }
 
         $billmateCheckoutId = $this->getBillmateCheckoutId();

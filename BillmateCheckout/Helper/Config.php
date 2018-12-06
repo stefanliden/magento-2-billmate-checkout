@@ -11,6 +11,7 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     const XML_PATH_GENERAL_BTN = 'billmate_billmatecheckout/general/inc_dec_btns';
     const XML_PATH_GENERAL_ATTRIBUTES = 'billmate_billmatecheckout/general/show_attributes_cart';
     const XML_PATH_GENERAL_TERMS_URL = 'billmate_billmatecheckout/general/terms_url';
+    const XML_PATH_GENERAL_PP_URL = 'billmate_billmatecheckout/general/privacy_policy_url';
     const XML_PATH_CREDENTIALS_ID = 'billmate_billmatecheckout/credentials/billmate_id';
     const XML_PATH_CREDENTIALS_KEY = 'billmate_billmatecheckout/credentials/billmate_key';
     const XML_PATH_GENERAL_TESTMODE = 'billmate_billmatecheckout/credentials/testmode';
@@ -155,6 +156,14 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     public function getTermsURL()
     {
         return $this->getConfig(self::XML_PATH_GENERAL_TERMS_URL);
+    }
+
+    /**
+     * @return string
+     */
+    public function getPPURL()
+    {
+        return $this->getConfig(self::XML_PATH_GENERAL_PP_URL);
     }
 
     /**

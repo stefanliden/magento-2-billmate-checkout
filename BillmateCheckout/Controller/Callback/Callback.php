@@ -105,30 +105,17 @@ class Callback extends \Magento\Framework\App\Action\Action
 			}
 
 			$order->setData('billmate_invoice_id', $requestData['data']['number']);
-            $orderStateActivated = $this->configHelper->getActivated();
 			if (
 			    $paymentInfo['PaymentData']['status'] == 'Created'||
-                ($paymentInfo['PaymentData']['status'] == 'Paid' && !$this->configHelper->getBmEnable())
+                ($paymentInfo['PaymentData']['status'] == 'Paid')
             ) {
-				$order->setState($orderStateActivated)->setStatus($orderStateActivated);
-			} elseif ($paymentInfo['PaymentData']['status'] == 'Paid' && $this->configHelper->getBmEnable()) {
-				if ($requestData['data']['status']=='Paid') {
-					$order->setState($orderStateActivated)->setStatus($orderStateActivated);
-					$order->save();
-					$invoice = $this->invoiceService->prepareInvoice($order);
-					$invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
-					$invoice->register();
-                    $transaction = $this->_transactionFactory->create();
-					$transactionSave = $transaction->addObject($invoice)->addObject($invoice->getOrder());
-					$transactionSave->save();
-				}
+                $orderState = $this->helper->getApproveStatus();
 			} elseif ($paymentInfo['PaymentData']['status'] == 'Pending') {
-				$orderState = $this->configHelper->getPendingControl();
-				$order->setState($orderState)->setStatus($orderState);
+				$orderState = $this->helper->getPendingStatus();
 			} else {
-				$orderState = $this->configHelper->getDeny();
-				$order->setState($orderState)->setStatus($orderState);
+				$orderState = $this->helper->getDenyStatus();
 			}
+            $order->setState($orderState)->setStatus($orderState);
             $order->save();
 		}
 	}

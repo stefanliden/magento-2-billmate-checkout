@@ -65,40 +65,6 @@
 					</comment>
 				</field>
 			</group>
-			<group id="pending_settings" translate="label" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="1">
-				<label>Control/Pending Settings</label>
-				<field id="fetch" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Should Magento fetch updates from Billmate for order with status pending?</label>
-					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-				</field>
-				<field id="multiselect" translate="label comment" type="multiselect" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Which status should we use to filter orders for check Billmate status</label>
-					<source_model>Billmate\BillmateCheckout\Model\Config\Source\Orderstatuses</source_model>
-					<comment>
-						
-					</comment>
-				</field>
-				<field id="bm_pending_control" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>What order status should be set if order is Pending from Billmate API?</label>
-					<source_model>Billmate\BillmateCheckout\Model\Config\Source\Orderstatuses</source_model>
-				</field>
-				<field id="bm_deny" translate="label comment" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>What order status should be set if a Pending order gets denied from Billmate API?</label>
-					<source_model>Billmate\BillmateCheckout\Model\Config\Source\Orderstatuses</source_model>
-				</field>
-				<field id="bm_activated" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>What order status should be set if a pending order gets activated from Billmate API?</label>
-					<source_model>Billmate\BillmateCheckout\Model\Config\Source\Orderstatuses</source_model>
-				</field>
-				<field id="bm_canceled" translate="label comment" type="select" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>What order status should be set if a pending order gets canceled from Billmate API?</label>
-					<source_model>Billmate\BillmateCheckout\Model\Config\Source\Orderstatuses</source_model>
-				</field>
-				<field id="enable" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Should invoice be created in Magento if order is marked as activated from Billmate API?</label>
-					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-				</field>
-			</group>
 		</section>
 	</system>
 </config>

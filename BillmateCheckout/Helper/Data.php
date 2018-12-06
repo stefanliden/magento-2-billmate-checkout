@@ -8,18 +8,58 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
 
     const PLUGIN_VERSION = '0.11.0b';
+    const BM_PENDING_STATUS = 'pending';
+    const BM_DENY_STATUS = 'canceled';
+    const BM_APPROVE_STATUS = 'processing';
 
+    /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
     protected $_storeManager;
+
+    /**
+     * @var \Magento\Customer\Model\CustomerFactory
+     */
     protected $customerFactory;
+
+    /**
+     * @var \Magento\Customer\Api\CustomerRepositoryInterface
+     */
     protected $customerRepository;
+
+    /**
+     * @var \Magento\Quote\Api\CartRepositoryInterface
+     */
     protected $cartRepositoryInterface;
+
+    /**
+     * @var \Magento\Quote\Api\CartManagementInterface
+     */
     protected $cartManagementInterface;
+
+    /**
+     * @var \Magento\Quote\Model\Quote\Address\Rate
+     */
     protected $shippingRate;
+
+    /**
+     * @var \Magento\Quote\Model\ResourceModel\Quote\CollectionFactory
+     */
     protected $quoteCollectionFactory;
+
+    /**
+     * @var \Magento\Framework\App\ResourceConnection
+     */
     protected $resource;
+
+    /**
+     * @var \Magento\Checkout\Model\Session
+     */
     protected $checkoutSession;
-    protected $shippingMethodManagementInterface;
-    protected $quoteManagement;
+
+    /**
+     * @var \Magento\Quote\Model\QuoteFactory
+     */
     protected $quote;
 
 
@@ -28,14 +68,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected $totalsCollector;
 
-    /**
-     * @var OrderSender
-     */
     protected $orderSender;
 
     protected $orderInterface;
+
 	protected $shippingPrice;
-	protected $checkoutCart;
 
     /**
      * @var \Magento\Framework\View\LayoutFactory
@@ -60,6 +97,26 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     protected $_quote = false;
 
+    /**
+     * Data constructor.
+     *
+     * @param \Magento\Framework\App\Helper\Context                      $context
+     * @param \Magento\Store\Model\StoreManagerInterface                 $storeManager
+     * @param \Magento\Customer\Model\CustomerFactory                    $customerFactory
+     * @param \Magento\Customer\Api\CustomerRepositoryInterface          $customerRepository
+     * @param \Magento\Quote\Api\CartRepositoryInterface                 $cartRepositoryInterface
+     * @param \Magento\Quote\Api\CartManagementInterface                 $cartManagementInterface
+     * @param \Magento\Quote\Model\Quote\Address\Rate                    $shippingRate
+     * @param \Magento\Sales\Api\Data\OrderInterface                     $order
+     * @param \Magento\Framework\App\ResourceConnection                  $resource
+     * @param \Magento\Checkout\Model\Session                            $_checkoutSession
+     * @param \Magento\Quote\Model\QuoteFactory                          $quote
+     * @param \Magento\Sales\Model\Order\Email\Sender\OrderSender        $orderSender
+     * @param \Magento\Quote\Model\ResourceModel\Quote\CollectionFactory $quoteCollectionFactory
+     * @param \Magento\Framework\View\LayoutFactory                      $layoutFactory
+     * @param ProductMetadataInterface                                   $metaData
+     * @param \Magento\Quote\Model\Quote\TotalsCollector                 $totalsCollector
+     */
     public function __construct(
 		\Magento\Framework\App\Helper\Context $context, 
 		\Magento\Store\Model\StoreManagerInterface $storeManager,
@@ -70,13 +127,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 		\Magento\Quote\Model\Quote\Address\Rate $shippingRate,
 		\Magento\Sales\Api\Data\OrderInterface $order, 
 		\Magento\Framework\App\ResourceConnection $resource, 
-		\Magento\Checkout\Model\Session $_checkoutSession, 
-		\Magento\Quote\Model\QuoteManagement $quoteManagement, 
+		\Magento\Checkout\Model\Session $_checkoutSession,
 		\Magento\Quote\Model\QuoteFactory $quote,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
-		\Magento\Quote\Api\ShippingMethodManagementInterface $_shippingMethodManagementInterface, 
 		\Magento\Quote\Model\ResourceModel\Quote\CollectionFactory $quoteCollectionFactory,
-		\Magento\Checkout\Model\Cart $checkoutCart,
         \Magento\Framework\View\LayoutFactory $layoutFactory,
         ProductMetadataInterface $metaData,
         \Magento\Quote\Model\Quote\TotalsCollector $totalsCollector
@@ -87,14 +141,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->customerRepository = $customerRepository;
         $this->cartRepositoryInterface = $cartRepositoryInterface;
         $this->cartManagementInterface = $cartManagementInterface;
-		$this->checkoutCart = $checkoutCart;
         $this->shippingRate = $shippingRate;
         $this->resource = $resource;
         $this->checkoutSession = $_checkoutSession;
-        $this->quoteManagement = $quoteManagement;
         $this->quote = $quote;
         $this->orderSender = $orderSender;
-        $this->shippingMethodManagementInterface = $_shippingMethodManagementInterface;
         $this->quoteCollectionFactory = $quoteCollectionFactory;
         $this->logger = $context->getLogger();
         $this->metaData = $metaData;
@@ -690,13 +741,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @return \Magento\Checkout\Model\Cart
+     * @param $data
      */
-    public function getCheckoutCart()
-    {
-        return $this->checkoutCart;
-    }
-
     public function addLog($data)
     {
         if (!is_array($data)) {
@@ -743,5 +789,30 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getOrderById($orderId)
     {
         return $this->orderInterface->load($orderId);
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function getPendingStatus()
+    {
+        return self::BM_PENDING_STATUS;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDenyStatus()
+    {
+        return self::BM_DENY_STATUS;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getApproveStatus()
+    {
+        return self::BM_APPROVE_STATUS;
     }
 }

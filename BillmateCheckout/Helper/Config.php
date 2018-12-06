@@ -7,7 +7,6 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
 
     const XML_PATH_GENERAL_ENABLE = 'billmate_billmatecheckout/general/enable';
     const XML_PATH_GENERAL_PUSHORDEREVENTS = 'billmate_billmatecheckout/general/pushorderevents';
-    const XML_PATH_GENERAL_CUSTOMCSS = 'billmate_billmatecheckout/general/customcss';
     const XML_PATH_GENERAL_BTN = 'billmate_billmatecheckout/general/inc_dec_btns';
     const XML_PATH_GENERAL_ATTRIBUTES = 'billmate_billmatecheckout/general/show_attributes_cart';
     const XML_PATH_GENERAL_TERMS_URL = 'billmate_billmatecheckout/general/terms_url';
@@ -164,13 +163,5 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
     public function getPPURL()
     {
         return $this->getConfig(self::XML_PATH_GENERAL_PP_URL);
-    }
-
-    /**
-     * @return string
-     */
-    public function getCustomCss()
-    {
-        return $this->getConfig(self::XML_PATH_GENERAL_CUSTOMCSS);
     }
 }

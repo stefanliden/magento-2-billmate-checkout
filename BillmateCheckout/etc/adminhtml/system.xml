@@ -21,12 +21,6 @@
 						Enable/Disable Billmate Checkout
 					</comment>
 				</field>
-				<field id="css_note" translate="label comment" type="note" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Custom CSS</label>
-					<comment>
-						If you want to use custom CSS then you can override the css by creating a file in app/design/frontend/{Vendor}/{Theme}/Billmate_BillmateCheckout/css/checkout.css
-					</comment>
-				</field>
 				<field id="pushorderevents" translate="label comment" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
 					<label>Push order events to Billmate</label>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

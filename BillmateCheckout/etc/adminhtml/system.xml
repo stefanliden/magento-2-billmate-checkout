@@ -37,6 +37,7 @@
 				</field>
 				<field id="show_attributes_cart" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
 					<label>Show attributes in cart</label>
+					<comment>Show attributes such as size and color.</comment>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 				</field>
 				<field id="terms_url" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">

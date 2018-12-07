@@ -3,11 +3,11 @@
 namespace Billmate\BillmateCheckout\Helper;
 
 use Magento\Framework\App\ProductMetadataInterface;
+use Magento\Framework\Module\ModuleListInterface;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
-
-    const PLUGIN_VERSION = '0.11.0b';
+    const MODULE_NAME = 'Billmate_BillmateCheckout';
     const BM_PENDING_STATUS = 'pending';
     const BM_DENY_STATUS = 'canceled';
     const BM_APPROVE_STATUS = 'processing';
@@ -67,6 +67,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @var \Magento\Quote\Model\Quote\TotalsCollector
      */
     protected $totalsCollector;
+
+    /**
+     * @var ModuleListInterface
+     */
+    protected $_moduleList;
 
     protected $orderSender;
 
@@ -133,7 +138,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
 		\Magento\Quote\Model\ResourceModel\Quote\CollectionFactory $quoteCollectionFactory,
         \Magento\Framework\View\LayoutFactory $layoutFactory,
         ProductMetadataInterface $metaData,
-        \Magento\Quote\Model\Quote\TotalsCollector $totalsCollector
+        \Magento\Quote\Model\Quote\TotalsCollector $totalsCollector,
+        ModuleListInterface $moduleList
 	){
         $this->orderInterface = $order;
         $this->_storeManager = $storeManager;
@@ -151,6 +157,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->metaData = $metaData;
         $this->layoutFactory = $layoutFactory;
         $this->totalsCollector = $totalsCollector;
+        $this->_moduleList = $moduleList;
 
         parent::__construct($context);
     }
@@ -628,7 +635,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getPluginVersion()
     {
-        return self::PLUGIN_VERSION;
+        return $this->_moduleList->getOne(self::MODULE_NAME)['setup_version'];
     }
 
     /**

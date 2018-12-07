@@ -54,7 +54,7 @@
 				<field id="testmode" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
 					<label>Billmate Test Mode</label>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-					<comment>Testmode, no real orders.</comment>
+					<comment>Enable/Disable Billmate Test Mode</comment>
 				</field>
 			</group>
 		</section>

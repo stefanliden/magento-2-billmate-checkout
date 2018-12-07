@@ -47,6 +47,11 @@ class Callback extends \Magento\Framework\App\Action\Action
      * @var TransactionFactory
      */
     protected $_transactionFactory;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Model\Order
+     */
+    protected $orderModel;
 	
 	public function __construct(
 	    Context $context,
@@ -57,7 +62,8 @@ class Callback extends \Magento\Framework\App\Action\Action
 		\Magento\Sales\Api\Data\OrderInterface $order,
         \Magento\Sales\Model\Service\InvoiceService $_invoiceService,
         \Billmate\BillmateCheckout\Model\Api\Billmate $billmateProvider,
-        TransactionFactory $transactionFactory
+        TransactionFactory $transactionFactory,
+        \Billmate\BillmateCheckout\Model\Order $orderModel
     ){
 		$this->resultPageFactory = $resultPageFactory;
 	    $this->productRepository = $productRepository;
@@ -67,6 +73,8 @@ class Callback extends \Magento\Framework\App\Action\Action
 		$this->orderInterface = $order;
         $this->billmateProvider = $billmateProvider;
         $this->_transactionFactory = $transactionFactory;
+        $this->orderModel = $orderModel;
+
 		parent::__construct($context);
 	}
 	
@@ -97,7 +105,7 @@ class Callback extends \Magento\Framework\App\Action\Action
 			$order = $this->helper->getOrderByIncrementId($paymentInfo['PaymentData']['orderid']);
 			if (!is_string($order->getIncrementId())) {
                 $orderInfo = $this->getOrderInfo($paymentInfo);
-				$order_id = $this->helper->createOrder($orderInfo, $paymentInfo['PaymentData']['orderid']);
+				$order_id = $this->orderModel->create($orderInfo, $paymentInfo['PaymentData']['orderid']);
                 if (!$order_id) {
                     return;
                 }

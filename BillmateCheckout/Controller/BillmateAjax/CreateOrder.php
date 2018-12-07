@@ -16,6 +16,11 @@ class CreateOrder extends \Magento\Framework\App\Action\Action
 	protected $helper;
 
     /**
+     * @var \Billmate\BillmateCheckout\Model\Order
+     */
+    protected $orderModel;
+
+    /**
      * CreateOrder constructor.
      *
      * @param Context                                          $context
@@ -24,10 +29,12 @@ class CreateOrder extends \Magento\Framework\App\Action\Action
      */
 	public function __construct(Context $context,
 		\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
-		\Billmate\BillmateCheckout\Helper\Data $_helper
+		\Billmate\BillmateCheckout\Helper\Data $_helper,
+        \Billmate\BillmateCheckout\Model\Order $orderModel
 	) {
 		$this->resultJsonFactory = $resultJsonFactory;
 		$this->helper = $_helper;
+        $this->orderModel = $orderModel;
 		parent::__construct($context);
 	}
 
@@ -53,7 +60,7 @@ class CreateOrder extends \Magento\Framework\App\Action\Action
 						'price' => $item->getPrice()
 					];
 				}
-				$orderId = $this->helper->createOrder($orderData);
+				$orderId = $this->orderModel->create($orderData);
                 $this->helper->setSessionData('bm_order_id', $orderId);
 				$this->helper->setSessionData('last_success_quote_id', $quote->getId());
 				$this->helper->setSessionData('last_quote_id', $quote->getId());

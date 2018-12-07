@@ -30,6 +30,11 @@ class Success extends \Magento\Framework\App\Action\Action
      * @var \Magento\Framework\Registry
      */
     protected $registry;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Model\Order
+     */
+    protected $orderModel;
 	
 	public function __construct(
 		Context $context,
@@ -39,7 +44,8 @@ class Success extends \Magento\Framework\App\Action\Action
 		CheckoutSession $checkoutSession,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Framework\Registry $registry,
-        \Magento\Checkout\Model\Session\SuccessValidator $successValidator
+        \Magento\Checkout\Model\Session\SuccessValidator $successValidator,
+        \Billmate\BillmateCheckout\Model\Order $orderModel
 	) {
 		$this->eventManager = $eventManager;
 		$this->resultPageFactory = $resultPageFactory;
@@ -48,6 +54,7 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->logger = $logger;
         $this->registry = $registry;
         $this->successValidator = $successValidator;
+        $this->orderModel = $orderModel;
 		parent::__construct($context);
 	}
 	
@@ -78,7 +85,7 @@ class Success extends \Magento\Framework\App\Action\Action
 					'email' => $this->helper->getSessionData('billmate_email'),
 					'shipping_address' => $this->helper->getSessionData('billmate_billing_address')
 				);
-				$orderId = $this->helper->createOrder($orderData);
+				$orderId = $this->orderModel->create($orderData);
                 if (!$orderId) {
                     throw new \Exception(
                         __('An error occurred on the server. Please try to place the order again.')

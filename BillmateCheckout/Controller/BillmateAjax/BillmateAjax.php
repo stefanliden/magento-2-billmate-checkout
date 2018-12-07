@@ -26,6 +26,11 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action
 	protected $checkoutSession;
 
     /**
+     * @var \Magento\Checkout\Model\Cart
+     */
+    protected $checkoutCart;
+
+    /**
      * BillmateAjax constructor.
      *
      * @param Context                                          $context
@@ -41,13 +46,15 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action
         \Magento\Framework\Data\Form\FormKey $formKey,
 		\Magento\Checkout\Model\Session $_checkoutSession,
 		\Billmate\BillmateCheckout\Helper\Data $_helper,
-        \Billmate\BillmateCheckout\Helper\Iframe $iframeHelper
+        \Billmate\BillmateCheckout\Helper\Iframe $iframeHelper,
+        \Magento\Checkout\Model\Cart $checkoutCart
 		) {
         $this->formKey = $formKey;
 		$this->helper = $_helper;
         $this->iframeHelper = $iframeHelper;
 		$this->resultJsonFactory = $resultJsonFactory;
 		$this->checkoutSession = $_checkoutSession;
+        $this->checkoutCart = $checkoutCart;
 		parent::__construct($context);
 	}
 
@@ -131,7 +138,7 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action
      */
     protected function getCheckoutCart()
     {
-        return $this->helper->getCheckoutCart();
+        return $this->checkoutCart;
     }
 
     /**

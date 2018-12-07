@@ -4,9 +4,6 @@
 		<css src="Billmate_BillmateCheckout/css/checkout.css"/>
 	</head> 
 	<body>
-	<!--	<move element="header-wrapper" destination="header.container" after="-"/>
-		<move element="logo" destination="header-wrapper"/>-->
-		
 		<referenceContainer name="checkout.root" remove="true">
 		</referenceContainer>
 		<referenceContainer name="page.wrapper">

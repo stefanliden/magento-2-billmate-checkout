@@ -30,7 +30,7 @@
  
  */
  
-namespace Billmate\Billmate\Model;
+namespace Billmate\BillmateCheckout\Model\Api;
  
 class Billmate {
 
@@ -111,7 +111,8 @@ class Billmate {
      *
      * @return array|mixed
      */
-	public function call($function,$params) {
+	public function call($function,$params)
+    {
 		$values = array(
 			"credentials" => array(
 				"id" => $this->ID,
@@ -141,7 +142,8 @@ class Billmate {
      *
      * @return array|mixed
      */
-    public function verify_hash($response) {
+    public function verify_hash($response)
+    {
 		$response_array = is_array($response)?$response:json_decode($response,true);
 		//If it is not decodable, the actual response will be returnt.
 		if(!$response_array && !is_array($response))
@@ -166,8 +168,8 @@ class Billmate {
      *
      * @return mixed|string
      */
-    public function curl($parameters) {
-
+    public function curl($parameters)
+    {
         if (is_array($parameters)) {
             $parameters = \GuzzleHttp\json_encode($parameters);
         }
@@ -227,7 +229,8 @@ class Billmate {
      * @param $name
      * @param $out
      */
-    public function out($name,$out) {
+    public function out($name,$out)
+    {
     	if (!$this->DEBUG) return;
     	print "$name: '";
     	if(is_array($out) or  is_object($out)) print_r($out);

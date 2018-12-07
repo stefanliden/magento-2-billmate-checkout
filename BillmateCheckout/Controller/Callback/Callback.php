@@ -39,7 +39,7 @@ class Callback extends \Magento\Framework\App\Action\Action
 	protected $invoiceService;
 
     /**
-     * @var \Billmate\Billmate\Model\Billmate
+     * @var \Billmate\BillmateCheckout\Model\Api\Billmate
      */
     protected $billmateProvider;
 
@@ -56,7 +56,7 @@ class Callback extends \Magento\Framework\App\Action\Action
         \Billmate\BillmateCheckout\Helper\Config $configHelper,
 		\Magento\Sales\Api\Data\OrderInterface $order,
         \Magento\Sales\Model\Service\InvoiceService $_invoiceService,
-        \Billmate\Billmate\Model\Billmate $billmateProvider,
+        \Billmate\BillmateCheckout\Model\Api\Billmate $billmateProvider,
         TransactionFactory $transactionFactory
     ){
 		$this->resultPageFactory = $resultPageFactory;

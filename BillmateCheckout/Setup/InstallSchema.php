@@ -1,5 +1,5 @@
 <?php
-namespace Billmate\Billmate\Setup;
+namespace Billmate\BillmateCheckout\Setup;
  
 use Magento\Framework\Setup\InstallSchemaInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;

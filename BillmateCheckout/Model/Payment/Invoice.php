@@ -1,12 +1,12 @@
 <?php
  
-namespace Billmate\Billmate\Model;
+namespace Billmate\BillmateCheckout\Model\Payment;
  
 /**
  * Pay In Store payment method model
  */
 
-class PaymentMethod extends \Billmate\Billmate\Model\BillmatePayments
+class Invoice extends \Billmate\BillmateCheckout\Model\Payment\BillmatePayments
 {
     /**
      * @var string

@@ -1,6 +1,6 @@
 <?php
 
-namespace Billmate\Billmate\Model;
+namespace Billmate\BillmateCheckout\Model\Payment;
 
 /**
  * Pay In Store payment method model
@@ -36,7 +36,7 @@ class BillmatePayments extends \Magento\Payment\Model\Method\AbstractMethod {
         \Magento\Framework\Module\ModuleListInterface $moduleList,
         \Magento\Framework\Stdlib\DateTime\TimezoneInterface $localeDate,
         \Billmate\BillmateCheckout\Helper\Data $_helper,
-        \Billmate\Billmate\Model\Billmate $billmateProvider,
+        \Billmate\BillmateCheckout\Model\Api\Billmate $billmateProvider,
         \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         array $data = []

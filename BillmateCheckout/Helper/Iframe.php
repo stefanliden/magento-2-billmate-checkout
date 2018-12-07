@@ -61,7 +61,7 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
      * @param \Magento\Checkout\Model\Session            $_checkoutSession
      * @param Config                                     $configHelper
      * @param Data                                       $dataHelper
-     * @param \Billmate\Billmate\Model\Billmate          $billmateProvider
+     * @param \Billmate\BillmateCheckout\Model\Api\Billmate          $billmateProvider
      * @param \Magento\Tax\Model\CalculationFactory      $taxCalculation
      */
     public function __construct(
@@ -71,7 +71,7 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
 		\Magento\Checkout\Model\Session $_checkoutSession,
         \Billmate\BillmateCheckout\Helper\Config $configHelper,
         \Billmate\BillmateCheckout\Helper\Data $dataHelper,
-        \Billmate\Billmate\Model\Billmate $billmateProvider,
+        \Billmate\BillmateCheckout\Model\Api\Billmate $billmateProvider,
         \Magento\Tax\Model\CalculationFactory $taxCalculation
 	){
         $this->_storeManager = $storeManager;

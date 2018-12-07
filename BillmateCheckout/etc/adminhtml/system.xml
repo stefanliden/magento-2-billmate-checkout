@@ -66,5 +66,35 @@
 				</field>
 			</group>
 		</section>
+		<section id="payment">
+			<group id="billmate_invoice" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+				<label>Billmate Faktura</label>
+				<field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+					<label>Enable</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+			</group>
+			<group id="billmate_card" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+				<label>Billmate Kort</label>
+				<field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+					<label>Enable</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+			</group>
+			<group id="billmate_partpay" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+				<label>Billmate Delbetalning</label>
+				<field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+					<label>Enable</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+			</group>
+			<group id="billmate_bank" translate="label" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+				<label>Billmate Bank</label>
+				<field id="active" translate="label comment" sortOrder="1" type="select" showInDefault="1" showInWebsite="1" showInStore="0">
+					<label>Enable</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+			</group>
+		</section>
 	</system>
 </config>

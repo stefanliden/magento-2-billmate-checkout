@@ -15,7 +15,7 @@ Billmate Gateway is a plugin that extends Magento, allowing your customers to ge
 2.0.x
 2.1.x
 2.2.x
-
+The version 2.3.* does not support yet.
 ## Installation
 ### Via Code Package
 1. Download the latest release zip file.
@@ -61,4 +61,10 @@ Copy the code below for the size that fits your needs.
 
 ### 0.9b (2017-09-18)
 * Initial commit.
-
+### 0.11.0b (2018-12-04)
+* Made full refactoring module.
+### 1.0.0 (2018-12-07)
+* Added security improvements.
+* Removed deprecated configurations.
+* Added pre-configured setup of the module.
+* Fixed design bugs.

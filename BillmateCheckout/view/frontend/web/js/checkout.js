@@ -55,6 +55,9 @@ define([
 				}
 				self.childWindow = json.source;
 				switch (json.event) {
+                    case 'go_to':
+                        location.href = json.data;
+                        break;
 				    case 'address_selected':
 						self.updateAddress(json.data);
 						if(window.method == null || window.method == json.data.method) {

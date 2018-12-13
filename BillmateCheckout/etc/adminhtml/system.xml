@@ -52,7 +52,7 @@
 					<label>Secret</label>
 				</field>
 				<field id="testmode" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Test Mode</label>
+					<label>Enable Test Mode</label>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 					<comment>Enable/Disable Billmate Test Mode</comment>
 				</field>

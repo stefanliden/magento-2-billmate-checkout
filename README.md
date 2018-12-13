@@ -6,7 +6,7 @@ By Billmate AB - [https://billmate.se](https://billmate.se/ "billmate.se")
 
 ## Description
 
-Billmate Gateway is a plugin that extends Magento, allowing your customers to get their products first and pay by invoice to Billmate later (https://www.billmate.se/). This plugin utilizes Billmate Invoice, Billmate Card, Billmate Bank and Billmate Part Payment.
+Billmate Checkout is a plugin that extends Magento, allowing your customers to get their products first and pay by invoice to Billmate later (https://www.billmate.se/). This plugin utilizes Billmate Invoice, Billmate Card, Billmate Bank and Billmate Part Payment.
 
 ## Important Note
 * This version is Checkout only.
@@ -16,6 +16,13 @@ Billmate Gateway is a plugin that extends Magento, allowing your customers to ge
 2.1.x
 2.2.x
 The version 2.3.* does not support yet.
+
+## Supported Languages
+### Admin
+* English
+### Frontend
+* Swedish
+
 ## Installation
 ### Via Code Package
 1. Download the latest release zip file.

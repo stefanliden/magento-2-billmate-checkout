@@ -19,6 +19,11 @@
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 					<comment>Enable/Disable Billmate Checkout</comment>
 				</field>
+				<field id="testmode" translate="label comment" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+					<label>Enable Test Mode</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+					<comment>Enable/Disable Billmate Test Mode</comment>
+				</field>
 				<field id="pushorderevents" translate="label comment" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
 					<label>Push order events to Billmate</label>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -50,11 +55,6 @@
 				</field>
 				<field id="billmate_key" translate="label" type="password" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
 					<label>Secret</label>
-				</field>
-				<field id="testmode" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Enable Test Mode</label>
-					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-					<comment>Enable/Disable Billmate Test Mode</comment>
 				</field>
 			</group>
 		</section>

@@ -39,6 +39,10 @@ define([
 					type: "POST",
 					dataType: 'json'
 				}).done(function (data) {
+                    if (data.error) {
+                        location.href = data.redirect_url;
+                        return;
+                    }
 					var old = parseInt(document.getElementById(qty).innerHTML);
 					update = parseInt(old + 1);
 					document.getElementById(qty).innerHTML = update;
@@ -110,9 +114,10 @@ define([
 					type: "POST",
 					dataType: 'json'
 				}).done(function (data) {
-					if (data == "redirect"){
-						window.location.replace(window.location.protocol + "//" + window.location.host);
-					}
+                    if (data.error) {
+                        location.href = data.redirect_url;
+                        return;
+                    }
 					var old = parseInt(document.getElementById(qty).innerHTML);
 					if (old != 0){
 						update = parseInt(old - 1);
@@ -183,9 +188,10 @@ define([
 					type: "POST",
 					dataType: 'json'
 				}).done(function (data) {
-					if (data == "redirect"){
-						window.location.replace(window.location.protocol + "//" + window.location.host);
-					}
+                    if (data.error) {
+                        location.href = data.redirect_url;
+                        return;
+                    }
 					document.getElementById('checkout').src = data.iframe;
 					document.getElementById('billmate-cart').innerHTML = data.cart;
 					var exists1 = document.getElementById("button-step1");
@@ -250,6 +256,10 @@ define([
 					type: "POST",
 					dataType: 'json'
 				}).done(function (data) {
+                    if (data.error) {
+                        location.href = data.redirect_url;
+                        return;
+                    }
 					document.getElementById('checkout').src = data.iframe;
 					document.getElementById('billmate-cart').innerHTML = data.cart;
 				});
@@ -267,6 +277,10 @@ define([
 					type: "POST",
 					dataType: 'json'
 				}).done(function (data) {
+                    if (data.error) {
+                        location.href = data.redirect_url;
+                        return;
+                    }
 					document.getElementById('checkout').src = data.iframe;
 					document.getElementById('billmate-cart').innerHTML = data.cart;
 					var exists1 = document.getElementById("button-step1");

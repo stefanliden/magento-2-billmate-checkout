@@ -75,7 +75,11 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action
 			}
 
             if (!$this->helper->getQuote()->getItemsQty()) {
-                return $result->setData("redirect");
+			    $errorData = [
+			        'error' => true,
+                    'redirect_url' => $this->_url->getUrl( 'billmatecheckout/success/error')
+                ];
+                return $result->setData($errorData);
             }
 
             $cartBlockContent = $this->helper->getCartContent();

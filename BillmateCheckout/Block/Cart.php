@@ -48,5 +48,16 @@ class Cart extends \Magento\Checkout\Block\Onepage
 	public function getAjaxUrl()
     {
 		return $this->getUrl('billmatecheckout/billmateajax/billmateajax');
-	}	
+	}
+
+    /**
+     * @return string
+     */
+	public function getJsonConfig()
+    {
+        $configData = [
+            'request_url' => $this->getAjaxUrl()
+        ];
+        return json_encode($configData);
+    }
 }

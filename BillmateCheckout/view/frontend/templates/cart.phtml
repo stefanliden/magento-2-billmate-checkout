@@ -7,10 +7,9 @@
 ?>
 <script>
   require(
-    ['jquery', 'Billmate_BillmateCheckout/js/ajax'],
-    function($, BillmateAjax) {
-      var ajaxUrl = '<?php echo $block->getAjaxUrl(); ?>';
-      BillmateAjax.call(ajaxUrl);
+    ['jquery', 'checkout_actions'],
+    function($, billmateCheckoutActions) {
+        billmateCheckoutActions.init(<?=  $block->getJsonConfig();?>);
     }
   );
 </script>

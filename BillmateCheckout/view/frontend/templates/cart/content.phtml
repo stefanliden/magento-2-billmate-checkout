@@ -29,11 +29,19 @@
             <div class="billmate-checkout-price" id="price_<?= $item->getId() ?>"><?= $block->formatPrice($item->getPrice()) ?></div>
             <div class="billmate-checkout-qty <?= !$isEnabledButtons? 'no-buttons' : '' ?>" id="qty_<?= $item->getId() ?>">
                 <?php if($isEnabledButtons): ?>
-                    <button class="billmate-checkout-button-sub sub" id="bm-sub-btn sub_<?= $item->getId() ?>" name="sub">-</button>
+                    <button class="billmate-checkout-button-sub sub" id="bm-sub-btn sub_<?= $item->getId() ?>" name="sub">
+                        <span class="action-sign-decr">
+                            &#8211;
+                        </span>
+                    </button>
                 <?php endif ?>
                 <div class="billmate-checkout-product-qty"><?= $item->getQty() ?></div>
                 <?php if($isEnabledButtons): ?>
-                    <button id="bm-inc-btn inc_<?= $item->getId() ?>" class="billmate-checkout-button-inc inc" name="inc">+</button>
+                    <button id="bm-inc-btn inc_<?= $item->getId() ?>" class="billmate-checkout-button-inc inc" name="inc">
+                        <span class="action-sign-inc">
+                            &#43;
+                        </span>
+                    </button>
                 <?php endif ?>
             </div>
             <div class="billmate-checkout-sum" id="sum_<?= $item->getId() ?>"><?= $block->formatPrice($item->getRowTotal()) ?></div>

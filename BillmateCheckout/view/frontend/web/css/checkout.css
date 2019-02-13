@@ -40,6 +40,11 @@
     width: 110px;
 }
 
+.billmate-checkout-qty .action-sign-decr{
+    display: block;
+    height: 20px;
+}
+
 .billmate-checkout-qty.no-buttons {
 
 }

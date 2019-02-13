@@ -20,7 +20,9 @@ The version 2.3.* does not support yet.
 ## Supported Languages
 ### Admin
 * English
+* Swedish
 ### Frontend
+* English
 * Swedish
 
 ## Installation

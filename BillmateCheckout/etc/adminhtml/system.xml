@@ -40,7 +40,7 @@
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 				</field>
 				<field id="terms_url" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-					<label>Store terms</label>
+					<label>Store Terms</label>
 					<comment>Put here full URL to terms and conditions</comment>
 				</field>
 				<field id="privacy_policy_url" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">

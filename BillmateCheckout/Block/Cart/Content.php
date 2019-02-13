@@ -23,6 +23,12 @@ class Content extends \Magento\Checkout\Block\Onepage
      * @var \Billmate\BillmateCheckout\Helper\Config
      */
     protected $configHelper;
+
+    /**
+     * @var \Magento\Tax\Helper\Data
+     */
+    protected $_taxHelper;
+
     /**
      * Cart constructor.
      *
@@ -46,6 +52,7 @@ class Content extends \Magento\Checkout\Block\Onepage
         \Magento\Framework\Pricing\Helper\Data $priceHelper,
         \Magento\Catalog\Block\Product\ImageBuilder $imageBuilder,
         \Billmate\BillmateCheckout\Helper\Config $configHelper,
+        \Magento\Tax\Helper\Data $taxHelper,
         array $layoutProcessors = [],
         array $data = []
 	) {
@@ -55,6 +62,7 @@ class Content extends \Magento\Checkout\Block\Onepage
 		$this->priceHelper = $priceHelper;
         $this->imageBuilder = $imageBuilder;
         $this->configHelper = $configHelper;
+        $this->_taxHelper = $taxHelper;
 	}
 
     /**
@@ -73,6 +81,19 @@ class Content extends \Magento\Checkout\Block\Onepage
     public function formatPrice($price, $format = true, $includeContainer = false)
     {
         return $this->priceHelper->currency($price, $format, $includeContainer);
+    }
+
+    /**
+     * @param $price
+     *
+     * @return float
+     */
+    public function getShippingPrice($price)
+    {
+        return $this->_taxHelper->getShippingPrice(
+            $price,
+            $this->_taxHelper->displayShippingPriceIncludingTax()
+        );
     }
 
     /**
@@ -147,7 +168,7 @@ class Content extends \Magento\Checkout\Block\Onepage
     {
         $shippingAddressTotal = $this->helper->getQuote()
             ->getShippingAddress();
-        return $shippingAddressTotal->getTaxAmount() + $shippingAddressTotal->getShippingTaxAmount();
+        return $shippingAddressTotal->getTaxAmount();
     }
 
     /**

@@ -94,7 +94,7 @@
                        name="method" value="<?= $rate->getCode() ?>"
                     <?php if($block->isActiveMethod($rate->getCode())):?> checked <?php endif ?> >
                 <label for="<?= $rate->getCode() ?>" class="radio_lable" ><?= $rate->getMethodTitle() ?>
-                    <?= $block->formatPrice($rate->getPrice()) ?>
+                    <?= $block->formatPrice($block->getShippingPrice($rate->getPrice())) ?>
                 </label>
             <?php endforeach; ?>
         </div>

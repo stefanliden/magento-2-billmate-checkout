@@ -25,7 +25,8 @@
 </script>
 <div id="billmate-checkout">
     <?php if(isset($billmateData['url'])): ?>
-        <iframe id="checkout" src="<?= $billmateData['url'] ?> " style="width: 100%; min-height: 800px; border:none;"
+        <iframe id="checkout" src="<?= $billmateData['url'] ?> "
+                scrolling="no"
                 sandbox="allow-same-origin allow-scripts allow-modals allow-popups allow-forms allow-top-navigation">
         </iframe>
     <?php else: ?>

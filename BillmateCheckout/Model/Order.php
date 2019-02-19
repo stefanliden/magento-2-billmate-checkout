@@ -3,6 +3,7 @@ namespace Billmate\BillmateCheckout\Model;
 
 class Order
 {
+    const BM_ADDITIONAL_INFO_CODE = 'bm_payment_method';
     /**
      * Order constructor.
      *
@@ -179,7 +180,13 @@ class Order
                 ->setShippingMethod($shippingCode); //shipping method
             $actual_quote->getShippingAddress()->addShippingRate($this->shippingRate);
             $actual_quote->setPaymentMethod($billmatePaymentMethod); //payment method
-            $actual_quote->getPayment()->importData(['method' => $billmatePaymentMethod]);
+            $actual_quote->getPayment()->importData([
+                'method' => $billmatePaymentMethod,
+            ]);
+            $actual_quote->getPayment()->setAdditionalInformation(
+                self::BM_ADDITIONAL_INFO_CODE, $orderData['payment_method_name']
+            );
+
             $actual_quote->setReservedOrderId($orderID);
             $actual_quote->collectTotals();
             $actual_quote->save();

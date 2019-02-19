@@ -35,6 +35,11 @@ class Success extends \Magento\Framework\App\Action\Action
      * @var \Billmate\BillmateCheckout\Model\Order
      */
     protected $orderModel;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Model\Api\Billmate
+     */
+    protected $billmateProvider;
 	
 	public function __construct(
 		Context $context,
@@ -45,7 +50,8 @@ class Success extends \Magento\Framework\App\Action\Action
         \Psr\Log\LoggerInterface $logger,
         \Magento\Framework\Registry $registry,
         \Magento\Checkout\Model\Session\SuccessValidator $successValidator,
-        \Billmate\BillmateCheckout\Model\Order $orderModel
+        \Billmate\BillmateCheckout\Model\Order $orderModel,
+        \Billmate\BillmateCheckout\Model\Api\Billmate $billmateProvider
 	) {
 		$this->eventManager = $eventManager;
 		$this->resultPageFactory = $resultPageFactory;
@@ -55,6 +61,7 @@ class Success extends \Magento\Framework\App\Action\Action
         $this->registry = $registry;
         $this->successValidator = $successValidator;
         $this->orderModel = $orderModel;
+        $this->billmateProvider = $billmateProvider;
 		parent::__construct($context);
 	}
 	
@@ -80,10 +87,18 @@ class Success extends \Magento\Framework\App\Action\Action
                 'isset.session.bm-inc-id' => (bool)$this->helper->getSessionData('bm-inc-id'),
             ]);
 
+            $requestData = $this->getBmRequestData();
+            $values = array(
+                "number" => $requestData['data']['number']
+            );
+
+            $paymentInfo = $this->billmateProvider->getPaymentinfo($values);
+
 			if (!$this->helper->getSessionData('bm-inc-id')) {
 				$orderData = array(
 					'email' => $this->helper->getSessionData('billmate_email'),
-					'shipping_address' => $this->helper->getSessionData('billmate_billing_address')
+					'shipping_address' => $this->helper->getSessionData('billmate_billing_address'),
+                    'payment_method_name' => $paymentInfo['PaymentData']['method_name']
 				);
 				$orderId = $this->orderModel->create($orderData);
                 if (!$orderId) {
@@ -95,6 +110,7 @@ class Success extends \Magento\Framework\App\Action\Action
                 $this->helper->setSessionData('bm_order_id', $orderId);
 
 			}
+
 			$order = $this->helper->getOrderByIncrementId($this->helper->getSessionData('bm-inc-id'));
             $this->registry->register('bm-inc-id', $this->helper->getSessionData('bm-inc-id'));
 			$orderId = $order->getId();
@@ -169,4 +185,25 @@ class Success extends \Magento\Framework\App\Action\Action
 
 		return $resultPage;
 	}
+
+    /**
+     * @return mixed
+     */
+    protected function getBmRequestData()
+    {
+        $bmRequestData = $this->getRequest()->getParam('data');
+        $bmRequestCredentials = $this->getRequest()->getParam('credentials');
+
+        if ($bmRequestData && $bmRequestCredentials) {
+            $postData['data'] = json_decode($bmRequestData, true);
+            $postData['credentials'] = json_decode($bmRequestCredentials, true);
+            return $postData;
+        }
+
+        $jsonBodyRequest = file_get_contents('php://input');
+        if ($jsonBodyRequest) {
+            return json_decode($jsonBodyRequest, true);
+        }
+        throw new Exception('The request does not contain information');
+    }
 }

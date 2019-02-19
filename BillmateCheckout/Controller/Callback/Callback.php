@@ -80,18 +80,7 @@ class Callback extends \Magento\Framework\App\Action\Action
 	
 	public function execute()
     {
-        /** @var return json row $paramsRow */
-        $paramsRow = file_get_contents('php://input');
-
-        $params = $this->getRequest()->getParams();
-        $requestData = empty($paramsRow) ? $params : json_decode($paramsRow,true);;
-
-		if (is_array($requestData) && $params) {
-		    if (!is_array($params['credentials']) && !is_array($params['data'])) {
-                $requestData['credentials'] = json_decode($params['credentials'], true);
-                $requestData['data'] = json_decode($params['data'],true);
-            }
-		}
+        $requestData = $this->getBmRequestData();
 
 		$hash = $this->getHashCode($requestData);
 		
@@ -215,5 +204,26 @@ class Callback extends \Magento\Framework\App\Action\Action
     {
         $hash = hash_hmac('sha512', json_encode($requestData['data']), $this->configHelper->getBillmateSecret());
         return $hash;
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function getBmRequestData()
+    {
+        $bmRequestData = $this->getRequest()->getParam('data');
+        $bmRequestCredentials = $this->getRequest()->getParam('credentials');
+
+        if ($bmRequestData && $bmRequestCredentials) {
+            $postData['data'] = json_decode($bmRequestData, true);
+            $postData['credentials'] = json_decode($bmRequestCredentials, true);
+            return $postData;
+        }
+
+        $jsonBodyRequest = file_get_contents('php://input');
+        if ($jsonBodyRequest) {
+            return json_decode($jsonBodyRequest, true);
+        }
+        throw new Exception('The request does not contain information');
     }
 }

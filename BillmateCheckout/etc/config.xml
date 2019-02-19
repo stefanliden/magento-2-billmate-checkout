@@ -46,34 +46,13 @@
             </general>
         </billmate_billmatecheckout>
         <payment>
-            <billmate_invoice>
+            <billmate_checkout>
                 <payment_action>capture</payment_action>
-                <model>Billmate\BillmateCheckout\Model\Payment\Invoice</model>
+                <model>Billmate\BillmateCheckout\Model\Payment\BillmatePayments</model>
                 <active>1</active>
-                <title>Billmate Faktura</title>
+                <title>Billmate Checkout</title>
                 <order_status>pending_payment</order_status>
-            </billmate_invoice>
-            <billmate_card>
-                <payment_action>capture</payment_action>
-                <model>Billmate\BillmateCheckout\Model\Payment\Card</model>
-                <active>1</active>
-                <title>Billmate Kort</title>
-                <order_status>pending_payment</order_status>
-            </billmate_card>
-            <billmate_partpay>
-                <payment_action>capture</payment_action>
-                <model>Billmate\BillmateCheckout\Model\Payment\PartPay</model>
-                <active>1</active>
-                <title>Billmate Delbetalning</title>
-                <order_status>pending_payment</order_status>
-            </billmate_partpay>
-            <billmate_bank>
-                <payment_action>capture</payment_action>
-                <model>Billmate\BillmateCheckout\Model\Payment\Bank</model>
-                <active>1</active>
-                <title>Billmate Bank</title>
-                <order_status>pending_payment</order_status>
-            </billmate_bank>
+            </billmate_checkout>
         </payment>
     </default>
 </config>

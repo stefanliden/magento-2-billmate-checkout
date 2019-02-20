@@ -47,6 +47,14 @@
         </billmate_billmatecheckout>
         <payment>
             <billmate_checkout>
+                <general>
+                    <enable>0</enable>
+                    <testmode>1</testmode>
+                    <pushorderevents>1</pushorderevents>
+                    <inc_dec_btns>1</inc_dec_btns>
+                    <show_attributes_cart>1</show_attributes_cart>
+                    <inc_dec_btns>1</inc_dec_btns>
+                </general>
                 <payment_action>capture</payment_action>
                 <model>Billmate\BillmateCheckout\Model\Payment\BillmateCheckout</model>
                 <active>1</active>

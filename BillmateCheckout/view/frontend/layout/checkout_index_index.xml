@@ -5,7 +5,7 @@
 		<referenceContainer name="page.wrapper">
 			<container name="bm-cart" htmlTag="div" htmlClass="bm-cart-wrapper" after="main">
 				<block class="Billmate\BillmateCheckout\Block\Cart"
-					   ifconfig="billmate_billmatecheckout/general/enable"
+					   ifconfig="payment/billmate_checkout/general/enable"
 					   cacheable="true"
 					   name="billmatecart"
 					   template="cart.phtml"
@@ -14,7 +14,7 @@
 			</container>
 			<container name="bm-checkout" htmlTag="div"  htmlClass="bm-checkout-wrapper" after="bm-cart">
 				<block class="Billmate\BillmateCheckout\Block\Checkout"
-					   ifconfig="billmate_billmatecheckout/general/enable"
+					   ifconfig="payment/billmate_checkout/general/enable"
 					   name="billmatecheckout"
 					   template="checkout.phtml"
 					   after="bm-cart"/>

@@ -49,71 +49,22 @@ class Order
     public function create($orderData, $orderID = '', $paymentID = '')
     {
         try {
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'aaa',
-            ]);
 
             if ($orderID == '') {
                 $orderID = $this->dataHelper->getQuote()->getReservedOrderId();
             }
-
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'aab',
-                'orderID' => $orderID,
-            ]);
 
             $exOrder = $this->dataHelper->getOrderByIncrementId($orderID);
             if ($exOrder->getIncrementId()){
                 return;
             }
 
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'aac',
-                'isset.session.billmate_applied_discount_code' => (bool)($this->dataHelper->getSessionData('billmate_applied_discount_code')),
-                'isset.session.shipping_code' => (bool)($this->dataHelper->getSessionData('shipping_code')),
-                'session.billmate_applied_discount_code' => ($this->dataHelper->getSessionData('billmate_applied_discount_code') ?
-                    $this->dataHelper->getSessionData('billmate_applied_discount_code') : ''),
-                'session.shipping_code' => (($this->dataHelper->getSessionData('shipping_code')) ? $this->dataHelper->getSessionData('shipping_code') : ''),
-            ]);
-
             $shippingCode = $this->dataHelper->getSessionData('shipping_code');
 
             $actual_quote = $this->quoteCollectionFactory->create()
                 ->addFieldToFilter("reserved_order_id", $orderID)->getFirstItem();
-            $actual_quote_id = $actual_quote->getId();
-
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'aad',
-                'actual_quote_id' => $actual_quote_id,
-            ]);
 
             $store = $this->_storeManager->getStore();
-
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'aae',
-            ]);
 
             $customer = $this->getCustomer($orderData);
 
@@ -121,16 +72,6 @@ class Order
             $actual_quote->setStore($store);
             $actual_quote->setCurrency();
             $actual_quote->assignCustomer($customer);
-
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'aaf assignCustomer to quote',
-
-            ]);
 
             if ($this->dataHelper->getSessionData('billmate_applied_discount_code')) {
                 $discountCode = $this->dataHelper->getSessionData('billmate_applied_discount_code');
@@ -140,17 +81,6 @@ class Order
             $billmateShippingAddress = $this->dataHelper->getSessionData('billmate_shipping_address');
             $billmateBillingAddress = $this->dataHelper->getSessionData('billmate_billing_address');
 
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'aag',
-                'isset.session.billmate_shipping_address' => (bool)$billmateShippingAddress,
-                'isset.session.billmate_billing_address' => (bool)$billmateBillingAddress,
-            ]);
-
             $actual_quote->getBillingAddress()->addData($billmateBillingAddress);
 
             if ($billmateShippingAddress){
@@ -159,22 +89,10 @@ class Order
                 $actual_quote->getShippingAddress()->addData($billmateBillingAddress);
             }
 
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'aah',
-            ]);
-
-
             $this->shippingRate->setCode($shippingCode)->getPrice();
             $shippingAddress = $actual_quote->getShippingAddress();
-            if (!$this->dataHelper->getSessionData('billmate_payment_method')) {
-                $this->dataHelper->setBmPaymentMethod('default');
-            }
-            $billmatePaymentMethod = $this->dataHelper->getSessionData('billmate_payment_method');
+
+            $billmatePaymentMethod = $this->dataHelper->getPaymentMethod();
             $shippingAddress->setCollectShippingRates(true)
                 ->collectShippingRates()
                 ->setShippingMethod($shippingCode); //shipping method
@@ -191,17 +109,8 @@ class Order
             $actual_quote->collectTotals();
             $actual_quote->save();
 
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'aai',
-            ]);
-
             $cart = $this->cartRepositoryInterface->get($actual_quote->getId());
             $cart->setCustomerEmail($orderData['email']);
-            $cart->setCustomerId($customer->getId());
             $cart->getBillingAddress()->addData($billmateBillingAddress);
             if ($billmateShippingAddress){
                 $cart->getShippingAddress()->addData($billmateShippingAddress);
@@ -210,75 +119,21 @@ class Order
             }
             $cart->getBillingAddress()->setCustomerId($customer->getId());
             $cart->getShippingAddress()->setCustomerId($customer->getId());
-            $cart->save();
-
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'aaj',
-            ]);
-
-            $cart->getBillingAddress()->setCustomerId($customer->getId());
-            $cart->getShippingAddress()->setCustomerId($customer->getId());
             $cart->setCustomerId($customer->getId());
             $cart->assignCustomer($customer);
             $cart->save();
 
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'aak',
-            ]);
-
             $orderId = $this->cartManagementInterface->placeOrder($cart->getId());
-
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'aal',
-                'order_id' => $orderId,
-            ]);
 
             $order = $this->dataHelper->getOrderById($orderId);
 
             $this->orderSender->send($order);
 
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'aam',
-            ]);
-
             $this->dataHelper->setSessionData('bm-inc-id', $order->getIncrementId());
-
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'aan',
-                'session.bm-inc-id' => $this->dataHelper->getSessionData('bm-inc-id'),
-            ]);
 
             $orderState = \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT;
             $order->setState($orderState)->setStatus($orderState);
             $order->save();
-            $this->dataHelper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'aao',
-                'order_id' => $orderId,
-            ]);
 
             return $orderId;
         }

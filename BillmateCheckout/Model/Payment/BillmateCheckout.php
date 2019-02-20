@@ -8,6 +8,8 @@ namespace Billmate\BillmateCheckout\Model\Payment;
 
 class BillmateCheckout extends \Magento\Payment\Model\Method\AbstractMethod {
 
+    const PAYMENT_CODE_CHECKOUT = 'billmate_checkout';
+
     /**
      * @var string
      */
@@ -127,6 +129,7 @@ class BillmateCheckout extends \Magento\Payment\Model\Method\AbstractMethod {
         $payment->setParentTransactionId($payment->getTransactionId());
         $transaction = $payment->addTransaction(\Magento\Sales\Model\Order\Payment\Transaction::TYPE_AUTH, null, true, "");
         $transaction->setIsClosed(true);
+
     }
 
     /**

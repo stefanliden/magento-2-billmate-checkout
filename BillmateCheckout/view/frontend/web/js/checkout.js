@@ -25,8 +25,7 @@ define([
 			
 		}
 		this.createOrder = function(data){
-			if (data.status == "Step2Loaded"){
-			//	document.getElementById("billmate-checkout").style.display = "none";
+			if (data && data.status == "Step2Loaded"){
 				$.ajax({
 					url : CREATE_ORDER_URL,
 					data: data,
@@ -36,13 +35,6 @@ define([
 					}
 				});
 			}
-		};
-		this.paymentMethod = function(data){
-			$.ajax({
-				url : SET_PAYMENTMETHOD_URL,
-				data: data,
-				type: 'POST'
-			});
 		};
 		this.initListeners = function () {
 			window.addEventListener("message",self.handleEvent);
@@ -63,9 +55,6 @@ define([
 						if(window.method == null || window.method == json.data.method) {
 							$('#checkoutdiv').removeClass('loading');
 						}
-						break;
-					case 'payment_method_selected':
-						self.paymentMethod(json.data);
 						break;
 					case 'checkout_success':
 							self.createOrder(json.data);

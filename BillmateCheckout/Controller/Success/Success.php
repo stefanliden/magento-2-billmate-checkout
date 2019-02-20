@@ -3,7 +3,7 @@ namespace Billmate\BillmateCheckout\Controller\Success;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Framework\App\Action\Context;
 use \Magento\Checkout\Model\Session as CheckoutSession;
-class Success extends \Magento\Framework\App\Action\Action
+class Success extends \Billmate\BillmateCheckout\Controller\FrontCore
 {
 
     /**
@@ -67,26 +67,9 @@ class Success extends \Magento\Framework\App\Action\Action
 	
 	public function execute()
     {
-        $this->helper->addLog([
-            '__FILE__' => __FILE__,
-            '__CLASS__' => __CLASS__,
-            '__FUNCTION__' => __FUNCTION__,
-            '__LINE__' => __LINE__,
-            'note' => 'aaa'
-        ]);
-
+        $this->helper->setSessionData('billmate_checkout_id',null);
 		$resultPage = $this->resultPageFactory->create();
 		try{
-
-            $this->helper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'aba',
-                'isset.session.bm-inc-id' => (bool)$this->helper->getSessionData('bm-inc-id'),
-            ]);
-
             $requestData = $this->getBmRequestData();
             $values = array(
                 "number" => $requestData['data']['number']
@@ -115,15 +98,6 @@ class Success extends \Magento\Framework\App\Action\Action
             $this->registry->register('bm-inc-id', $this->helper->getSessionData('bm-inc-id'));
 			$orderId = $order->getId();
 
-            $this->helper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'abb',
-                'orderId' => $orderId,
-            ]);
-
 			$this->eventManager->dispatch(
 				'checkout_onepage_controller_success_action',
 				['order_ids' => [$order->getId()]]
@@ -133,34 +107,11 @@ class Success extends \Magento\Framework\App\Action\Action
 			$this->checkoutSession->setLastQuoteId($this->helper->getQuote()->getId());
 			$this->checkoutSession->setLastOrderId($orderId);
 
-            if (!$this->successValidator->isValid()) {
-                return $this->resultRedirectFactory->create()->setPath('checkout/cart');
-            }
-
-            $this->helper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'abc',
-            ]);
-
-            $url = $this->_url->getUrl('checkout/onepage/success');
-
-            $this->helper->addLog([
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'note' => 'abd',
-                'url' => $url,
-                'headers_sent' => (headers_sent()),
-            ]);
-
             $this->helper->clearSession();
 		}
 		catch (\Exception $e){
             $this->helper->setSessionData('bm-inc-id',$this->helper->getQuote()->getReservedOrderId());
+            $this->helper->setSessionData('billmate_checkout_id',null);
             $this->helper->addLog([
                 'note' => 'Could not redirect customer to store order confirmation page',
                 '__FILE__' => __FILE__,
@@ -171,39 +122,9 @@ class Success extends \Magento\Framework\App\Action\Action
                 'exception.file' => $e->getFile(),
                 'exception.line' => $e->getLine(),
             ]);
-            return $this->resultRedirectFactory->create()->setPath('billmatecheckout/success/error');
+           return $this->resultRedirectFactory->create()->setPath('billmatecheckout/success/error');
 		}
-
-        $this->helper->addLog([
-            'note' => 'Customer redirected to the success page',
-            '__FILE__' => __FILE__,
-            '__CLASS__' => __CLASS__,
-            '__FUNCTION__' => __FUNCTION__,
-            '__LINE__' => __LINE__,
-            'note' => 'done Return content of resultPage',
-        ]);
 
 		return $resultPage;
 	}
-
-    /**
-     * @return mixed
-     */
-    protected function getBmRequestData()
-    {
-        $bmRequestData = $this->getRequest()->getParam('data');
-        $bmRequestCredentials = $this->getRequest()->getParam('credentials');
-
-        if ($bmRequestData && $bmRequestCredentials) {
-            $postData['data'] = json_decode($bmRequestData, true);
-            $postData['credentials'] = json_decode($bmRequestCredentials, true);
-            return $postData;
-        }
-
-        $jsonBodyRequest = file_get_contents('php://input');
-        if ($jsonBodyRequest) {
-            return json_decode($jsonBodyRequest, true);
-        }
-        throw new Exception('The request does not contain information');
-    }
 }

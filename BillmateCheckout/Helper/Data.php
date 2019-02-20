@@ -4,6 +4,7 @@ namespace Billmate\BillmateCheckout\Helper;
 
 use Magento\Framework\App\ProductMetadataInterface;
 use Magento\Framework\Module\ModuleListInterface;
+use Billmate\BillmateCheckout\Model\Payment\BillmateCheckout;
 
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
@@ -258,26 +259,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
 	public function setBmPaymentMethod($methodCode)
     {
-		switch ($methodCode) {
-			case "1":
-                $method = 'billmate_invoice';
-			break;
-			case "4":
-                $method = 'billmate_partpay';
-			break;
-			case "8":
-                $method = 'billmate_card';
-			break;
-			case "16":
-                $method = 'billmate_bank';
-			break;
-			default:
-				$method = 'billmate_invoice';
-			break;
-		}
-
+        $method = 'billmate_checkout';
         $this->setSessionData('billmate_payment_method', $method);
 	}
+
+    public function getPaymentMethod()
+    {
+        return BillmateCheckout::PAYMENT_CODE_CHECKOUT;
+    }
 
     /**
      * @return string

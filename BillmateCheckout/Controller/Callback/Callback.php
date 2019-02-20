@@ -4,7 +4,7 @@ use Magento\Framework\View\Result\PageFactory;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\DB\TransactionFactory;
 
-class Callback extends \Magento\Framework\App\Action\Action
+class Callback extends \Billmate\BillmateCheckout\Controller\FrontCore
 {
     const COUNTRY_ID = 'se';
 
@@ -204,26 +204,5 @@ class Callback extends \Magento\Framework\App\Action\Action
     {
         $hash = hash_hmac('sha512', json_encode($requestData['data']), $this->configHelper->getBillmateSecret());
         return $hash;
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getBmRequestData()
-    {
-        $bmRequestData = $this->getRequest()->getParam('data');
-        $bmRequestCredentials = $this->getRequest()->getParam('credentials');
-
-        if ($bmRequestData && $bmRequestCredentials) {
-            $postData['data'] = json_decode($bmRequestData, true);
-            $postData['credentials'] = json_decode($bmRequestCredentials, true);
-            return $postData;
-        }
-
-        $jsonBodyRequest = file_get_contents('php://input');
-        if ($jsonBodyRequest) {
-            return json_decode($jsonBodyRequest, true);
-        }
-        throw new Exception('The request does not contain information');
     }
 }

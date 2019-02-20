@@ -83,7 +83,7 @@ class Success extends \Billmate\BillmateCheckout\Controller\FrontCore
 					'shipping_address' => $this->helper->getSessionData('billmate_billing_address'),
                     'payment_method_name' => $paymentInfo['PaymentData']['method_name']
 				);
-				$orderId = $this->orderModel->create($orderData);
+				$orderId = $this->orderModel->setOrderData($orderData)->create();
                 if (!$orderId) {
                     throw new \Exception(
                         __('An error occurred on the server. Please try to place the order again.')

@@ -89,12 +89,11 @@ class Callback extends \Billmate\BillmateCheckout\Controller\FrontCore
 				"number" => $requestData['data']['number']
 			);
 			$paymentInfo = $this->billmateProvider->getPaymentinfo($values);
-			$this->helper->setBmPaymentMethod($paymentInfo['PaymentData']['method']);
 
 			$order = $this->helper->getOrderByIncrementId($paymentInfo['PaymentData']['orderid']);
 			if (!is_string($order->getIncrementId())) {
                 $orderInfo = $this->getOrderInfo($paymentInfo);
-				$order_id = $this->orderModel->create($orderInfo, $paymentInfo['PaymentData']['orderid']);
+				$order_id = $this->orderModel->setOrderData($orderInfo)->create($paymentInfo['PaymentData']['orderid']);
                 if (!$order_id) {
                     return;
                 }

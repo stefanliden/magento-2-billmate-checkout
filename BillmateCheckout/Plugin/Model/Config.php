@@ -43,7 +43,7 @@ class Config {
         $privacyPolicy = $configModel->getData(self::CONFIG_PATH_PRIVACY_URL);
         $isEnable = $configModel->getData(self::CONFIG_PATH_ENABLE);
         if ($isEnable && !$privacyPolicy) {
-            $this->messageManager->addWarning(__('The option "Privacy Policy" is required for Billmate Chekcout'));
+            $this->messageManager->addWarning(__('The option "Privacy Policy" is required for Billmate Checkout'));
         }
     }
 }

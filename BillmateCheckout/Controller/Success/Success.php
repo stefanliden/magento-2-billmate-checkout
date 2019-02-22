@@ -110,8 +110,7 @@ class Success extends \Billmate\BillmateCheckout\Controller\FrontCore
             $this->helper->clearSession();
 		}
 		catch (\Exception $e){
-            $this->helper->setSessionData('bm-inc-id',$this->helper->getQuote()->getReservedOrderId());
-            $this->helper->setSessionData('billmate_checkout_id',null);
+            $this->helper->clearBmSession();
             $this->helper->addLog([
                 'note' => 'Could not redirect customer to store order confirmation page',
                 '__FILE__' => __FILE__,

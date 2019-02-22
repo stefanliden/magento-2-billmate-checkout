@@ -240,6 +240,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
 		$this->checkoutSession->clearStorage();
 		$this->checkoutSession->clearQuote();
+		$this->clearBmSession();
+		session_unset();
+	}
+
+	public function clearBmSession()
+    {
         $this->setSessionData('shippingPrice', null);
         $this->setSessionData('shipping_code', null);
         $this->setSessionData('billmate_shipping_tax', null);
@@ -250,9 +256,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->setSessionData('billmate_checkout_id', null);
         $this->setSessionData('billmate_payment_method', null);
         $this->setSessionData('bm-inc-id',null);
-
-		session_unset();
-	}
+    }
 
     /**
      * @param $methodCode int

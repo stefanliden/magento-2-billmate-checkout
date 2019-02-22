@@ -1,9 +1,9 @@
 <?php
 namespace Billmate\BillmateCheckout\Controller;
 
-use Billmate\BillmateCheckout\Controller\FrontCore\Abs;
+use Billmate\BillmateCheckout\Controller\FrontCore\AbsModified;
 
-abstract class FrontCore extends Abs
+abstract class FrontCore extends AbsModified
 {
     /**
      * @return mixed

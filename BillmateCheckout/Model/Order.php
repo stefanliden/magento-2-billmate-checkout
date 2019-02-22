@@ -145,6 +145,7 @@ class Order
             ->setShippingMethod($shippingCode);
         $actual_quote->getShippingAddress()->addShippingRate($this->shippingRate);
         $actual_quote->setPaymentMethod($billmatePaymentMethod);
+        $actual_quote->getPayment()->setQuote($actual_quote);
         $actual_quote->getPayment()->importData([
             'method' => $billmatePaymentMethod,
         ]);

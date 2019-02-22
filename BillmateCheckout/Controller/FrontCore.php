@@ -1,7 +1,9 @@
 <?php
 namespace Billmate\BillmateCheckout\Controller;
 
-abstract class FrontCore extends \Magento\Framework\App\Action\Action
+use Billmate\BillmateCheckout\Controller\FrontCore\Abs;
+
+abstract class FrontCore extends Abs
 {
     /**
      * @return mixed

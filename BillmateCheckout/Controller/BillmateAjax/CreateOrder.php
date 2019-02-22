@@ -60,7 +60,7 @@ class CreateOrder extends \Magento\Framework\App\Action\Action
 						'price' => $item->getPrice()
 					];
 				}
-				$orderId = $this->orderModel->create($orderData);
+				$orderId = $this->orderModel->setOrderData($orderData)->create();
                 $this->helper->setSessionData('bm_order_id', $orderId);
 				$this->helper->setSessionData('last_success_quote_id', $quote->getId());
 				$this->helper->setSessionData('last_quote_id', $quote->getId());

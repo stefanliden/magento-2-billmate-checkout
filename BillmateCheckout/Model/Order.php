@@ -4,6 +4,12 @@ namespace Billmate\BillmateCheckout\Model;
 class Order
 {
     const BM_ADDITIONAL_INFO_CODE = 'bm_payment_method';
+
+    /**
+     * @var array
+     */
+    protected $orderData;
+
     /**
      * Order constructor.
      *
@@ -41,89 +47,31 @@ class Order
 
     /**
      * @param        $orderData
-     * @param string $orderID
+     * @param string $orderId
      * @param string $paymentID
      *
      * @return int
      */
-    public function create($orderData, $orderID = '', $paymentID = '')
+    public function create($orderId = '')
     {
         try {
 
-            if ($orderID == '') {
-                $orderID = $this->dataHelper->getQuote()->getReservedOrderId();
+            if (!$this->getOrderData()) {
+                throw new \Exception('The request does not contain order data');
             }
 
-            $exOrder = $this->dataHelper->getOrderByIncrementId($orderID);
+            if ($orderId == '') {
+                $orderId = $this->dataHelper->getQuote()->getReservedOrderId();
+            }
+
+            $exOrder = $this->dataHelper->getOrderByIncrementId($orderId);
             if ($exOrder->getIncrementId()){
                 return;
             }
 
-            $shippingCode = $this->dataHelper->getSessionData('shipping_code');
+            $actualCart = $this->createCart($orderId);
 
-            $actual_quote = $this->quoteCollectionFactory->create()
-                ->addFieldToFilter("reserved_order_id", $orderID)->getFirstItem();
-
-            $store = $this->_storeManager->getStore();
-
-            $customer = $this->getCustomer($orderData);
-
-            $actual_quote->setCustomerEmail($orderData['email']);
-            $actual_quote->setStore($store);
-            $actual_quote->setCurrency();
-            $actual_quote->assignCustomer($customer);
-
-            if ($this->dataHelper->getSessionData('billmate_applied_discount_code')) {
-                $discountCode = $this->dataHelper->getSessionData('billmate_applied_discount_code');
-                $actual_quote->setCouponCode($discountCode);
-            }
-
-            $billmateShippingAddress = $this->dataHelper->getSessionData('billmate_shipping_address');
-            $billmateBillingAddress = $this->dataHelper->getSessionData('billmate_billing_address');
-
-            $actual_quote->getBillingAddress()->addData($billmateBillingAddress);
-
-            if ($billmateShippingAddress){
-                $actual_quote->getShippingAddress()->addData($billmateShippingAddress);
-            } else {
-                $actual_quote->getShippingAddress()->addData($billmateBillingAddress);
-            }
-
-            $this->shippingRate->setCode($shippingCode)->getPrice();
-            $shippingAddress = $actual_quote->getShippingAddress();
-
-            $billmatePaymentMethod = $this->dataHelper->getPaymentMethod();
-            $shippingAddress->setCollectShippingRates(true)
-                ->collectShippingRates()
-                ->setShippingMethod($shippingCode); //shipping method
-            $actual_quote->getShippingAddress()->addShippingRate($this->shippingRate);
-            $actual_quote->setPaymentMethod($billmatePaymentMethod); //payment method
-            $actual_quote->getPayment()->importData([
-                'method' => $billmatePaymentMethod,
-            ]);
-            $actual_quote->getPayment()->setAdditionalInformation(
-                self::BM_ADDITIONAL_INFO_CODE, $orderData['payment_method_name']
-            );
-
-            $actual_quote->setReservedOrderId($orderID);
-            $actual_quote->collectTotals();
-            $actual_quote->save();
-
-            $cart = $this->cartRepositoryInterface->get($actual_quote->getId());
-            $cart->setCustomerEmail($orderData['email']);
-            $cart->getBillingAddress()->addData($billmateBillingAddress);
-            if ($billmateShippingAddress){
-                $cart->getShippingAddress()->addData($billmateShippingAddress);
-            } else {
-                $cart->getShippingAddress()->addData($billmateBillingAddress);
-            }
-            $cart->getBillingAddress()->setCustomerId($customer->getId());
-            $cart->getShippingAddress()->setCustomerId($customer->getId());
-            $cart->setCustomerId($customer->getId());
-            $cart->assignCustomer($customer);
-            $cart->save();
-
-            $orderId = $this->cartManagementInterface->placeOrder($cart->getId());
+            $orderId = $this->cartManagementInterface->placeOrder($actualCart->getId());
 
             $order = $this->dataHelper->getOrderById($orderId);
 
@@ -136,8 +84,7 @@ class Order
             $order->save();
 
             return $orderId;
-        }
-        catch (\Exception $e){
+        } catch (\Exception $e){
             $this->dataHelper->addLog([
                 'Could not create order',
                 '__FILE__' => __FILE__,
@@ -150,6 +97,91 @@ class Order
             ]);
             return 0;
         }
+    }
+
+    /**
+     * @param $orderId
+     * @param $customer
+     *
+     * @return mixed
+     */
+    protected function createQuote($orderId, $customer)
+    {
+        $billmateShippingAddress = $this->dataHelper->getSessionData('billmate_shipping_address');
+        $billmateBillingAddress = $this->dataHelper->getSessionData('billmate_billing_address');
+        $shippingCode = $this->dataHelper->getSessionData('shipping_code');
+
+        $orderData = $this->getOrderData();
+
+        $actual_quote = $this->quoteCollectionFactory->create()
+            ->addFieldToFilter("reserved_order_id", $orderId)->getFirstItem();
+
+        $store = $this->_storeManager->getStore();
+
+        $actual_quote->setCustomerEmail($customer->getEmail());
+        $actual_quote->setStore($store);
+        $actual_quote->setCurrency();
+        $actual_quote->assignCustomer($customer);
+
+        if ($this->dataHelper->getSessionData('billmate_applied_discount_code')) {
+            $discountCode = $this->dataHelper->getSessionData('billmate_applied_discount_code');
+            $actual_quote->setCouponCode($discountCode);
+        }
+
+        $actual_quote->getBillingAddress()->addData($billmateBillingAddress);
+
+        if ($billmateShippingAddress){
+            $actual_quote->getShippingAddress()->addData($billmateShippingAddress);
+        } else {
+            $actual_quote->getShippingAddress()->addData($billmateBillingAddress);
+        }
+
+        $this->shippingRate->setCode($shippingCode)->getPrice();
+        $shippingAddress = $actual_quote->getShippingAddress();
+
+        $billmatePaymentMethod = $this->dataHelper->getPaymentMethod();
+        $shippingAddress->setCollectShippingRates(true)
+            ->collectShippingRates()
+            ->setShippingMethod($shippingCode);
+        $actual_quote->getShippingAddress()->addShippingRate($this->shippingRate);
+        $actual_quote->setPaymentMethod($billmatePaymentMethod);
+        $actual_quote->getPayment()->setQuote($actual_quote);
+        $actual_quote->getPayment()->importData([
+            'method' => $billmatePaymentMethod,
+        ]);
+        $actual_quote->getPayment()->setAdditionalInformation(
+            self::BM_ADDITIONAL_INFO_CODE, $orderData['payment_method_name']
+        );
+
+        $actual_quote->setReservedOrderId($orderId);
+        $actual_quote->collectTotals();
+        $actual_quote->save();
+        return $actual_quote;
+    }
+
+
+    protected function createCart($orderId)
+    {
+        $billmateShippingAddress = $this->dataHelper->getSessionData('billmate_shipping_address');
+        $billmateBillingAddress = $this->dataHelper->getSessionData('billmate_billing_address');
+
+        $customer = $this->getCustomer($this->getOrderData());
+        $actualQuote = $this->createQuote($orderId, $customer);
+
+        $cart = $this->cartRepositoryInterface->get($actualQuote->getId());
+        $cart->setCustomerEmail($customer->getEmail());
+        $cart->getBillingAddress()->addData($billmateBillingAddress);
+        if ($billmateShippingAddress){
+            $cart->getShippingAddress()->addData($billmateShippingAddress);
+        } else {
+            $cart->getShippingAddress()->addData($billmateBillingAddress);
+        }
+        $cart->getBillingAddress()->setCustomerId($customer->getId());
+        $cart->getShippingAddress()->setCustomerId($customer->getId());
+        $cart->setCustomerId($customer->getId());
+        $cart->assignCustomer($customer);
+        $cart->save();
+        return $cart;
     }
 
     /**
@@ -180,5 +212,26 @@ class Order
         $customer->save();
 
         return $this->customerRepository->getById($customer->getEntityId());
+    }
+
+    /**
+     * @param $orderData
+     *
+     * @return $this
+     */
+    public function setOrderData($orderData)
+    {
+        $this->orderData = $orderData;
+        return $this;
+    }
+
+    /**
+     * @param $orderData
+     *
+     * @return $this
+     */
+    public function getOrderData()
+    {
+        return $this->orderData;
     }
 }

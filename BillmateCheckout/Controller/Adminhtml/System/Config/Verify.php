@@ -41,4 +41,3 @@ class Verify extends Action {
 		
     }
 }
-?>

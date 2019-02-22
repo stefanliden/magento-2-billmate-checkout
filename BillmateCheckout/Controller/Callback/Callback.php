@@ -14,6 +14,11 @@ class Callback extends \Billmate\BillmateCheckout\Controller\FrontCore
 	protected $resultPageFactory;
 
     /**
+     * @var \Magento\Framework\Controller\Result\JsonFactory
+     */
+    protected $resultJsonFactory;
+
+    /**
      * @var \Magento\Catalog\Api\ProductRepositoryInterface
      */
 	private $productRepository;
@@ -56,6 +61,7 @@ class Callback extends \Billmate\BillmateCheckout\Controller\FrontCore
 	public function __construct(
 	    Context $context,
         PageFactory $resultPageFactory,
+        \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
         \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
         \Billmate\BillmateCheckout\Helper\Data $_helper,
         \Billmate\BillmateCheckout\Helper\Config $configHelper,
@@ -66,6 +72,7 @@ class Callback extends \Billmate\BillmateCheckout\Controller\FrontCore
         \Billmate\BillmateCheckout\Model\Order $orderModel
     ){
 		$this->resultPageFactory = $resultPageFactory;
+        $this->resultJsonFactory = $resultJsonFactory;
 	    $this->productRepository = $productRepository;
 		$this->invoiceService = $_invoiceService;
 		$this->helper = $_helper;
@@ -80,41 +87,52 @@ class Callback extends \Billmate\BillmateCheckout\Controller\FrontCore
 	
 	public function execute()
     {
+        $jsonResponse = $this->resultJsonFactory->create();
         $requestData = $this->getBmRequestData();
-
 		$hash = $this->getHashCode($requestData);
-		
-		if ($hash == $requestData['credentials']['hash']) {
-			$values = array(
-				"number" => $requestData['data']['number']
-			);
-			$paymentInfo = $this->billmateProvider->getPaymentinfo($values);
-			$this->helper->setBmPaymentMethod($paymentInfo['PaymentData']['method']);
 
-			$order = $this->helper->getOrderByIncrementId($paymentInfo['PaymentData']['orderid']);
-			if (!is_string($order->getIncrementId())) {
+		try{
+            if ($hash != $requestData['credentials']['hash']) {
+                throw new \Exception(
+                    __('Invalid credentials hash.')
+                );
+            }
+            $values = array(
+                "number" => $requestData['data']['number']
+            );
+            $paymentInfo = $this->billmateProvider->getPaymentinfo($values);
+
+            $order = $this->helper->getOrderByIncrementId($paymentInfo['PaymentData']['orderid']);
+            if (!is_string($order->getIncrementId())) {
                 $orderInfo = $this->getOrderInfo($paymentInfo);
-				$order_id = $this->orderModel->create($orderInfo, $paymentInfo['PaymentData']['orderid']);
+                $order_id = $this->orderModel->setOrderData($orderInfo)->create($paymentInfo['PaymentData']['orderid']);
                 if (!$order_id) {
-                    return;
+                    throw new \Exception(
+                        __('An error occurred on the server. Please try to place the order again.')
+                    );
                 }
-				$order = $this->helper->getOrderById($order_id);
-			}
+                $order = $this->helper->getOrderById($order_id);
+            }
 
-			$order->setData('billmate_invoice_id', $requestData['data']['number']);
-			if (
-			    $paymentInfo['PaymentData']['status'] == 'Created'||
+            $order->setData('billmate_invoice_id', $requestData['data']['number']);
+            if (
+                $paymentInfo['PaymentData']['status'] == 'Created'||
                 ($paymentInfo['PaymentData']['status'] == 'Paid')
             ) {
                 $orderState = $this->helper->getApproveStatus();
-			} elseif ($paymentInfo['PaymentData']['status'] == 'Pending') {
-				$orderState = $this->helper->getPendingStatus();
-			} else {
-				$orderState = $this->helper->getDenyStatus();
-			}
+            } elseif ($paymentInfo['PaymentData']['status'] == 'Pending') {
+                $orderState = $this->helper->getPendingStatus();
+            } else {
+                $orderState = $this->helper->getDenyStatus();
+            }
             $order->setState($orderState)->setStatus($orderState);
             $order->save();
-		}
+            $respMessage = _('Order status successfully updated.');
+
+        } catch(\Exception $exception) {
+            $respMessage = $exception->getMessage();
+        }
+        return $jsonResponse->setData($respMessage);
 	}
 
     /**

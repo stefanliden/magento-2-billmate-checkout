@@ -90,6 +90,26 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getIframeData()
     {
+        $bmRequestData = $this->prepareRequestData();
+        $method = $this->getApiMethod();
+
+        $response = $this->billmateProvider->call(
+            $method,
+            $bmRequestData
+        );
+
+        if (isset($response['number'])) {
+            $this->setSessionData('billmate_checkout_id', $response['number']);
+        }
+
+        return $response;
+	}
+
+    /**
+     * @return array
+     */
+	protected function prepareRequestData()
+    {
         $this->dataHelper->prepareCheckout();
         $this->runCheckIsUpdateCheckout();
 
@@ -129,18 +149,8 @@ class Iframe extends \Magento\Framework\App\Helper\AbstractHelper
             ]
         ];
 
-        $method = $this->getApiMethod();
-        $response = $this->billmateProvider->call(
-            $method,
-            $data
-        );
-
-        if (isset($response['number'])) {
-            $this->setSessionData('billmate_checkout_id', $response['number']);
-        }
-
-        return $response;
-	}
+        return $data;
+    }
 
 
     /**

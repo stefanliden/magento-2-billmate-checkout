@@ -1,5 +1,5 @@
 {
-    "name": "billmate/magento2",
+    "name": "billmate/magento2-checkout",
     "type": "magento2-module",
     "authors": [
         {
@@ -8,6 +8,7 @@
         }
     ],
     "require": {},
+    "version": "1.0.1",
     "license": [
         "OSL-3.0",
         "AFL-3.0"

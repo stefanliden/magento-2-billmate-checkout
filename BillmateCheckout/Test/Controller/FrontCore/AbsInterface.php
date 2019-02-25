@@ -1,5 +1,5 @@
 <?php
-namespace Billmate\BillmateCheckout\Controller\FrontCore;
+namespace Billmate\BillmateCheckout\Test\Controller\FrontCore;
 
 abstract class AbsInterface extends \Magento\Framework\App\Action\Action
     implements \Magento\Framework\App\CsrfAwareActionInterface

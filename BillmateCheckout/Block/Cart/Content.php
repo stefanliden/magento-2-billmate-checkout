@@ -30,6 +30,13 @@ class Content extends \Magento\Checkout\Block\Onepage
     protected $_taxHelper;
 
     /**
+     * Catalog product configuration
+     *
+     * @var \Magento\Catalog\Helper\Product\Configuration
+     */
+    protected $_productConfig = null;
+
+    /**
      * Cart constructor.
      *
      * @param \Magento\Framework\View\Element\Template\Context $context
@@ -53,6 +60,7 @@ class Content extends \Magento\Checkout\Block\Onepage
         \Magento\Catalog\Block\Product\ImageBuilder $imageBuilder,
         \Billmate\BillmateCheckout\Helper\Config $configHelper,
         \Magento\Tax\Helper\Data $taxHelper,
+        \Magento\Catalog\Helper\Product\Configuration $productConfig,
         array $layoutProcessors = [],
         array $data = []
 	) {
@@ -63,6 +71,7 @@ class Content extends \Magento\Checkout\Block\Onepage
         $this->imageBuilder = $imageBuilder;
         $this->configHelper = $configHelper;
         $this->_taxHelper = $taxHelper;
+        $this->_productConfig = $productConfig;
 	}
 
     /**
@@ -117,6 +126,25 @@ class Content extends \Magento\Checkout\Block\Onepage
     public function isEnabledButtons()
     {
         return $this->configHelper->getBtnEnable();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isShowAttribute()
+    {
+        return $this->configHelper->getShowAttribute();
+    }
+
+    /**
+     * @param $item
+     *
+     * @return mixed
+     */
+    public function getProductOptions($item)
+    {
+        /* @var $helper \Magento\Catalog\Helper\Product\Configuration */
+        return $this->_productConfig->getCustomOptions($item);
     }
 
     /**

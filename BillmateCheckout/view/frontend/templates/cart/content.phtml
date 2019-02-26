@@ -25,7 +25,14 @@
             <div class="billmate-checkout-img">
                 <?= $block->getImage($item->getProduct(), 'billmate_checkout_content')->toHtml() ?>
             </div>
-            <div class="billmate-checkout-name"><p><?= $block->escapeHtml($item->getName()) ?></p></div>
+            <div class="billmate-checkout-name">
+                <p><?= $block->escapeHtml($item->getName()) ?></p>
+
+                <?php if($block->isShowAttribute()): ?>
+                    <?php $options = $block->getChildBlock('bm.item.renderer')->setItem($item)->getOptionList() ?>
+                    <div class="billmate-checkout-attributes"><p><?= $block->escapeHtml($item->getName()) ?></p></div>
+                <?php  endif; ?>
+            </div>
             <div class="billmate-checkout-price" id="price_<?= $item->getId() ?>"><?= $block->formatPrice($item->getPrice()) ?></div>
             <div class="billmate-checkout-qty <?= !$isEnabledButtons? 'no-buttons' : '' ?>" id="qty_<?= $item->getId() ?>">
                 <?php if($isEnabledButtons): ?>

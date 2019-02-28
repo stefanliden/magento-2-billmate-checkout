@@ -216,6 +216,12 @@ div#billmate-cart{
     padding-left: 15px;
     padding-right: 15px;
 }
+iframe#checkout {
+    margin-top: 20px;
+    width: 100%;
+    min-height: 800px;
+    border:none;
+}
 
 .billmate-checkout-table-head{
     border-bottom: 2px solid #7c7c7c;

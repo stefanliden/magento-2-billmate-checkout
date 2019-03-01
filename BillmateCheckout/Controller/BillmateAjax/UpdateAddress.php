@@ -130,7 +130,7 @@ class UpdateAddress extends \Magento\Framework\App\Action\Action {
             if (isset($shippingAddress['country'])) {
                 $country =  $shippingAddress['country'];
             } else {
-                $country = $this->getSessionData('billmate_country');
+                $country = $this->helper->getSessionData('billmate_country');
             }
             $shippingFormatted = [
                 'firstname'=> $shippingAddress['firstname'],

@@ -60,6 +60,14 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action
 
 	public function execute() {
 		$result = $this->resultJsonFactory->create();
+		if ($this->isQuoteExpired()) {
+            $errorData = [
+                'error' => true,
+                'redirect_url' => $this->_url->getUrl( 'checkout/cart')
+            ];
+            return $result->setData($errorData);
+        }
+
 		if ($this->getRequest()->isAjax()) {
             $itemId = $this->getItemIdFromRequest();
 			if ($this->getRequest()->getParam('field2') == 'sub') {
@@ -91,6 +99,14 @@ class BillmateAjax extends \Magento\Framework\App\Action\Action
             return $result->setData($return);
 		}
 	}
+
+    /***
+     * @return bool
+     */
+    public function isQuoteExpired()
+    {
+        return !(bool)$this->checkoutCart->getQuote()->getItems();
+    }
 
     /**
      * @param $id

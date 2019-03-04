@@ -1,44 +1,50 @@
-"ID has not been recived from Billmate","ID has not been recived from Billmate"
+"Verify","Verify"
+"Invalid credentials hash.","Invalid credentials."
+"An error occurred on the server. Please try to place the order again.","An unexpected error occurred. Please try to place the order again."
+"Discount rules ids: ",""
+"Show Super Attributes",""
+"Show All Visible Attributes",""
+"Show no Attributes",""
+"Minute",""
+"Hourly",""
+"ID has not been recived from Billmate","ID was not recived from Billmate"
+"The option ""Store Terms"" is required for Billmate Checkout","Store Terms is mandatory to enter to be able to use Billmate Checkout."
+"Type of payment: <b>%1</b>","Payment method: <b>%1</b>"
 "Shopping Cart","Shopping Cart"
-Product,Product
-Price,Price
-Quantity,Quantity
-Sum,Sum
-Shipping,Shipping
-Discount,Discount
-Tax,Tax
-Total,Total
+"Product","Product"
+"Price","Price"
+"Quantity","Quantity"
+"Sum","Sum"
+"Shipping","Shipping"
+"Discount","Discount"
+"Tax","Tax"
+"Total","Total"
 "Discount Codes","Discount Codes"
 "Apply Discount","Apply Discount"
 "Shipping Methods","Shipping Methods"
-"Something goes wrong.Please try again later. Or call to our suport center.","Something goes wrong.Please try again later. Or call to our suport center."
-"Contact Us","Contact Us"
-"We'll email you an order confirmation with details and tracking info.","We'll email you an order confirmation with details and tracking info."
-"Your order # is: <span>%1</span>.","Your order # is: <span>%1</span>."
-"Continue Shopping","Continue Shopping"
-Billmate,Billmate
-Checkout,Checkout
-General,General
+"Something goes wrong.Please try again later. Or call to our suport center.","An unexpected error occurred, please try again. If the issue is reoccurring, please contact us."
+"Contact Us",""
+"We'll email you an order confirmation with details and tracking info.",""
+"Your order # is: <span>%1</span>.",""
+"Continue Shopping",""
+"Billmate","Billmate"
+"Billmate Checkout","Billmate Checkout"
+"General","General"
 "Plugin Version","Plugin Version"
-Enabled,Enabled
-"Enable/Disable Billmate Checkout","Enable/Disable Billmate Checkout"
+"Enabled","Enabled"
+"Enable/Disable Billmate Checkout","Enable / Disable Billmate Checkout"
+"Test Mode Enabled","Test Mode Enabled"
+"Enable/Disable Billmate Test Mode","Enable / Disable Billmate Test Mode"
 "Push order events to Billmate","Push order events to Billmate"
 "Push order events, credit, cancel and activate to Billmate.","Push order events, credit, cancel and activate to Billmate."
-"Show Increase/Decrease buttons in cart","Show Increase/Decrease buttons in cart"
-"Activate if you want to show increase and decrease buttons in checkout","Activate if you want to show increase and decrease buttons in checkout"
+"Show Increase/Decrease buttons in cart","Show Increase / Decrease buttons in cart"
+"Activate if you want to show increase and decrease buttons in checkout","Activate of you want to show buttons to change the number of articles in the cart on the checkout page."
 "Show attributes in cart","Show attributes in cart"
-"Show attributes such as size & color.","Show attributes such as size & color."
+"Show attributes such as size & color.","Show attributes such as size & color in the cart on the checkout page."
 "Store Terms","Store Terms"
-"Put here full URL to terms and conditions","Put here full URL to terms and conditions"
+"Put here full URL to terms and conditions","Input the URL to the stores terms. (ex. https://yourstore.com/store-terms)"
 "Privacy Policy","Privacy Policy"
-"Put here full URL to privacy policy (ex: https://youdomain.com/privacy-policy-url)","Put here full URL to privacy policy (ex: https://youdomain.com/privacy-policy-url)"
-Credentials,Credentials
-ID,ID
-Secret,Secret
-"Test Mode","Test Mode"
-"Enable/Disable Billmate Test Mode","Enable/Disable Billmate Test Mode"
-"Billmate Faktura","Billmate Faktura"
-Enable,Enable
-"Billmate Kort","Billmate Kort"
-"Billmate Delbetalning","Billmate Delbetalning"
-"Billmate Bank","Billmate Bank"
+"Put here full URL to privacy policy (ex: https://youdomain.com/privacy-policy-url)","Input the URL to the stores privacy policy, (ex. https://yourstore.com/privacy-policy)"
+"Credentials","Credentials"
+"ID","ID"
+"Secret","Secret"

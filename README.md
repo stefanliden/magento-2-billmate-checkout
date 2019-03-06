@@ -36,6 +36,6 @@ Will be added in an upcoming release.
 	php bin/magento setup:upgrade
 	php bin/magento setup:static-content:deploy
 	```
-5. Configure the general settings under "Stores" --> "Configuration" --> "Billmate" --> "Checkout". 
-6. Configure payment method specific settings under "Stores" --> "Configuration" --> "Sales" --> "Payment Methods".
+5. Configure the Billmate Credentials under "Stores" --> "Configuration" --> "Sales" --> "Payment Methods" --> "Billmate Checkout" --> "Credentials"
+6. Configure the General under "Stores" --> "Configuration" --> "Sales" --> "Payment Methods" --> "Billmate Checkout" --> "General"
 7. Make a test purchase for every payment method to verify that you have made the correct settings.

@@ -12,7 +12,8 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 /**
  * Verify button renderer
  */
-class Verify extends Field {
+class Verify extends Field
+{
     /**
      * @var string
      */
@@ -22,7 +23,8 @@ class Verify extends Field {
      * @param \Magento\Backend\Block\Template\Context $context
      * @param array $data
      */
-    public function __construct(\Magento\Backend\Block\Template\Context $context, array $data = []) {
+    public function __construct(Context $context, array $data = [])
+    {
         parent::__construct($context, $data);
     }
 
@@ -32,7 +34,8 @@ class Verify extends Field {
      * @param  \Magento\Framework\Data\Form\Element\AbstractElement $element
      * @return string
      */
-    public function render(\Magento\Framework\Data\Form\Element\AbstractElement $element){
+    public function render(AbstractElement $element)
+    {
         $element->unsScope()->unsCanUseWebsiteValue()->unsCanUseDefaultValue();
         return parent::render($element);
     }
@@ -45,7 +48,8 @@ class Verify extends Field {
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    protected function _getElementHtml(\Magento\Framework\Data\Form\Element\AbstractElement $element){
+    protected function _getElementHtml(AbstractElement $element)
+    {
         return $this->_toHtml();
     }
 
@@ -54,7 +58,8 @@ class Verify extends Field {
      *
      * @return string
      */
-    public function getAjaxSyncUrl(){
+    public function getAjaxSyncUrl()
+    {
         return $this->getUrl('billmatecheckout/system_config/verify');
     }
 
@@ -63,13 +68,13 @@ class Verify extends Field {
      *
      * @return string
      */
-    public function getButtonHtml(){
-        $button = $this->getLayout()->createBlock('Magento\Backend\Block\Widget\Button')->setData(
-            [
+    public function getButtonHtml()
+    {
+        $button = $this->getLayout()->createBlock('Magento\Backend\Block\Widget\Button')
+            ->setData([
                 'id' => 'verify_button',
                 'label' => __('Verify'),
-            ]
-        );
+            ]);
 
         return $button->toHtml();
     }

@@ -3,12 +3,43 @@ namespace Billmate\BillmateCheckout\Controller\Success;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Framework\App\Action\Context;
 use \Magento\Checkout\Model\Session as CheckoutSession;
-class Success extends \Magento\Framework\App\Action\Action {
-	
+class Success extends \Billmate\BillmateCheckout\Controller\FrontCore
+{
+
+    /**
+     * @var PageFactory
+     */
 	protected $resultPageFactory;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Helper\Data
+     */
 	protected $helper;
+
+    /**
+     * @var CheckoutSession
+     */
 	protected $checkoutSession;
+
+    /**
+     * @var \Magento\Framework\Event\Manager
+     */
 	protected $eventManager;
+
+    /**
+     * @var \Magento\Framework\Registry
+     */
+    protected $registry;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Model\Order
+     */
+    protected $orderModel;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Model\Api\Billmate
+     */
+    protected $billmateProvider;
 	
 	public function __construct(
 		Context $context,
@@ -16,136 +47,70 @@ class Success extends \Magento\Framework\App\Action\Action {
 		\Magento\Framework\Event\Manager $eventManager,
 		\Billmate\BillmateCheckout\Helper\Data $_helper, 
 		CheckoutSession $checkoutSession,
-        \Psr\Log\LoggerInterface $logger
+        \Psr\Log\LoggerInterface $logger,
+        \Magento\Framework\Registry $registry,
+        \Magento\Checkout\Model\Session\SuccessValidator $successValidator,
+        \Billmate\BillmateCheckout\Model\Order $orderModel,
+        \Billmate\BillmateCheckout\Model\Api\Billmate $billmateProvider
 	) {
 		$this->eventManager = $eventManager;
 		$this->resultPageFactory = $resultPageFactory;
 		$this->checkoutSession = $checkoutSession;
 		$this->helper = $_helper;
         $this->logger = $logger;
+        $this->registry = $registry;
+        $this->successValidator = $successValidator;
+        $this->orderModel = $orderModel;
+        $this->billmateProvider = $billmateProvider;
 		parent::__construct($context);
 	}
 	
-	public function execute(){
+	public function execute()
+    {
+        $this->helper->setSessionData('billmate_checkout_id',null);
 
-        $this->logger->error(print_r(array(
-            '__FILE__' => __FILE__,
-            '__CLASS__' => __CLASS__,
-            '__FUNCTION__' => __FUNCTION__,
-            '__LINE__' => __LINE__,
-            'date' => date('Y-m-d H:i:s'),
-            'note' => 'aaa',
-            '' => ''
-        ), true));
-
-		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-
-        $this->logger->error(print_r(array(
-            '__FILE__' => __FILE__,
-            '__CLASS__' => __CLASS__,
-            '__FUNCTION__' => __FUNCTION__,
-            '__LINE__' => __LINE__,
-            'date' => date('Y-m-d H:i:s'),
-            'note' => 'aab',
-            '' => ''
-        ), true));
-
-		$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-
-         $this->logger->error(print_r(array(
-            '__FILE__' => __FILE__,
-            '__CLASS__' => __CLASS__,
-            '__FUNCTION__' => __FUNCTION__,
-            '__LINE__' => __LINE__,
-            'date' => date('Y-m-d H:i:s'),
-            'note' => 'aac',
-            '' => ''
-        ), true));
-
-		$resultPage = $this->resultPageFactory->create();
 		try{
+            $requestData = $this->getBmRequestData();
+            $values = array(
+                "number" => $requestData['data']['number']
+            );
 
-            $this->logger->error(print_r(array(
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'aba',
-                'isset.session.bm-inc-id' => (isset($_SESSION['bm-inc-id'])),
-                '' => ''
-            ), true));
+            $paymentInfo = $this->billmateProvider->getPaymentinfo($values);
 
-			if (!isset($_SESSION['bm-inc-id'])){
+			if (!$this->helper->getSessionData('bm-inc-id')) {
 				$orderData = array(
-					'email'=>$_SESSION['billmate_email'],
-					'shipping_address'=>$_SESSION['billmate_billing_address']
+					'email' => $this->helper->getSessionData('billmate_email'),
+					'shipping_address' => $this->helper->getSessionData('billmate_billing_address'),
+                    'payment_method_name' => $paymentInfo['PaymentData']['method_name']
 				);
-				$orderId = $this->helper->createOrder($orderData);
-				$_SESSION['bm_order_id'] = $orderId;
-			}
-			$order = $objectManager->get('\Magento\Sales\Model\Order')->loadByIncrementId($_SESSION['bm-inc-id']);
-			$orderId = $order->getId();
+				$orderId = $this->orderModel->setOrderData($orderData)->create();
+                if (!$orderId) {
+                    throw new \Exception(
+                        __('An error occurred on the server. Please try to place the order again.')
+                    );
+                }
 
-            $this->logger->error(print_r(array(
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'abb',
-                'orderId' => $orderId,
-                '' => ''
-            ), true));
+                $this->helper->setSessionData('bm_order_id', $orderId);
+
+			}
+
+			$order = $this->helper->getOrderByIncrementId($this->helper->getSessionData('bm-inc-id'));
+            $this->registry->register('bm-inc-id', $this->helper->getSessionData('bm-inc-id'));
+			$orderId = $order->getId();
 
 			$this->eventManager->dispatch(
 				'checkout_onepage_controller_success_action',
 				['order_ids' => [$order->getId()]]
 			);
-			
-			$this->checkoutSession->setLastSuccessQuoteId($cart->getQuote()->getId());
-			$this->checkoutSession->setLastQuoteId($cart->getQuote()->getId());
+
+			$this->checkoutSession->setLastSuccessQuoteId($this->helper->getQuote()->getId());
+			$this->checkoutSession->setLastQuoteId($this->helper->getQuote()->getId());
 			$this->checkoutSession->setLastOrderId($orderId);
-			$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-			$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
-
-            $this->logger->error(print_r(array(
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'abc',
-                '' => ''
-            ), true));
-
-			$url = $storeManager->getStore()->getBaseUrl() . "checkout/onepage/success";
-
-            $this->logger->error(print_r(array(
-                '__FILE__' => __FILE__,
-                '__CLASS__' => __CLASS__,
-                '__FUNCTION__' => __FUNCTION__,
-                '__LINE__' => __LINE__,
-                'date' => date('Y-m-d H:i:s'),
-                'note' => 'abd',
-                'url' => $url,
-                'headers_sent' => (headers_sent()),
-                '' => ''
-            ), true));
-
-			if (headers_sent()){
-				die('<script type="text/javascript">window.location.href="' . $url . '";</script>');
-			}
-			else{
-				header('Location: ' . $url);
-				die();
-			}
 		}
 		catch (\Exception $e){
-			$_SESSION['bm-inc-id'] = $cart->getQuote()->getReservedOrderId();
-
-            $this->logger->error(print_r(array(
-                'note' => 'could not redirect customer to store order confirmation page',
+            $this->helper->clearBmSession();
+            $this->helper->addLog([
+                'note' => 'Could not redirect customer to store order confirmation page',
                 '__FILE__' => __FILE__,
                 '__CLASS__' => __CLASS__,
                 '__FUNCTION__' => __FUNCTION__,
@@ -153,21 +118,10 @@ class Success extends \Magento\Framework\App\Action\Action {
                 'exception.message' => $e->getMessage(),
                 'exception.file' => $e->getFile(),
                 'exception.line' => $e->getLine(),
-                '' => ''
-            ), true));
+            ]);
+           return $this->resultRedirectFactory->create()->setPath('billmatecheckout/success/error');
 		}
 
-        $this->logger->error(print_r(array(
-            'note' => 'could not redirect customer to store order confirmation page',
-            '__FILE__' => __FILE__,
-            '__CLASS__' => __CLASS__,
-            '__FUNCTION__' => __FUNCTION__,
-            '__LINE__' => __LINE__,
-            'date' => date('Y-m-d H:i:s'),
-            'note' => 'done Return content of resultPage',
-            '' => ''
-        ), true));
-
-		return $resultPage;
+        return $this->resultRedirectFactory->create()->setPath('checkout/onepage/success');
 	}
 }

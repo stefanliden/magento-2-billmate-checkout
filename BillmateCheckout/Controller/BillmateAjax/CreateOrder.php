@@ -1,60 +1,72 @@
 <?php
 namespace Billmate\BillmateCheckout\Controller\BillmateAjax;
-use Magento\Framework\View\Result\PageFactory;
+
 use Magento\Framework\App\Action\Context;
 
-class CreateOrder extends \Magento\Framework\App\Action\Action {
-	
-	protected $resultPageFactory;
-	private $productRepository;
+class CreateOrder extends \Magento\Framework\App\Action\Action
+{
+    /**
+     * @var \Magento\Framework\Controller\Result\JsonFactory
+     */
+	protected $resultJsonFactory;
+
+    /**
+     * @var \Billmate\BillmateCheckout\Helper\Data
+     */
 	protected $helper;
-	protected $orderInterface;
-	protected $eventManager;
-	protected $checkoutSession;
-	
-	public function __construct(Context $context, 
-		PageFactory $resultPageFactory,
+
+    /**
+     * @var \Billmate\BillmateCheckout\Model\Order
+     */
+    protected $orderModel;
+
+    /**
+     * CreateOrder constructor.
+     *
+     * @param Context                                          $context
+     * @param \Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory
+     * @param \Billmate\BillmateCheckout\Helper\Data           $_helper
+     */
+	public function __construct(Context $context,
 		\Magento\Framework\Controller\Result\JsonFactory $resultJsonFactory,
-		\Magento\Catalog\Api\ProductRepositoryInterface $productRepository, 
-		\Billmate\BillmateCheckout\Helper\Data $_helper, 
-		\Magento\Framework\Event\Manager $eventManager,
-		\Magento\Sales\Api\Data\OrderInterface $order,
-		\Magento\Checkout\Model\Session $_session
-	){
-		$this->eventManager = $eventManager;
+		\Billmate\BillmateCheckout\Helper\Data $_helper,
+        \Billmate\BillmateCheckout\Model\Order $orderModel
+	) {
 		$this->resultJsonFactory = $resultJsonFactory;
-		$this->resultPageFactory = $resultPageFactory;
-	    $this->productRepository = $productRepository;
 		$this->helper = $_helper;
-		$this->orderInterface = $order;
-		$this->checkoutSession = $_session;
+        $this->orderModel = $orderModel;
 		parent::__construct($context);
 	}
-	
-	public function execute(){
-		$result = $this->resultJsonFactory->create();
-		if ($_POST['status'] == 'Step2Loaded'){
-			if (isset($_SESSION['billmate_email'])){
-				$input = array(
-					'email'=>$_SESSION['billmate_email'],
-					'shipping_address'=>$_SESSION['billmate_billing_address'],
+
+    /**
+     * @return $this
+     */
+	public function execute()
+    {
+		if ($this->getRequest()->getParam('status') == 'Step2Loaded') {
+			if ($this->helper->getSessionData('billmate_email')){
+                $orderData = array(
+					'email' => $this->helper->getSessionData('billmate_email'),
+					'shipping_address' => $this->helper->getSessionData('billmate_billing_address'),
 					'items'=>array()
 				);
-				$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-				$cart = $objectManager->get('\Magento\Checkout\Model\Cart');
-				$allItems = $cart->getQuote()->getAllVisibleItems();
-				foreach($allItems as $item){
-					array_push($input['items'], array(
-						'product_id'=>$item->getSku(),
-						'qty'=>$item->getQty(),
-						'price'=>$item->getPrice()
-					));
+				$quote = $this->helper->getQuote();
+				$allItems = $this->helper->getItems();
+
+				foreach ($allItems as $item) {
+					$orderData['items'][] = [
+						'product_id' => $item->getSku(),
+						'qty' => $item->getQty(),
+						'price' => $item->getPrice()
+					];
 				}
-				$orderId = $this->helper->createOrder($input);
-				$_SESSION['bm_order_id'] = $orderId;
-				$this->checkoutSession->setLastSuccessQuoteId($cart->getQuote()->getId());
-				$this->checkoutSession->setLastQuoteId($cart->getQuote()->getId());
-				$this->checkoutSession->setLastOrderId($orderId);
+				$orderId = $this->orderModel->setOrderData($orderData)->create();
+                $this->helper->setSessionData('bm_order_id', $orderId);
+				$this->helper->setSessionData('last_success_quote_id', $quote->getId());
+				$this->helper->setSessionData('last_quote_id', $quote->getId());
+				$this->helper->setSessionData('last_order_id', $orderId);
+
+                $result = $this->resultJsonFactory->create();
 				return $result->setData('checkout/onepage/success');
 			}
 		}

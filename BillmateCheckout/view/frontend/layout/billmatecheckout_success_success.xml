@@ -4,16 +4,11 @@
 		<css src="Billmate_BillmateCheckout/css/success.css" />
 	</head> 
     <body>
-        <referenceContainer name="checkout.root" remove="true">
-            <action method="setTemplate">
-                <argument name="template" xsi:type="string">Billmate_BillmateCheckout::Success.phtml</argument>
-            </action>
-        </referenceContainer>
 		<referenceContainer name="columns">
 			<container name="div.sidebar.main" htmlTag="div" htmlClass="sidebar sidebar-main" after="main">
 			</container>
 			<container name="column.main" htmlTag="div" htmlClass="column main" before="main"> <!--   -->
-				<block class="Billmate\BillmateCheckout\Block\Success" cacheable="false" name="billmatecheckout" template="Success.phtml" />
+				<block class="Billmate\BillmateCheckout\Block\Success" cacheable="false" name="billmatecheckout" template="success.phtml" />
 			</container>
 		</referenceContainer>
     </body>

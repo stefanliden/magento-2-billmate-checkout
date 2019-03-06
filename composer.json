@@ -1,0 +1,27 @@
+{
+    "name": "billmate/magento2-checkout",
+    "description": "Billmate checkout - payment method",
+    "type": "magento2-module",
+    "authors": [
+        {
+            "name": "Billmate AB",
+            "email": "support@billmate.se"
+        }
+    ],
+    "require": {
+        "php": "^5.6.5",
+        "magento/framework": ">= 2.1 || <= 2.2"
+    },
+    "version": "1.0.0",
+    "license": [
+        "MIT"
+    ],
+    "autoload": {
+        "files": [
+            "BillmateCheckout/registration.php"
+        ],
+        "psr-4": {
+            "Billmate\\BillmateCheckout\\": "BillmateCheckout"
+        }
+    }
+}

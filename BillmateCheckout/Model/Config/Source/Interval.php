@@ -10,8 +10,8 @@ class Interval implements \Magento\Framework\Option\ArrayInterface {
 	*/	
     public function toOptionArray(){
         return [
-            'minute' => 'Minute',
-            'hour' => 'Hourly',
+            'minute' => __('Minute'),
+            'hour' => __('Hourly'),
         ];
     }
 }

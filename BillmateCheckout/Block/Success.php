@@ -1,26 +1,38 @@
 <?php
-
 namespace Billmate\BillmateCheckout\Block;
  
-class Success extends \Magento\Framework\View\Element\Template {
-	
+class Success extends \Magento\Framework\View\Element\Template
+{
+    /**
+     * @var \Billmate\BillmateCheckout\Helper\Data
+     */
     protected $helper;
 
-    protected $objectManager;
+    /**
+     * @var \Magento\Framework\Registry
+     */
+    protected $registry;
 
-    public function __construct(\Magento\Framework\View\Element\Template\Context $context, array $data = [], \Billmate\BillmateCheckout\Helper\Data $_helper, \Magento\Framework\ObjectManagerInterface $_objectManager){
+    /**
+     * Success constructor.
+     *
+     * @param \Magento\Framework\View\Element\Template\Context $context
+     * @param \Billmate\BillmateCheckout\Helper\Data           $_helper
+     * @param array                                            $data
+     */
+    public function __construct(
+        \Magento\Framework\View\Element\Template\Context $context,
+        \Billmate\BillmateCheckout\Helper\Data $_helper,
+        \Magento\Framework\Registry $registry,
+        array $data = []
+    ) {
         parent::__construct($context, $data);
 		$this->helper = $_helper;
-		$this->objectManager = $_objectManager;
+        $this->registry = $registry;
 	}
-	
-	protected function _toHtml(){
-		return parent::_toHtml();
-	}
-	
-	public function getSuccess(){
-		$str = $this->helper->getCheckout();
-		$this->helper->clearSession();
-		return $str;
-	}
+
+	public function getLastOrderIncId()
+    {
+        return $this->registry->registry('bm-inc-id');
+    }
 }

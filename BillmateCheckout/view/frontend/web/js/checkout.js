@@ -1,13 +1,10 @@
-/**
- * Created by Boxedsolutions on 2016-12-07.
- */
 define([
 	'jquery'
 ], function ($, billmateajax) {
 	window.method = null;
 	window.address_selected = null;
 	window.latestScroll = null;
-	var BillmateIframe = new function(){
+	BillmateIframe = new function(){
 		var self = this;
 		var childWindow = null;
 	    this.updateAddress = function (data) {
@@ -19,14 +16,28 @@ define([
 					document.getElementById('billmate-cart').innerHTML = response.cart;
 				}
 			});
-
 		};
-		this.update = function(){
-			
-		}
-		this.createOrder = function(data){
-			if (data.status == "Step2Loaded"){
-			//	document.getElementById("billmate-checkout").style.display = "none";
+		this.unlock = function() {
+			setTimeout(
+				function() {
+                    self.checkoutPostMessage('unlock')
+				}, 1000);
+		};
+        this.lock = function() {
+            this.checkoutPostMessage('lock');
+        };
+        this.update = function() {
+            this.checkoutPostMessage('update');
+        };
+        this.checkoutPostMessage = function(message) {
+            var checkout = document.getElementById('checkout');
+            if (checkout != null) {
+                var win = checkout.contentWindow;
+                win.postMessage(message,'*');
+            }
+        }
+		this.createOrder = function(data) {
+			if (data && data.status == "Step2Loaded") {
 				$.ajax({
 					url : CREATE_ORDER_URL,
 					data: data,
@@ -36,13 +47,6 @@ define([
 					}
 				});
 			}
-		};
-		this.paymentMethod = function(data){
-			$.ajax({
-				url : SET_PAYMENTMETHOD_URL,
-				data: data,
-				type: 'POST'
-			});
 		};
 		this.initListeners = function () {
 			window.addEventListener("message",self.handleEvent);
@@ -55,20 +59,20 @@ define([
 				}
 				self.childWindow = json.source;
 				switch (json.event) {
+                    case 'go_to':
+                        location.href = json.data;
+                        break;
 				    case 'address_selected':
 						self.updateAddress(json.data);
 						if(window.method == null || window.method == json.data.method) {
 							$('#checkoutdiv').removeClass('loading');
 						}
 						break;
-					case 'payment_method_selected':
-						self.paymentMethod(json.data);
-						break;
 					case 'checkout_success':
 							self.createOrder(json.data);
 						break;
 					case 'content_height':
-						document.getElementById("checkout").height = json.data;
+						$("iframe#checkout").css('height',json.data);
 						break;
 					case 'content_scroll_position':
 						window.latestScroll = $(document).find( "#checkout" ).offset().top + json.data;

@@ -9,7 +9,9 @@ This repo **only supports Billmate Checkout** and ~~**not Custom Pay~~**.
 
 ## COMPATIBILITY Magento versions
 2.1.X
+
 2.2.X
+
 2.3.X is not yet supported but is planned for a 1.1 release for this payment module.
 
 ## Documentation
